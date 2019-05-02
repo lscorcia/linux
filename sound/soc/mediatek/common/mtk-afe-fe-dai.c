@@ -50,8 +50,9 @@ int mtk_afe_fe_startup(struct snd_pcm_substream *substream,
 	snd_pcm_hw_constraint_step(substream->runtime, 0,
 				   SNDRV_PCM_HW_PARAM_BUFFER_BYTES, 16);
 	/* enable agent */
-	mtk_regmap_update_bits(afe->regmap, memif->data->agent_disable_reg,
-			       1, 0, memif->data->agent_disable_shift);
+	if (memif->data->agent_disable_reg)
+		mtk_regmap_update_bits(afe->regmap, memif->data->agent_disable_reg,
+			       	       1, 0, memif->data->agent_disable_shift);
 
 	snd_soc_set_runtime_hwparams(substream, mtk_afe_hardware);
 
@@ -558,11 +559,13 @@ int mtk_memif_set_format(struct mtk_base_afe *afe,
 		break;
 	}
 
-	mtk_regmap_update_bits(afe->regmap, memif->data->hd_reg,
-			       0x3, hd_audio, memif->data->hd_shift);
+	if (memif->data->hd_reg)
+		mtk_regmap_update_bits(afe->regmap, memif->data->hd_reg,
+			       	       0x3, hd_audio, memif->data->hd_shift);
 
-	mtk_regmap_update_bits(afe->regmap, memif->data->hd_align_reg,
-			       0x1, hd_align, memif->data->hd_align_mshift);
+	if (memif->data->hd_align_reg)
+		mtk_regmap_update_bits(afe->regmap, memif->data->hd_align_reg,
+			       	       0x1, hd_align, memif->data->hd_align_mshift);
 
 	return 0;
 }
