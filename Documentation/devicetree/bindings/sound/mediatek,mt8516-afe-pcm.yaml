@@ -1,0 +1,63 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/sound/mediatek,mt8516-afe-pcm.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: Mediatek AFE PCM controller for MT8516
+
+maintainers:
+  - Luca Leonardo Scorcia <l.scorcia@gmail.com>
+
+properties:
+  compatible:
+    const: mediatek,mt8516-afe-pcm
+
+  reg:
+    maxItems: 1
+
+  interrupts:
+    maxItems: 1
+
+  clocks:
+    items:
+      - description: Audio top mux
+      - description: ADDA DAC clock
+      - description: ADDA DAC pre-distortion clock
+      - description: ADDA ADC clock
+
+  clock-names:
+    items:
+      - const: top_pdn_audio
+      - const: aud_dac_clk
+      - const: aud_dac_predis_clk
+      - const: aud_adc_clk
+
+required:
+  - compatible
+  - reg
+  - interrupts
+  - clocks
+  - clock-names
+
+additionalProperties: false
+
+examples:
+  - |
+    #include <dt-bindings/clock/mt8516-clk.h>
+    #include <dt-bindings/interrupt-controller/arm-gic.h>
+    #include <dt-bindings/interrupt-controller/irq.h>
+
+    afe: mt8516-afe-pcm@11140000 {
+      compatible = "mediatek,mt8516-afe-pcm";
+      reg = <0x11140000 0x1000>;
+      interrupts = <GIC_SPI 120 IRQ_TYPE_LEVEL_LOW>;
+      clocks = <&topckgen CLK_TOP_AUDIO>,
+               <&audiotop CLK_AUD_DAC>,
+               <&audiotop CLK_AUD_DAC_PREDIS>,
+               <&audiotop CLK_AUD_ADC>;
+      clock-names = "top_pdn_audio",
+                    "aud_dac_clk",
+                    "aud_dac_predis_clk",
+                    "aud_adc_clk";
+    };
