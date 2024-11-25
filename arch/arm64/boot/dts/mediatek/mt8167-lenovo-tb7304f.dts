@@ -1,0 +1,344 @@
+// SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+/*
+ * Copyright (c) 2024 Val Packett <val@packett.cool>
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+#include "mt8167.dtsi"
+#include "mt6392.dtsi"
+
+/ {
+	model = "Lenovo Tab 7 Essential";
+	chassis-type = "tablet";
+	compatible = "lenovo,tb7304f", "mediatek,mt8167";
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		stdout-path = &uart0;
+	};
+
+	memory@40000000 {
+		device_type = "memory";
+		reg = <0 0x40000000 0 0x80000000>;
+	};
+
+	reserved-memory {
+		pstore-reserved-memory@44410000 {
+			reg = <0 0x44410000 0 0xe0000>;
+			compatible = "ramoops";
+			console-size = <0x10000>;
+			record-size = <0x10000>;
+		};
+	};
+
+	usb_vbus: regulator-usb-vbus {
+		compatible = "regulator-fixed";
+		regulator-name = "usb-vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		enable-active-high;
+		// XXX: it's the same pin as a DSI data line?? but it's definitely 3 in the vendor dtb??
+		// gpio = <&pio 3 GPIO_ACTIVE_HIGH>; // low?
+		// pinctrl-names = "default";
+		// pinctrl-0 = <&usb0_drvvbus>;
+	};
+};
+
+&pmic {
+	interrupts-extended = <&pio 28 IRQ_TYPE_LEVEL_HIGH>;
+
+	keys {
+		key-home {
+			linux,keycodes = <KEY_VOLUMEDOWN>;
+		};
+	};
+};
+
+/* With the firmware on Android devices, cores don't seem to come back after out
+   idle/unplug (though initial SMP boot is fine) */
+
+&cpu0 {
+	/delete-property/ cpu-idle-states;
+	proc-supply = <&mt6392_vproc_reg>;
+};
+
+&cpu1 {
+	/delete-property/ cpu-idle-states;
+	proc-supply = <&mt6392_vproc_reg>;
+};
+
+&cpu2 {
+	/delete-property/ cpu-idle-states;
+	proc-supply = <&mt6392_vproc_reg>;
+};
+
+&cpu3 {
+	/delete-property/ cpu-idle-states;
+	proc-supply = <&mt6392_vproc_reg>;
+};
+
+&keypad {
+	status = "okay";
+	linux,keymap = <MATRIX_KEY(0x00, 0x00, KEY_VOLUMEUP)>;
+	keypad,num-rows = <1>;
+	keypad,num-columns = <1>;
+	debounce-delay-ms = <32>;
+	mediatek,keys-per-group = <1>;
+};
+
+&pio {
+	uart0_pins_default: uart0-default-pins {
+		pins-rx {
+			pinmux = <MT8167_PIN_62_URXD0__FUNC_URXD0>;
+			input-enable;
+			bias-pull-up;
+		};
+		pins-tx {
+			pinmux = <MT8167_PIN_63_UTXD0__FUNC_UTXD0>;
+		};
+	};
+
+	mmc0_pins_default: mmc0-default-pins {
+		pins_cmd_dat {
+			pinmux = <MT8167_PIN_120_MSDC0_DAT0__FUNC_MSDC0_DAT0>,
+				<MT8167_PIN_119_MSDC0_DAT1__FUNC_MSDC0_DAT1>,
+				<MT8167_PIN_118_MSDC0_DAT2__FUNC_MSDC0_DAT2>,
+				<MT8167_PIN_117_MSDC0_DAT3__FUNC_MSDC0_DAT3>,
+				<MT8167_PIN_113_MSDC0_DAT4__FUNC_MSDC0_DAT4>,
+				<MT8167_PIN_112_MSDC0_DAT5__FUNC_MSDC0_DAT5>,
+				<MT8167_PIN_111_MSDC0_DAT6__FUNC_MSDC0_DAT6>,
+				<MT8167_PIN_110_MSDC0_DAT7__FUNC_MSDC0_DAT7>,
+				<MT8167_PIN_115_MSDC0_CMD__FUNC_MSDC0_CMD>;
+			input-enable;
+			bias-pull-up;
+		};
+
+		pins_clk {
+			pinmux = <MT8167_PIN_116_MSDC0_CLK__FUNC_MSDC0_CLK>;
+			bias-pull-down;
+		};
+
+		pins_rst {
+			pinmux = <MT8167_PIN_114_MSDC0_RSTB__FUNC_MSDC0_RSTB>;
+			bias-pull-up;
+		};
+	};
+
+	mmc0_pins_uhs: mmc0-uhs-pins {
+		pins_cmd_dat {
+			pinmux = <MT8167_PIN_120_MSDC0_DAT0__FUNC_MSDC0_DAT0>,
+				<MT8167_PIN_119_MSDC0_DAT1__FUNC_MSDC0_DAT1>,
+				<MT8167_PIN_118_MSDC0_DAT2__FUNC_MSDC0_DAT2>,
+				<MT8167_PIN_117_MSDC0_DAT3__FUNC_MSDC0_DAT3>,
+				<MT8167_PIN_113_MSDC0_DAT4__FUNC_MSDC0_DAT4>,
+				<MT8167_PIN_112_MSDC0_DAT5__FUNC_MSDC0_DAT5>,
+				<MT8167_PIN_111_MSDC0_DAT6__FUNC_MSDC0_DAT6>,
+				<MT8167_PIN_110_MSDC0_DAT7__FUNC_MSDC0_DAT7>,
+				<MT8167_PIN_115_MSDC0_CMD__FUNC_MSDC0_CMD>;
+			input-enable;
+			drive-strength = <MTK_DRIVE_6mA>;
+			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
+		};
+
+		pins_clk {
+			pinmux = <MT8167_PIN_116_MSDC0_CLK__FUNC_MSDC0_CLK>;
+			drive-strength = <MTK_DRIVE_8mA>;
+			bias-pull-down = <MTK_PUPD_SET_R1R0_10>;
+		};
+
+		pins_rst {
+			pinmux = <MT8167_PIN_114_MSDC0_RSTB__FUNC_MSDC0_RSTB>;
+			bias-pull-up;
+		};
+	};
+
+	mmc1_pins_default: mmc1-default-pins {
+		pins_cmd_dat {
+			pinmux = <MT8167_PIN_106_MSDC1_DAT0__FUNC_MSDC1_DAT0>,
+				<MT8167_PIN_107_MSDC1_DAT1__FUNC_MSDC1_DAT1>,
+				<MT8167_PIN_108_MSDC1_DAT2__FUNC_MSDC1_DAT2>,
+				<MT8167_PIN_109_MSDC1_DAT3__FUNC_MSDC1_DAT3>,
+				<MT8167_PIN_104_MSDC1_CMD__FUNC_MSDC1_CMD>;
+			input-enable;
+			drive-strength = <MTK_DRIVE_6mA>;
+			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
+		};
+
+		pins_clk {
+			pinmux = <MT8167_PIN_105_MSDC1_CLK__FUNC_MSDC1_CLK>;
+			drive-strength = <MTK_DRIVE_6mA>;
+			bias-pull-down = <MTK_PUPD_SET_R1R0_10>;
+		};
+
+		pins_insert {
+			pinmux = <MT8167_PIN_20_EINT20__FUNC_GPIO20>;
+			bias-pull-up;
+		};
+	};
+
+	mmc1_pins_uhs: mmc1-uhs-pins {
+		pins_cmd_dat {
+			pinmux = <MT8167_PIN_106_MSDC1_DAT0__FUNC_MSDC1_DAT0>,
+				<MT8167_PIN_107_MSDC1_DAT1__FUNC_MSDC1_DAT1>,
+				<MT8167_PIN_108_MSDC1_DAT2__FUNC_MSDC1_DAT2>,
+				<MT8167_PIN_109_MSDC1_DAT3__FUNC_MSDC1_DAT3>,
+				<MT8167_PIN_104_MSDC1_CMD__FUNC_MSDC1_CMD>;
+			input-enable;
+			drive-strength = <MTK_DRIVE_6mA>;
+			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
+		};
+
+		pins_clk {
+			pinmux = <MT8167_PIN_105_MSDC1_CLK__FUNC_MSDC1_CLK>;
+			drive-strength = <MTK_DRIVE_8mA>;
+			bias-pull-down = <MTK_PUPD_SET_R1R0_10>;
+		};
+	};
+
+	i2c0_pins_a: i2c0-pins {
+		pins1 {
+			pinmux = <MT8167_PIN_58_SDA0__FUNC_SDA0_0>,
+				 <MT8167_PIN_59_SCL0__FUNC_SCL0_0>;
+			bias-disable;
+		};
+	};
+
+	i2c1_pins_a: i2c1-pins {
+		pins1 {
+			pinmux = <MT8167_PIN_52_SDA1__FUNC_SDA1_0>,
+				 <MT8167_PIN_53_SCL1__FUNC_SCL1_0>;
+			bias-disable;
+		};
+	};
+
+	i2c2_pins_a: i2c2-pins {
+		pins1 {
+			pinmux = <MT8167_PIN_60_SDA2__FUNC_SDA2_0>,
+				 <MT8167_PIN_61_SCL2__FUNC_SCL2_0>;
+			bias-disable;
+		};
+	};
+
+	// usb0_drvvbus: drvvbus_init {
+		// pins_cmd_dat {
+		// 	pinmux = <MT8167_PIN_3_EINT3__FUNC_GPIO3>;
+		// 	output-low;
+		// };
+	// };
+
+	usb0_iddig: iddig-irq-init-pins {
+		pins_cmd_dat {
+			pinmux = <MT8167_PIN_41_KPROW1__FUNC_IDDIG>;
+			// slew-rate = <0>; // Not supported in the driver
+			bias-pull-up = <0>;
+		};
+	};
+
+	touch_pins: touch-pins {
+		pins_cmd_dat {
+			pinmux = <MT8167_PIN_100_CMDAT0__FUNC_GPIO100>,
+				<MT8167_PIN_101_CMDAT1__FUNC_GPIO101>;
+			// slew-rate = <0>; // Not supported in the driver
+			bias-disable;
+		};
+	};
+};
+
+&uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart0_pins_default>;
+	status = "okay";
+};
+
+&i2c0 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c0_pins_a>;
+
+	touchscreen@5d {
+		compatible = "goodix,gt9293", "goodix,gt917s";
+		reg = <0x5d>;
+		interrupts-extended = <&pio 100 IRQ_TYPE_LEVEL_HIGH>;
+		irq-gpios = <&pio 100 GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&pio 101 GPIO_ACTIVE_HIGH>;
+		AVDD28-supply = <&mt6392_vgp1_reg>;
+		VDDIO-supply = <&mt6392_vgp1_reg>;
+		touchscreen-size-x = <600>;
+		touchscreen-size-y = <1024>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&touch_pins>;
+	};
+};
+
+&i2c1 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c1_pins_a>;
+};
+
+&i2c2 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c2_pins_a>;
+};
+
+&mmc0 {
+	status = "okay";
+	pinctrl-names = "default", "state_uhs";
+	pinctrl-0 = <&mmc0_pins_default>;
+	pinctrl-1 = <&mmc0_pins_uhs>;
+	bus-width = <8>;
+	max-frequency = <200000000>;
+	cap-mmc-highspeed;
+	mmc-hs200-1_8v;
+	cap-mmc-hw-reset;
+	vmmc-supply = <&mt6392_vemc3v3_reg>;
+	vqmmc-supply = <&mt6392_vio18_reg>;
+	non-removable;
+};
+
+&mmc1 {
+	status = "okay";
+	pinctrl-names = "default", "state_uhs";
+	pinctrl-0 = <&mmc1_pins_default>;
+	pinctrl-1 = <&mmc1_pins_uhs>;
+	bus-width = <4>;
+	max-frequency = <200000000>;
+	cap-sd-highspeed;
+	sd-uhs-sdr50;
+	sd-uhs-sdr104;
+	cd-gpios = <&pio 20 0>;
+	vmmc-supply = <&mt6392_vmch_reg>;
+	vqmmc-supply = <&mt6392_vmc_reg>;
+};
+
+&usb0 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb0_iddig>;
+	vusb33-supply = <&mt6392_vusb_reg>;
+	maximum-speed = "high-speed";
+	dr_mode = "peripheral";
+	usb-role-switch;
+
+	connector {
+		compatible = "gpio-usb-b-connector", "usb-b-connector";
+		id-gpios = <&pio 41 GPIO_ACTIVE_HIGH>;
+		type = "micro";
+		vbus-supply = <&usb_vbus>;
+	};
+};
+
+&usb_phy {
+	status = "okay";
+};
