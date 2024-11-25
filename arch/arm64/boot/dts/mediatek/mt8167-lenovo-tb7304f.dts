@@ -244,6 +244,18 @@
 		};
 	};
 
+	panel_pins: panel-pins {
+		pins_rst {
+			pinmux = <MT8167_PIN_66_LCM_RST__FUNC_GPIO66>;
+				 // <MT8167_PIN_68_MSDC2_CMD__FUNC_GPIO68>;
+		};
+
+		pins_pwr { // XXX: "gpio_lcd_pwr" in vendor dtb; regulator or what??
+			pinmux = <MT8167_PIN_25_EINT25__FUNC_GPIO25>;
+			output-high;
+		};
+	};
+
 	touch_pins: touch-pins {
 		pins_cmd_dat {
 			pinmux = <MT8167_PIN_100_CMDAT0__FUNC_GPIO100>,
@@ -341,4 +353,39 @@
 
 &usb_phy {
 	status = "okay";
+};
+
+&disp_pwm {
+	status = "okay";
+};
+
+&mipi_tx {
+	status = "okay";
+};
+
+&dsi {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	panel: panel@0 {
+		compatible = "boe,tv070wsm-tl0", "himax,hx8394";
+		reg = <0>;
+		vcc-supply = <&mt6392_vgp2_reg>;
+		iovcc-supply = <&mt6392_vgp2_reg>;
+		reset-gpios = <&pio 66 GPIO_ACTIVE_HIGH>;
+		rotation = <270>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&panel_pins>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&dsi_out>;
+			};
+		};
+	};
+};
+
+&dsi_out {
+	remote-endpoint = <&panel_in>;
 };
