@@ -5834,6 +5834,35 @@ static const struct panel_desc_dsi osd101t2045_53ts = {
 	.lanes = 4,
 };
 
+static const struct drm_display_mode zhunyi_z40046_mode = {
+	.clock = 26700,
+	.hdisplay = 480,
+	.hsync_start = 480 + 20,
+	.hsync_end = 480 + 20 + 20,
+	.htotal = 480 + 20 + 20 + 20,
+	.vdisplay = 800,
+	.vsync_start = 800 + 12,
+	.vsync_end = 800 + 12 + 4,
+	.vtotal = 800 + 12 + 4 + 8,
+	.flags = DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC,
+};
+
+static const struct panel_desc_dsi zhunyi_z40046 = {
+	.desc = {
+		.modes = &zhunyi_z40046_mode,
+		.num_modes = 1,
+		.bpc = 8,
+		.size = {
+			.width = 52,
+			.height = 86,
+		},
+		.connector_type = DRM_MODE_CONNECTOR_DSI,
+	},
+	.flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE,
+	.format = MIPI_DSI_FMT_RGB888,
+	.lanes = 2,
+};
+
 static const struct of_device_id dsi_of_match[] = {
 	{
 		.compatible = "auo,b080uan01",
@@ -5853,6 +5882,9 @@ static const struct of_device_id dsi_of_match[] = {
 	}, {
 		.compatible = "osddisplays,osd101t2045-53ts",
 		.data = &osd101t2045_53ts
+	}, {
+		.compatible = "zhunyi,z40046",
+		.data = &zhunyi_z40046
 	}, {
 		/* sentinel */
 	}
