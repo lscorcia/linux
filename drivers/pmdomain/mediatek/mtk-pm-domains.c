@@ -639,8 +639,10 @@ static int scpsys_modem_pwrseq_on(struct scpsys_domain *pd)
 	/* wait until PWR_ACK = 1 */
 	ret = readx_poll_timeout(scpsys_domain_is_on, pd, tmp, tmp, MTK_POLL_DELAY_US,
 				 MTK_POLL_TIMEOUT);
-	if (ret < 0)
+	if (ret < 0) {
+		dev_err(scpsys->dev, "PD %s: failed to wait for PWR_ACK: %d\n", pd->genpd.name, ret);
 		return ret;
+	}
 
 	return 0;
 }
@@ -699,13 +701,19 @@ static int scpsys_power_on(struct generic_pm_domain *genpd)
 	struct scpsys *scpsys = pd->scpsys;
 	int ret;
 
+	dev_err(scpsys->dev, "PD %s powering on\n", pd->genpd.name);
+
 	ret = scpsys_regulator_enable(pd->supply);
-	if (ret)
+	if (ret) {
+		dev_err(scpsys->dev, "PD %s: failed to enable regulator: %d\n", pd->genpd.name, ret);
 		return ret;
+	}
 
 	ret = clk_bulk_prepare_enable(pd->num_clks, pd->clks);
-	if (ret)
+	if (ret) {
+		dev_err(scpsys->dev, "PD %s: failed to prepare clocks: %d\n", pd->genpd.name, ret);
 		goto err_reg;
+	}
 
 	if (pd->data->ext_buck_iso_offs && MTK_SCPD_CAPS(pd, MTK_SCPD_EXT_BUCK_ISO))
 		regmap_clear_bits(scpsys->base, pd->data->ext_buck_iso_offs,
@@ -740,28 +748,37 @@ static int scpsys_power_on(struct generic_pm_domain *genpd)
 	if (!MTK_SCPD_CAPS(pd, MTK_SCPD_STRICT_BUS_PROTECTION)) {
 		ret = clk_bulk_prepare_enable(pd->num_subsys_clks,
 					      pd->subsys_clks);
-		if (ret)
+		if (ret) {
+			dev_err(scpsys->dev, "PD %s: failed to prepare subsys clks: %d\n", pd->genpd.name, ret);
 			goto err_pwr_ack;
+		}
 	}
 
 	if (!MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ) &&
 	    !MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_SECURE_PWRSEQ)) {
 		ret = scpsys_sram_enable(pd);
-		if (ret < 0)
+		if (ret < 0) {
+			dev_err(scpsys->dev, "PD %s: failed to enable sram: %d\n", pd->genpd.name, ret);
 			goto err_disable_subsys_clks;
+		}
 	}
 
 	ret = scpsys_bus_protect_disable(pd, 0);
-	if (ret < 0)
+	if (ret < 0) {
+		dev_err(scpsys->dev, "PD %s: failed to disable bp: %d\n", pd->genpd.name, ret);
 		goto err_disable_sram;
+	}
 
 	if (MTK_SCPD_CAPS(pd, MTK_SCPD_STRICT_BUS_PROTECTION)) {
 		ret = clk_bulk_prepare_enable(pd->num_subsys_clks,
 					      pd->subsys_clks);
-		if (ret)
+		if (ret) {
+			dev_err(scpsys->dev, "PD %s: failed to enable subsys clks(strict): %d\n", pd->genpd.name, ret);
 			goto err_enable_bus_protect;
+		}
 	}
 
+	dev_err(scpsys->dev, "PD %s powered on\n", pd->genpd.name);
 	return 0;
 
 err_enable_bus_protect:
@@ -786,9 +803,13 @@ static int scpsys_power_off_internal(struct scpsys_domain *pd)
 	struct scpsys *scpsys = pd->scpsys;
 	int ret;
 
+	dev_err(scpsys->dev, "PD %s powering off\n", pd->genpd.name);
+
 	ret = scpsys_bus_protect_enable(pd, 0);
-	if (ret < 0)
+	if (ret < 0) {
+		dev_err(scpsys->dev, "PD %s off: failed to enable bus protect: %d\n", pd->genpd.name, ret);
 		return ret;
+	}
 
 	if (MTK_SCPD_CAPS(pd, MTK_SCPD_MODEM_SECURE_PWRSEQ)) {
 		ret = scpsys_modem_sec_power_on(false);
@@ -796,8 +817,10 @@ static int scpsys_power_off_internal(struct scpsys_domain *pd)
 			return ret;
 	} else if (!MTK_SCPD_CAPS(pd, MTK_SCPD_SIMPLE_PWRSEQ)) {
 		ret = scpsys_sram_disable(pd);
-		if (ret < 0)
+		if (ret < 0) {
+			dev_err(scpsys->dev, "PD %s off: failed to disable sram: %d\n", pd->genpd.name, ret);
 			return ret;
+		}
 	}
 
 	if (pd->data->ext_buck_iso_offs && MTK_SCPD_CAPS(pd, MTK_SCPD_EXT_BUCK_ISO))
@@ -831,6 +854,7 @@ static int scpsys_power_off_internal(struct scpsys_domain *pd)
 
 	scpsys_regulator_disable(pd->supply);
 
+	dev_err(scpsys->dev, "PD %s powered off\n", pd->genpd.name);
 	return 0;
 }
 
