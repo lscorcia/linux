@@ -295,10 +295,10 @@
 	status = "okay";
 	dr_mode = "peripheral";
 	usb-role-switch;
-	
-	maximum-speed = "high-speed";
 
-	vusb33-supply = <&mt6392_vusb_reg>;
+	//maximum-speed = "high-speed";
+
+	//vusb33-supply = <&mt6392_vusb_reg>;
 
 	usb_con: connector {
 		compatible = "usb-b-connector";
