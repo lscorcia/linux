@@ -27,11 +27,11 @@
 
 		framebuffer0: framebuffer@7f1c0000 {
 			compatible = "simple-framebuffer";
-			reg = <0x0 0x7f1c0000 0x0 (800 * 480 * 3)>;
-			width = <800>;
-			height = <480>;
-			stride = <(800 * 3)>;
-			format = "r8g8b8";
+			reg = <0x0 0x7f1c0000 0x0 (800 * 480 * 4)>;
+			width = <480>;
+			height = <800>;
+			stride = <(480 * 4)>;
+			format = "a8r8g8b8";
 			display = <&dsi>; /* hmm */
 		};
 	};
