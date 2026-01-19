@@ -303,7 +303,7 @@
 	dr_mode = "peripheral";
 	usb-role-switch;
 	
-	vusb33-supply = <&mt6392_vusb_reg>;
+	//vusb33-supply = <&mt6392_vusb_reg>;
 
 	usb_con: connector {
 		compatible = "usb-b-connector";
