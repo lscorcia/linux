@@ -199,8 +199,7 @@
 		};
 
 		ovl0: ovl0@14007000 {
-			compatible = "mediatek,mt8167-disp-ovl",
-				     "mediatek,mt8173-disp-ovl";
+			compatible = "mediatek,mt8167-disp-ovl";
 			reg = <0 0x14007000 0 0x1000>;
 			interrupts = <GIC_SPI 160 IRQ_TYPE_LEVEL_LOW>;
 			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
@@ -221,8 +220,7 @@
 		};
 
 		color: color@1400c000 {
-			compatible = "mediatek,mt8167-disp-color",
-				     "mediatek,mt8173-disp-color";
+			compatible = "mediatek,mt8167-disp-color";
 			reg = <0 0x1400c000 0 0x1000>;
 			interrupts = <GIC_SPI 165 IRQ_TYPE_LEVEL_LOW>;
 			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
@@ -239,7 +237,8 @@
 		};
 
 		aal: aal@1400e000 {
-			compatible = "mediatek,mt8167-disp-aal";
+			compatible = "mediatek,mt8167-disp-aal",
+					"mediatek,mt8173-disp-aal";
 			reg = <0 0x1400e000 0 0x1000>;
 			interrupts = <GIC_SPI 167 IRQ_TYPE_LEVEL_LOW>;
 			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
