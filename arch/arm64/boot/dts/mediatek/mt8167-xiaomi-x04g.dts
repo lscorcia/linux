@@ -155,8 +155,23 @@
 	pinctrl-0 = <&i2c_pins_2>;
 	status = "okay";
 
-	/* cap_touch mediatek,cap_touch @ 38 */ /* TODO: poke running android to figure out which touch panel is actually there */
-	/* cap_touch mediatek,tlsc6x_touch @ 2e */ /* <<< https://github.com/fsong549/touchpanel_driver/blob/master/tlsc6x/sc9863_tlsc6x/tlsc6x_main.c */
+	/* Touch panel controller is Chipsemi CHSC6440, stock calls it tlsc6x_touch,
+	   driver is compatible with FT6236, provided by CONFIG_TOUCHSCREEN_EDT_FT5X06. 
+	   The very similar Lenovo Smart Clock sources actually point to focaltech,ft6336,
+	   however this variant is not supported upstream yet. */
+	touch@2e {
+		reg = <0x2e>;
+		compatible = "focaltech,ft6236";
+
+		interrupt-parent = <&pio>;
+		interrupts = <18 IRQ_TYPE_EDGE_FALLING>;
+		vcc-supply = <&mt6392_vgp1_reg>;
+
+		touchscreen-size-x = <480>;
+		touchscreen-size-y = <800>;
+
+		wakeup-source;
+	};
 };
 
 &keypad {
