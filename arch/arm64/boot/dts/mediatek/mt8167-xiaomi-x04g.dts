@@ -137,9 +137,19 @@
 &i2c0 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&i2c_pins_0>;
+	clock-div = <1>;
 	status = "okay";
 
-	/* alsps em3071x @ 24 */
+	/* Ambient light/presence sensor is Epticore EM30719,
+	   driver is epticore,em3071x, provided by CONFIG_EM3071X. */
+	em3071x@24 {
+		reg = <0x24>;
+		compatible = "epticore,em3071x";
+
+		interrupt-parent = <&pio>;
+		interrupts = <10 IRQ_TYPE_LEVEL_LOW>;
+		vcc-supply = <&mt6392_vgp2_reg>;
+	};
 };
 
 &i2c1 {
