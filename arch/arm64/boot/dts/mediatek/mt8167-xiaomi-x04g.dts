@@ -62,6 +62,19 @@
 			no-map;
 		};
 	};
+
+	backlight_lcd: backlight-lcd {
+		compatible = "pwm-backlight";
+		brightness-levels = <
+			  0  16  32  48  64  80  96 112
+			128 144 160 176 192 208 224 240
+			255
+		>;
+		default-brightness-level = <9>;
+		enable-gpios = <&pio 43 GPIO_ACTIVE_HIGH>;
+		power-supply = <&mt6392_vio18_reg>;
+		pwms = <&disp_pwm 0 1000000>;
+	};
 };
 
 &auxadc {
