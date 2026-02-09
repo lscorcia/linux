@@ -20,7 +20,7 @@
 	chosen {
 		#address-cells = <2>;
 		#size-cells = <2>;
-		bootargs = "console=tty0 console=ttyS0,921600n1 earlycon=uart8250,mmio32,0x11005000 PMOS_NOSPLASH";
+		bootargs = "console=tty0 console=ttyS0,921600n1 earlycon=uart8250,mmio32,0x11005000 fbcon=rotate:3 PMOS_NOSPLASH";
 		ranges;
 
 		stdout-path = &framebuffer0;
