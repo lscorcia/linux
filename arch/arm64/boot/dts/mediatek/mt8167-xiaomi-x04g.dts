@@ -170,8 +170,14 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&i2c_pins_1>;
 	status = "okay";
+	clock-div = <1>;
+	clock-frequency = <400000>;
 
-	/* es7243 mi,es7243 @ 13 */
+	/* Microphone input audio codec is ES7243 */
+	es7243@13 {
+		reg = <0x13>;
+		compatible = "mi,es7243";
+	};
 };
 
 &i2c2 {
