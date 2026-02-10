@@ -8,6 +8,7 @@
 #include <dt-bindings/clock/mt8167-clk.h>
 #include <dt-bindings/memory/mt8167-larb-port.h>
 #include <dt-bindings/power/mt8167-power.h>
+#include <dt-bindings/reset/mediatek,mt8167-resets.h>
 
 #include "mt8167-pinfunc.h"
 
@@ -156,6 +157,7 @@
 			reg = <0 0x14000000 0 0x1000>;
 			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
 			#clock-cells = <1>;
+			#reset-cells = <1>;
 
 			port {
 				#address-cells = <1>;
@@ -410,6 +412,7 @@
 			phys = <&mipi_tx>;
 			phy-names = "dphy";
 			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
+			resets = <&mmsys MT8167_MMSYS_SW0_RST_B_DSI0>;
 			status = "disabled";
 
 			#address-cells = <1>;
