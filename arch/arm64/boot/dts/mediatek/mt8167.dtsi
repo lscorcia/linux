@@ -9,6 +9,7 @@
 #include <dt-bindings/gce/mediatek,mt8167-gce.h>
 #include <dt-bindings/memory/mt8167-larb-port.h>
 #include <dt-bindings/power/mt8167-power.h>
+#include <dt-bindings/reset/mediatek,mt8167-resets.h>
 
 #include "mt8167-pinfunc.h"
 
@@ -167,6 +168,7 @@
 			reg = <0 0x14000000 0 0x1000>;
 			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
 			#clock-cells = <1>;
+			#reset-cells = <1>;
 			mboxes = <&gce 0 CMDQ_THR_PRIO_HIGHEST>,
 				 <&gce 1 CMDQ_THR_PRIO_HIGHEST>;
 			mediatek,gce-client-reg = <&gce SUBSYS_1400XXXX 0 0x1000>;
@@ -433,6 +435,7 @@
 			phys = <&mipi_tx>;
 			phy-names = "dphy";
 			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
+			resets = <&mmsys MT8167_MMSYS_SW0_RST_B_DISP_DSI0>;
 			status = "disabled";
 
 			#address-cells = <1>;
