@@ -75,6 +75,23 @@
 		power-supply = <&mt6392_vio18_reg>;
 		enable-gpios = <&pio 43 GPIO_ACTIVE_HIGH>;
 	};
+
+	panel: panel@0 {
+		compatible = "zhunyi,z40046";
+		reg = <0>;
+		/* "mi,mico_lcm_common" in stock dtb suggests vio18 & vio28, both always-on lol. it's vgp2 on the lenovo tablet tho.. ~val */
+		power-supply = <&mt6392_vio28_reg>;
+		reset-gpios = <&pio 66 GPIO_ACTIVE_HIGH>;
+		rotation = <270>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&panel_pins>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&dsi_out>;
+			};
+		};
+	};
 };
 
 &auxadc {
@@ -108,33 +125,9 @@
 	status = "okay";
 };
 
-&dsi {
-	status = "okay";
-	#address-cells = <1>;
-	#size-cells = <0>;
 
-	panel: panel@0 {
-		compatible = "zhunyi,z40046";
-		reg = <0>;
-		/* "mi,mico_lcm_common" in stock dtb suggests vio18 & vio28, both always-on lol. it's vgp2 on the lenovo tablet tho.. ~val */
-		power-supply = <&mt6392_vio28_reg>;
-		reset-gpios = <&pio 66 GPIO_ACTIVE_HIGH>;
-		rotation = <270>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&panel_pins>;
-
-		port {
-			panel_in: endpoint {
-				remote-endpoint = <&dsi_out>;
-			};
-		};
-	};
-	
-	port {
-		dsi_out: endpoint {
-			remote-endpoint = <&panel_in>;
-		};
-	};
+&dsi_out {
+	remote-endpoint = <&panel_in>;
 };
 
 &i2c0 {
