@@ -903,7 +903,7 @@ void mtk_mutex_add_comp(struct mtk_mutex *mutex,
 		sof_id = MUTEX_SOF_DSI0;
 		break;
 	case DDP_COMPONENT_DSI1:
-		sof_id = MUTEX_SOF_DSI0;
+		sof_id = MUTEX_SOF_DSI1;
 		break;
 	case DDP_COMPONENT_DSI2:
 		sof_id = MUTEX_SOF_DSI2;
