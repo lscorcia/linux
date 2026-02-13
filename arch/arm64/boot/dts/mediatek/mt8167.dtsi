@@ -6,6 +6,7 @@
  */
 
 #include <dt-bindings/clock/mt8167-clk.h>
+#include <dt-bindings/gce/mediatek,mt8167-gce.h>
 #include <dt-bindings/memory/mt8167-larb-port.h>
 #include <dt-bindings/power/mt8167-power.h>
 
@@ -134,6 +135,16 @@
 			#iommu-cells = <1>;
 		};
 
+		gce: mailbox@1020a000 {
+			compatible = "mediatek,mt8167-gce",
+				     "mediatek,mt8173-gce";
+			reg = <0 0x1020a000 0 0x1000>;
+			clocks = <&topckgen CLK_TOP_GCE>;
+			clock-names = "gce";
+			interrupts = <GIC_SPI 125 IRQ_TYPE_LEVEL_LOW>;
+			#mbox-cells = <2>;
+		};
+
 		disp_pwm: pwm@1100f000 {
 			compatible = "mediatek,mt8167-disp-pwm", "mediatek,mt8173-disp-pwm";
 			reg = <0 0x1100f000 0 0x1000>;
@@ -149,6 +160,9 @@
 			reg = <0 0x14000000 0 0x1000>;
 			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
 			#clock-cells = <1>;
+			mboxes = <&gce 0 CMDQ_THR_PRIO_HIGHEST>,
+				 <&gce 1 CMDQ_THR_PRIO_HIGHEST>;
+			mediatek,gce-client-reg = <&gce SUBSYS_1400XXXX 0 0x1000>;
 
 			port {
 				#address-cells = <1>;
@@ -173,6 +187,7 @@
 			interrupts = <GIC_SPI 160 IRQ_TYPE_LEVEL_LOW>;
 			iommus = <&iommu M4U_PORT_DISP_OVL0>;
 			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
+			mediatek,gce-client-reg = <&gce SUBSYS_1400XXXX 0x7000 0x1000>;
 
 			ports {
 				#address-cells = <1>;
@@ -201,6 +216,7 @@
 			interrupts = <GIC_SPI 162 IRQ_TYPE_LEVEL_LOW>;
 			iommus = <&iommu M4U_PORT_DISP_RDMA0>;
 			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
+			mediatek,gce-client-reg = <&gce SUBSYS_1400XXXX 0x9000 0x1000>;
 
 			ports {
 				#address-cells = <1>;
@@ -229,6 +245,7 @@
 			interrupts = <GIC_SPI 163 IRQ_TYPE_LEVEL_LOW>;
 			iommus = <&iommu M4U_PORT_DISP_RDMA1>;
 			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
+			mediatek,gce-client-reg = <&gce SUBSYS_1400XXXX 0xa000 0x1000>;
 			status = "disabled";
 
 			ports {
@@ -256,6 +273,7 @@
 			interrupts = <GIC_SPI 164 IRQ_TYPE_LEVEL_LOW>;
 			iommus = <&iommu M4U_PORT_DISP_WDMA0>;
 			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
+			mediatek,gce-client-reg = <&gce SUBSYS_1400XXXX 0xb000 0x1000>;
 		};
 
 		color: color@1400c000 {
@@ -264,6 +282,7 @@
 			clocks = <&mmsys CLK_MM_DISP_COLOR>;
 			interrupts = <GIC_SPI 165 IRQ_TYPE_LEVEL_LOW>;
 			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
+			mediatek,gce-client-reg = <&gce SUBSYS_1400XXXX 0xc000 0x1000>;
 
 			ports {
 				#address-cells = <1>;
@@ -291,6 +310,7 @@
 			clocks = <&mmsys CLK_MM_DISP_CCORR>;
 			interrupts = <GIC_SPI 166 IRQ_TYPE_LEVEL_LOW>;
 			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
+			mediatek,gce-client-reg = <&gce SUBSYS_1400XXXX 0xd000 0x1000>;
 
 			ports {
 				#address-cells = <1>;
@@ -318,6 +338,7 @@
 			clocks = <&mmsys CLK_MM_DISP_AAL>;
 			interrupts = <GIC_SPI 167 IRQ_TYPE_LEVEL_LOW>;
 			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
+			mediatek,gce-client-reg = <&gce SUBSYS_1400XXXX 0xe000 0x1000>;
 
 			ports {
 				#address-cells = <1>;
@@ -345,6 +366,7 @@
 			clocks = <&mmsys CLK_MM_DISP_GAMMA>;
 			interrupts = <GIC_SPI 168 IRQ_TYPE_LEVEL_LOW>;
 			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
+			mediatek,gce-client-reg = <&gce SUBSYS_1400XXXX 0xf000 0x1000>;
 
 			ports {
 				#address-cells = <1>;
@@ -372,6 +394,7 @@
 			clocks = <&mmsys CLK_MM_DISP_DITHER>;
 			interrupts = <GIC_SPI 169 IRQ_TYPE_LEVEL_LOW>;
 			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
+			mediatek,gce-client-reg = <&gce SUBSYS_1401XXXX 0 0x1000>;
 
 			ports {
 				#address-cells = <1>;
@@ -431,6 +454,9 @@
 			reg = <0 0x14015000 0 0x1000>;
 			interrupts = <GIC_SPI 153 IRQ_TYPE_LEVEL_LOW>;
 			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
+			mediatek,gce-client-reg = <&gce SUBSYS_1401XXXX 0x5000 0x1000>;
+			mediatek,gce-events = <CMDQ_EVENT_MUTEX0_STREAM_EOF>,
+					      <CMDQ_EVENT_MUTEX1_STREAM_EOF>;
 		};
 
 		larb0: larb@14016000 {
