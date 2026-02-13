@@ -130,6 +130,7 @@ properties:
           - const: mediatek,mt8135
       - items:
           - enum:
+              - lenovo,tb7304f
               - mediatek,mt8167-pumpkin
               - xiaomi,x04g
           - const: mediatek,mt8167
