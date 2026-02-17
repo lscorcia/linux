@@ -62,6 +62,13 @@
 			no-map;
 		};
 	};
+
+	vbat: regulator-vbat-sys {
+		compatible = "regulator-fixed";
+		regulator-name = "vbat";
+		regulator-always-on;
+		regulator-boot-on;
+	};
 };
 
 &auxadc {
@@ -294,4 +301,99 @@
 
 &usb_phy {
 	status = "okay";
+};
+
+&mt6392regulators {
+	vproc-supply = <&vbat>;
+	vcore-supply = <&vbat>;
+	vsys-supply = <&vbat>;
+	ldo1-supply = <&vbat>;
+	ldo2-supply = <&vbat>;
+	ldo3-supply = <&vbat>;
+};
+
+&mt6392_vcore_reg {
+	regulator-min-microvolt = <700000>;
+	regulator-max-microvolt = <1350000>;
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vproc_reg {
+	regulator-min-microvolt = <700000>;
+	regulator-max-microvolt = <1350000>;
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vsys_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vaud28_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vxo22_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vaud22_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vadc18_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vio28_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vusb_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vmc_reg {
+	regulator-boot-on;
+};
+
+&mt6392_vmch_reg {
+	regulator-boot-on;
+};
+
+&mt6392_vemc3v3_reg {
+	regulator-boot-on;
+};
+
+&mt6392_vm25_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vdig18_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vm_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vio18_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vrtc_reg {
+	regulator-always-on;
+	regulator-boot-on;
 };
