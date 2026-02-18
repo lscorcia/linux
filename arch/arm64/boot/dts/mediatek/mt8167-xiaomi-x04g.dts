@@ -161,10 +161,14 @@
 
 &keypad {
 	status = "okay";
-	linux,keymap = <MATRIX_KEY(0x00, 0x00, KEY_VOLUMEUP)>;
+	debounce-delay-ms = <32>;
+	
+	pinctrl-names = "default";
+	pinctrl-0 = <&keypad_pins>;
+
 	keypad,num-rows = <1>;
 	keypad,num-columns = <1>;
-	debounce-delay-ms = <32>;
+	linux,keymap = <MATRIX_KEY(0x00, 0x00, KEY_VOLUMEUP)>;
 	mediatek,keys-per-group = <1>;
 };
 
@@ -189,25 +193,33 @@
 &pio {
 	i2c_pins_0: i2c0-pins {
 		pins_i2c {
+			bias-disable;
 			pinmux = <MT8167_PIN_58_SDA0__FUNC_SDA0_0>,
 				 <MT8167_PIN_59_SCL0__FUNC_SCL0_0>;
-			bias-disable;
 		};
 	};
 
 	i2c_pins_1: i2c1-pins {
 		pins_i2c {
+			bias-disable;
 			pinmux = <MT8167_PIN_52_SDA1__FUNC_SDA1_0>,
 				 <MT8167_PIN_53_SCL1__FUNC_SCL1_0>;
-			bias-disable;
 		};
 	};
 
 	i2c_pins_2: i2c2-pins {
 		pins_i2c {
+			bias-disable;
 			pinmux = <MT8167_PIN_60_SDA2__FUNC_SDA2_0>,
 				 <MT8167_PIN_61_SCL2__FUNC_SCL2_0>;
-			bias-disable;
+		};
+	};
+
+	keypad_pins: keypad-pins {
+		pins_cols {
+			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
+			input-enable;
+			pinmux = <MT8167_PIN_42_KPCOL0__FUNC_KPCOL0>;
 		};
 	};
 
