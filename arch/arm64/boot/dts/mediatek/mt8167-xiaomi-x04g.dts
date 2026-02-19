@@ -145,9 +145,10 @@
 	em3071x@24 {
 		reg = <0x24>;
 		compatible = "epticore,em3071x";
-
 		interrupt-parent = <&pio>;
 		interrupts = <10 IRQ_TYPE_LEVEL_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&alsps_intpin_default>;
 		vcc-supply = <&mt6392_vgp2_reg>;
 	};
 };
@@ -217,6 +218,14 @@
 };
 
 &pio {
+	alsps_intpin_default: alsps-default-pins {
+		pins {
+			bias-disable;
+			input-enable;
+			pinmux = <MT8167_PIN_10_EINT10__FUNC_GPIO10>;
+		};
+	};
+
 	i2c_pins_0: i2c0-pins {
 		pins_i2c {
 			bias-disable;
