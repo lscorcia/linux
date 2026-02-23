@@ -14,17 +14,21 @@ description:
 
 properties:
   compatible:
-    enum:
-      - mediatek,mt2701-pinctrl
-      - mediatek,mt2712-pinctrl
-      - mediatek,mt6392-pinctrl
-      - mediatek,mt6397-pinctrl
-      - mediatek,mt7623-pinctrl
-      - mediatek,mt8127-pinctrl
-      - mediatek,mt8135-pinctrl
-      - mediatek,mt8167-pinctrl
-      - mediatek,mt8173-pinctrl
-      - mediatek,mt8516-pinctrl
+    oneOf:
+      - enum:
+          - mediatek,mt2701-pinctrl
+          - mediatek,mt2712-pinctrl
+          - mediatek,mt6392-pinctrl
+          - mediatek,mt6397-pinctrl
+          - mediatek,mt7623-pinctrl
+          - mediatek,mt8127-pinctrl
+          - mediatek,mt8135-pinctrl
+          - mediatek,mt8173-pinctrl
+      - description: Deprecated bindings
+        enum:
+          - mediatek,mt8167-pinctrl
+          - mediatek,mt8516-pinctrl
+        deprecated: true
 
   reg:
     maxItems: 1
