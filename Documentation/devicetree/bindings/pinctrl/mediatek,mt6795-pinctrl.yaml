@@ -15,7 +15,10 @@ description:
 
 properties:
   compatible:
-    const: mediatek,mt6795-pinctrl
+    enum:
+      - mediatek,mt6795-pinctrl
+      - mediatek,mt8167-pinctrl-paris
+      - mediatek,mt8516-pinctrl-paris
 
   gpio-controller: true
 
