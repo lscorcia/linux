@@ -289,17 +289,18 @@
 				 <MT8167_PIN_111_MSDC0_DAT6__FUNC_MSDC0_DAT6>,
 				 <MT8167_PIN_110_MSDC0_DAT7__FUNC_MSDC0_DAT7>,
 				 <MT8167_PIN_115_MSDC0_CMD__FUNC_MSDC0_CMD>;
-			bias-pull-up;
+			input-enable;
+			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
 		};
 
 		pins_clk {
 			pinmux = <MT8167_PIN_116_MSDC0_CLK__FUNC_MSDC0_CLK>;
-			bias-pull-down;
+			bias-pull-down = <MTK_PUPD_SET_R1R0_10>;
 		};
 
 		pins_rst {
 			pinmux = <MT8167_PIN_114_MSDC0_RSTB__FUNC_MSDC0_RSTB>;
-			bias-pull-up;
+			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
 		};
 	};
 
@@ -327,7 +328,7 @@
 
 		pins_rst {
 			pinmux = <MT8167_PIN_114_MSDC0_RSTB__FUNC_MSDC0_RSTB>;
-			bias-pull-up;
+			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
 		};
 	};
 
