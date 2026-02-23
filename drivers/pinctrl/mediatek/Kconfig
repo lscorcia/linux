@@ -234,7 +234,7 @@ config PINCTRL_MT8167
 	depends on OF
 	depends on ARM64 || COMPILE_TEST
 	default ARM64 && ARCH_MEDIATEK
-	select PINCTRL_MTK
+	select PINCTRL_MTK_PARIS
 
 config PINCTRL_MT8173
 	bool "MediaTek MT8173 pin control"
