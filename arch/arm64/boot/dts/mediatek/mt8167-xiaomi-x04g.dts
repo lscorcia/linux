@@ -195,6 +195,8 @@
 
 		interrupt-parent = <&pio>;
 		interrupts = <18 IRQ_TYPE_EDGE_FALLING>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&touch_pins>;
 		vcc-supply = <&mt6392_vgp1_reg>;
 
 		touchscreen-size-x = <480>;
@@ -333,6 +335,18 @@
 		pins_rst {
 			pinmux = <MT8167_PIN_66_LCM_RST__FUNC_GPIO66>;
 			bias-pull-up;
+		};
+	};
+
+	touch_pins: touch-pins {
+		pins_cmd_dat {
+			pinmux = <MT8167_PIN_18_EINT18__FUNC_GPIO18>;
+			input-enable;
+		};
+
+		pins_rst {
+			pinmux = <MT8167_PIN_19_EINT19__FUNC_GPIO19>;
+			slew-rate = <1>;
 		};
 	};
 };
