@@ -104,14 +104,16 @@
 
 	panel: panel@0 {
 		reg = <0>;
-		compatible = "zhunyi,z40046";
+		compatible = "zhunyikeji,z40046-ctc", "jadard,jd9365da-h3";
 
 		pinctrl-names = "default";
 		pinctrl-0 = <&panel_pins>;
 
-		power-supply = <&mt6392_vio28_reg>;
-		reset-gpios = <&pio 66 GPIO_ACTIVE_HIGH>;
+		backlight = <&backlight_lcd>;
+		reset-gpios = <&pio 66 GPIO_ACTIVE_LOW>;
 		rotation = <270>;
+		vccio-supply = <&mt6392_vio28_reg>;
+		vdd-supply = <&mt6392_vio18_reg>;
 
 		port {
 			panel_in: endpoint {
@@ -258,7 +260,7 @@
 	panel_pins: dsi0-pins {
 		pins_rst {
 			pinmux = <MT8167_PIN_66_LCM_RST__FUNC_GPIO66>;
-			/* XXX: idk, necessary? bias etc??? ~val */
+			bias-pull-up;
 		};
 	};
 };

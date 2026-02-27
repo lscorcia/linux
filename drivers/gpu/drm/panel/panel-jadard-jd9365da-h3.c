@@ -1126,7 +1126,7 @@ static const struct jadard_panel_desc melfas_lmfbx101117480_desc = {
 };
 
 // Sequence retrieved from Xiaomi Mi Smart Clock x04g kernel in boot.bin
-static int zhunyi_z40046_init_cmds_v1(struct jadard *jadard_data)
+static int zhunyi_z40046_init_cmds_ctc(struct jadard *jadard_data)
 {
 	struct mipi_dsi_multi_context dsi_ctx = { .dsi = jadard_data->dsi };
 
@@ -1246,7 +1246,7 @@ static int zhunyi_z40046_init_cmds_v1(struct jadard *jadard_data)
 	return dsi_ctx.accum_err;
 };
 
-static const struct jadard_panel_desc zhunyi_z40046v1_desc = {
+static const struct jadard_panel_desc zhunyi_z40046_ctc_desc = {
 	.mode = {
 		.clock		= (480 + 20 + 20 + 20) * (800 + 14 + 4 + 8) * 60 / 1000,
 
@@ -1276,11 +1276,11 @@ static const struct jadard_panel_desc zhunyi_z40046v1_desc = {
 	.backlight_off_to_display_off_delay_ms = 100,
 	.display_off_to_enter_sleep_delay_ms = 50,
 	.enter_sleep_to_reset_down_delay_ms = 100,
-	.init = zhunyi_z40046_init_cmds_v1,
+	.init = zhunyi_z40046_init_cmds_ctc,
 };
 
 // Sequence retrieved from Xiaomi Mi Smart Clock x04g kernel in boot.bin
-static int zhunyi_z40046_init_cmds_v2(struct jadard *jadard_data)
+static int zhunyi_z40046_init_cmds_boe(struct jadard *jadard_data)
 {
 	struct mipi_dsi_multi_context dsi_ctx = { .dsi = jadard_data->dsi };
 
@@ -1386,7 +1386,7 @@ static int zhunyi_z40046_init_cmds_v2(struct jadard *jadard_data)
 	return dsi_ctx.accum_err;
 };
 
-static const struct jadard_panel_desc zhunyi_z40046v2_desc = {
+static const struct jadard_panel_desc zhunyi_z40046_boe_desc = {
 	.mode = {
 		.clock		= (480 + 20 + 20 + 20) * (800 + 14 + 4 + 8) * 60 / 1000,
 
@@ -1416,7 +1416,7 @@ static const struct jadard_panel_desc zhunyi_z40046v2_desc = {
 	.backlight_off_to_display_off_delay_ms = 100,
 	.display_off_to_enter_sleep_delay_ms = 50,
 	.enter_sleep_to_reset_down_delay_ms = 100,
-	.init = zhunyi_z40046_init_cmds_v2,
+	.init = zhunyi_z40046_init_cmds_boe,
 };
 
 static int jadard_dsi_probe(struct mipi_dsi_device *dsi)
