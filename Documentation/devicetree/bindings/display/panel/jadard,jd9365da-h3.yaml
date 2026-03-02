@@ -23,6 +23,8 @@ properties:
           - melfas,lmfbx101117480
           - radxa,display-10hd-ad001
           - radxa,display-8hd-ad002
+          - zhunyikeji,z40046-ctc
+          - zhunyikeji,z40046-boe
       - const: jadard,jd9365da-h3
 
   reg:
