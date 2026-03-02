@@ -1895,6 +1895,8 @@ patternProperties:
     description: Zinitix Co., Ltd
   "^zkmagic,.*":
     description: Shenzhen Zkmagic Technology Co., Ltd.
+  "^zhunyikeji,.*":
+    description: Shenzhen Zhunyi Technology Co., Ltd.
   "^zte,.*":
     description: ZTE Corp.
   "^zyxel,.*":
