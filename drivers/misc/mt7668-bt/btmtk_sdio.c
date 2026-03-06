@@ -276,8 +276,6 @@ static unsigned char *userbuf_fwlog;
 static u32 rx_length;
 static struct btmtk_sdio_card *g_card;
 
-#define SDIO_VENDOR_ID_MEDIATEK 0x037A
-
 static const struct sdio_device_id btmtk_sdio_ids[] = {
 	/* Mediatek SD8688 Bluetooth device */
 	{ SDIO_DEVICE(SDIO_VENDOR_ID_MEDIATEK, 0x6630),
@@ -3164,7 +3162,6 @@ unreg_dev:
 static void btmtk_sdio_remove(struct sdio_func *func)
 {
 	struct btmtk_sdio_card *card;
-	int ret;
 
 	pr_info("%s begin user_rmmod %d\n", __func__, user_rmmod);
 	probe_ready = false;
@@ -4175,7 +4172,6 @@ static long btmtk_fops_unlocked_ioctl(struct file *filp,
 				unsigned int cmd, unsigned long arg)
 {
 	u32 ret = 0;
-	int err = 0;
 
 #ifdef SUPPORT_BT_STEREO
 	int cnt = 0;
