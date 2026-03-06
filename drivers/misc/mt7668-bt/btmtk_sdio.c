@@ -3123,16 +3123,6 @@ static int btmtk_sdio_probe(struct sdio_func *func,
 
 	hdev->bus = HCI_SDIO;
 
-	if (id->class == SDIO_CLASS_BT_AMP)
-		hdev->dev_type = HCI_AMP;
-	else
-
-#if KERNEL_VERSION(4, 8, 0) > LINUX_VERSION_CODE
-		hdev->dev_type = HCI_BREDR;
-#else
-		hdev->dev_type = HCI_PRIMARY;
-#endif
-
 	SET_HCIDEV_DEV(hdev, &func->dev);
 
 	hdev->open     = btsdio_open;
