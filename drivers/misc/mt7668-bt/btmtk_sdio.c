@@ -3866,7 +3866,7 @@ static int btmtk_fops_close(struct inode *inode, struct file *file)
 	return 0;
 }
 
-ssize_t btmtk_fops_write(struct file *filp, const char __user *buf,
+static ssize_t btmtk_fops_write(struct file *filp, const char __user *buf,
 			size_t count, loff_t *f_pos)
 {
 	int retval = 0;
@@ -4009,7 +4009,7 @@ OUT:
 	return retval;
 }
 
-ssize_t btmtk_fops_read(struct file *filp, char __user *buf,
+static ssize_t btmtk_fops_read(struct file *filp, char __user *buf,
 			size_t count, loff_t *f_pos)
 {
 	struct sk_buff *skb = NULL;
@@ -4124,7 +4124,7 @@ static int btmtk_fops_fasync(int fd, struct file *file, int on)
 	return fasync_helper(fd, file, on, &fasync);
 }
 
-unsigned int btmtk_fops_poll(struct file *filp, poll_table *wait)
+static unsigned int btmtk_fops_poll(struct file *filp, poll_table *wait)
 {
 	unsigned int mask = 0;
 
