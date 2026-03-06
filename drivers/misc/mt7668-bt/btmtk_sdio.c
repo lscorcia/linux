@@ -134,7 +134,7 @@ int fw_dump_task_should_stop;
 u8 *fw_dump_ptr;
 u8 *fw_dump_read_ptr;
 u8 *fw_dump_write_ptr;
-struct timeval fw_dump_last_write_time;
+struct timespec64 fw_dump_last_write_time;
 int fw_dump_end_checking_task_should_stop;
 int fw_is_doing_coredump;
 int fw_is_coredump_end_packet;
@@ -2922,9 +2922,9 @@ static int btmtk_sdio_RegisterBTIrq(struct btmtk_sdio_card *data)
 static int btmtk_stereo_irq_handler(int irq, void *dev)
 {
 	/* Get sys clk */
-	struct timeval tv;
-	do_gettimeofday(&tv);
-	stereo_clk.sys_clk = tv.tv_sec*1000000 + tv.tv_usec;
+	struct timespec64 now;
+	ktime_get_ts64(&now);
+	stereo_clk.sys_clk = now.tv_sec*1000000 +(now.tv_nsec/1000);
 	clk_flag = 0x01;
 	pr_debug("%s: tv_sec %d, tv_usec %d sys_clk %ld\n", __func__, tv.tv_sec, tv.tv_usec, stereo_clk.sys_clk);
 	return 0;
