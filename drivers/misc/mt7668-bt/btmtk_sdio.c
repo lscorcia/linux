@@ -145,10 +145,10 @@ int fw_is_coredump_end_packet;
 	static int	fw_dump_file;
 #endif
 
-const struct file_operations BT_proc_fops = {
-	.open = btmtk_proc_open,
-	.read = seq_read,
-	.release = single_release,
+const struct proc_ops BT_proc_fops = {
+	.proc_open = btmtk_proc_open,
+	.proc_read = seq_read,
+	.proc_release = single_release,
 };
 
 static const struct btmtk_sdio_card_reg btmtk_reg_6630 = {
