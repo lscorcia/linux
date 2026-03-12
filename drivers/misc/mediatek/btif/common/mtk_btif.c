@@ -709,12 +709,12 @@ long btif_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 #endif
 
 /*-----------device property----------------*/
-static ssize_t driver_flag_read(struct device_driver *drv, char *buf)
+static ssize_t flag_show(struct device_driver *drv, char *buf)
 {
 	return sprintf(buf, "btif driver debug level:%d\n", mtk_btif_dbg_lvl);
 }
 
-static ssize_t driver_flag_set(struct device_driver *drv,
+static ssize_t flag_store(struct device_driver *drv,
 			       const char *buffer, size_t count)
 {
 	char buf[256];
@@ -840,7 +840,7 @@ static ssize_t driver_flag_set(struct device_driver *drv,
 	return count;
 }
 
-static DRIVER_ATTR(flag, S_IRUGO | S_IWUSR, driver_flag_read, driver_flag_set);
+static DRIVER_ATTR_RW(flag);
 
 /*-----------End of platform bus related operation APIs------------*/
 
