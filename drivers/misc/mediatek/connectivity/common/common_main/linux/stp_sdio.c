@@ -181,7 +181,7 @@ UINT32 g_stp_sdio_host_count;
 static struct proc_dir_entry *gStpSdioRxDbgEntry;
 static INT32 stp_sdio_rxdbg_cnt;
 static struct stp_sdio_rxdbg stp_sdio_rxdbg_buffer[STP_SDIO_RXDBG_COUNT];
-static struct timeval old = {0};
+static struct timespec64 old = {0};
 #define TX_NO_ACK_TIMEOUT_ASSERT 5 /* tx no ack timeout assert, unit:second*/
 
 static ssize_t stp_sdio_rxdbg_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos);
@@ -1688,7 +1688,7 @@ static VOID stp_sdio_tx_wkr(struct work_struct *work)
 	INT32 ret;
 	UINT32 idx;
 	MTK_WCN_STP_SDIO_PKT_BUF *pb;
-	struct timeval now;
+	struct timespec64 now;
 
 	p_info = container_of(work, MTK_WCN_STP_SDIO_HIF_INFO, tx_work);
 	ret = HIF_SDIO_ERR_SUCCESS;
@@ -1833,7 +1833,7 @@ static VOID stp_sdio_tx_wkr(struct work_struct *work)
 				wake_up_interruptible(&pb->fullwait_q);
 			}
 			spin_unlock_irqrestore(&pb->rd_cnt_lock, pb->rd_irq_flag);
-			do_gettimeofday(&old);
+			ktime_get_real_ts64(&old);
 		} else {
 			/* tx FIFO free space < packet size, wait next time */
 #if STP_SDIO_DBG_SUPPORT && STP_SDIO_TXPERFDBG
@@ -1842,7 +1842,7 @@ static VOID stp_sdio_tx_wkr(struct work_struct *work)
 			++stp_sdio_txperf_fifo_lmt_cnt;
 #endif
 
-			do_gettimeofday(&now);
+			ktime_get_real_ts64(&now);
 			if ((now.tv_sec - old.tv_sec) > TX_NO_ACK_TIMEOUT_ASSERT) {
 				STPSDIO_INFO_FUNC("tx_fifo_size(%d), four_byte_align_len(%d), tx_packet_num(%d)\n",
 						p_info->firmware_info.tx_fifo_size, four_byte_align_len,
@@ -1879,7 +1879,7 @@ static VOID stp_sdio_tx_wkr(struct work_struct *work)
 	INT32 ret;
 	UINT32 idx;
 	MTK_WCN_STP_SDIO_PKT_BUF *pb;
-	struct timeval now;
+	struct timespec64 now;
 
 	p_info = container_of(work, MTK_WCN_STP_SDIO_HIF_INFO, tx_work);
 	ret = HIF_SDIO_ERR_SUCCESS;
@@ -2006,7 +2006,7 @@ static VOID stp_sdio_tx_wkr(struct work_struct *work)
 			}
 			spin_unlock_irqrestore(&p_info->pkt_buf.rd_idx_lock,
 					       p_info->pkt_buf.rd_irq_flag);
-			do_gettimeofday(&old);
+			ktime_get_real_ts64(&old);
 		} else {
 #if STP_SDIO_DBG_SUPPORT && STP_SDIO_TXPERFDBG
 			stp_sdio_txperf_fifo_left += p_info->firmware_info.tx_fifo_size;
@@ -2014,7 +2014,7 @@ static VOID stp_sdio_tx_wkr(struct work_struct *work)
 			++stp_sdio_txperf_fifo_lmt_cnt;
 #endif
 			/* (tx FIFO free space < packet size) or (the number of tx packets >= 7) */
-			do_gettimeofday(&now);
+			ktime_get_real_ts64(&now);
 			if ((now.tv_sec - old.tv_sec) > TX_NO_ACK_TIMEOUT_ASSERT) {
 				STPSDIO_INFO_FUNC("tx_fifo_size(%d), four_byte_align_len(%d), tx_packet_num(%d)\n",
 						p_info->firmware_info.tx_fifo_size, four_byte_align_len,

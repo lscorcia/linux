@@ -1292,21 +1292,21 @@ static _osal_inline_ INT32 stp_dbg_fill_hdr(STP_DBG_HDR_T *hdr, INT32 type, INT3
 			      INT32 crc, INT32 dir, INT32 len, INT32 dbg_type)
 {
 
-	struct timeval now;
+	struct timespec64 now;
 
 	if (!hdr) {
 		STP_DBG_ERR_FUNC("function invalid\n");
 		return -EINVAL;
 	}
 
-	do_gettimeofday(&now);
+	ktime_get_real_ts64(&now);
 	hdr->last_dbg_type = gStpDbgDumpType;
 	gStpDbgDumpType = dbg_type;
 	hdr->dbg_type = dbg_type;
 	hdr->ack = ack;
 	hdr->seq = seq;
 	hdr->sec = now.tv_sec;
-	hdr->usec = now.tv_usec;
+	hdr->usec = now.tv_nsec / 1000;
 	hdr->crc = crc;
 	hdr->dir = dir;	/* rx */
 	hdr->dmy = 0xffffffff;

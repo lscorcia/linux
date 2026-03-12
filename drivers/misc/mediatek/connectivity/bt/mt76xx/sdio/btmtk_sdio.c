@@ -114,7 +114,7 @@ int fw_dump_task_should_stop;
 u8 *fw_dump_ptr;
 u8 *fw_dump_read_ptr;
 u8 *fw_dump_write_ptr;
-struct timeval fw_dump_last_write_time;
+struct timespec64 fw_dump_last_write_time;
 int fw_dump_end_checking_task_should_stop;
 int fw_is_doing_coredump;
 int fw_is_coredump_end_packet;

@@ -510,10 +510,10 @@ static void btmtk_fops_set_state(int new_state)
 
 static unsigned int btmtk_usb_hci_snoop_get_microseconds(void)
 {
-	struct timeval now;
+	struct timespec64 now;
 
-	do_gettimeofday(&now);
-	return now.tv_sec * 1000000 + now.tv_usec;
+	ktime_get_real_ts64(&now);
+	return now.tv_sec * 1000000 + now.tv_nsec / 1000;
 }
 
 static int btmtk_usb_dispatch_event(u8 *buf, int len)
