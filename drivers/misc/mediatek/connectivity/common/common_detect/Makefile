@@ -2,23 +2,23 @@ subdir-ccflags-y += -I$(srctree)/arch/arm/mach-$(MTK_PLATFORM)/$(ARCH_MTK_PROJEC
 subdir-ccflags-y += -DWMT_PLAT_ALPS=1
 
 COMBO_CHIP_SUPPORT := false
-ifneq ($(filter "MT6620E3",$(CONFIG_MTK_COMBO_CHIP)),)
+ifneq ($(filter MT6620E3,$(CONFIG_MTK_COMBO_CHIP)),)
 	COMBO_CHIP_SUPPORT := true
 endif
-ifneq ($(filter "MT6628",$(CONFIG_MTK_COMBO_CHIP)),)
+ifneq ($(filter MT6628,$(CONFIG_MTK_COMBO_CHIP)),)
 	COMBO_CHIP_SUPPORT := true
 endif
-ifneq ($(filter "MT6630",$(CONFIG_MTK_COMBO_CHIP)),)
+ifneq ($(filter MT6630,$(CONFIG_MTK_COMBO_CHIP)),)
 	COMBO_CHIP_SUPPORT := true
 endif
-ifneq ($(filter "MT6632",$(CONFIG_MTK_COMBO_CHIP)),)
+ifneq ($(filter MT6632,$(CONFIG_MTK_COMBO_CHIP)),)
 	COMBO_CHIP_SUPPORT := true
 endif
 ifeq ($(COMBO_CHIP_SUPPORT), true)
 	subdir-ccflags-y += -D MTK_WCN_COMBO_CHIP_SUPPORT
 endif
 
-ifneq ($(filter "CONSYS_%",$(CONFIG_MTK_COMBO_CHIP)),)
+ifneq ($(filter CONSYS_%,$(CONFIG_MTK_COMBO_CHIP)),)
 	subdir-ccflags-y += -D MTK_WCN_SOC_CHIP_SUPPORT
 endif
 

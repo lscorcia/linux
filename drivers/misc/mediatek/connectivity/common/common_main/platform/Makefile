@@ -19,7 +19,7 @@ else
 endif
 
 PLAT := alps
-ifneq ($(filter "CONSYS_%",$(CONFIG_MTK_COMBO_CHIP)),)
+ifneq ($(filter CONSYS_%,$(CONFIG_MTK_COMBO_CHIP)),)
 obj-y	+= $(MTK_PLATFORM).o
 endif
 obj-y	+= wmt_plat_$(PLAT).o

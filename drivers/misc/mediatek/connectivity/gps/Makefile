@@ -9,7 +9,7 @@
 # it under the terms of the GNU General Public License version 2 as
 # published by the Free Software Foundation.
 
-ifneq ($(filter "CONSYS_%",$(CONFIG_MTK_COMBO_CHIP)),)
+ifneq ($(filter CONSYS_%,$(CONFIG_MTK_COMBO_CHIP)),)
         ccflags-y += -DSOC_CO_CLOCK_FLAG=1
         ccflags-y += -DWMT_CREATE_NODE_DYNAMIC=1
         ccflags-y += -DREMOVE_MK_NODE=0
