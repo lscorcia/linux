@@ -45,7 +45,9 @@
 #include <aee.h>
 #endif
 #include <linux/kfifo.h>
+#ifndef CONFIG_PM_WAKELOCKS
 #include <linux/wakelock.h>
+#endif
 #include <linux/log2.h>
 #include <linux/atomic.h>
 
