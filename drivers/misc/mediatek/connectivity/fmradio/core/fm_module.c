@@ -1263,7 +1263,7 @@ static fm_s32 fm_cdev_setup(struct fm *fm)
 		return ret;
 	}
 #ifndef FM_DEV_STATIC_ALLOC
-	plat->cls = class_create(THIS_MODULE, FM_NAME);
+	plat->cls = class_create(FM_NAME);
 
 	if (IS_ERR(plat->cls)) {
 		ret = PTR_ERR(plat->cls);

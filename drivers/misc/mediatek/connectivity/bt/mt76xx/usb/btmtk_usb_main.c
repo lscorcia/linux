@@ -1733,7 +1733,7 @@ static int btmtk_usb_BT_init(void)
 	BTUSB_INFO("%s: %s driver(major %d) installed.", __func__, "BT_chrdev", BT_major);
 	BTUSB_INFO("%s: %s driver(major %d) installed.", __func__, "BT_chrdevfwlog", BT_majorfwlog);
 	BTUSB_INFO("%s: %s driver(major %d) installed.", __func__, "BT_cdev_sco", BT_major_sco);
-	pBTClass = class_create(THIS_MODULE, "BT_chrdev");
+	pBTClass = class_create("BT_chrdev");
 	if (IS_ERR(pBTClass)) {
 		BTUSB_ERR("class create fail, error code(%ld)", PTR_ERR(pBTClass));
 		goto err1;

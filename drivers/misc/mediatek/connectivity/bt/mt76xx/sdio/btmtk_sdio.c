@@ -4288,7 +4288,7 @@ static int BTMTK_init(void)
 	pr_info("%s driver(major %d) installed.\n",
 			"BT_chrdevfwlog", BT_majorfwlog);
 
-	pBTClass = class_create(THIS_MODULE, "BT_chrdev");
+	pBTClass = class_create("BT_chrdev");
 	if (IS_ERR(pBTClass)) {
 		pr_err("class create fail, error code(%ld)\n",
 			PTR_ERR(pBTClass));
