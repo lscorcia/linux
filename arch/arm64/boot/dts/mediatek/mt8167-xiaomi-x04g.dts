@@ -60,6 +60,7 @@
 			size = <0x00 0x200000>;
 			alignment = <0x00 0x200000>;
 			no-map;
+			compatible = "mediatek,consys-reserve-memory";
 		};
 	};
 
@@ -361,6 +362,41 @@
 			pinmux = <MT8167_PIN_63_UTXD0__FUNC_UTXD0>;
 		};
 	};
+
+	gps_lna_default_pins: gps-lna-default-pins {
+		
+	};
+
+	gps_lna_state_init_pins: gps-lna-init-pins {
+		
+	};
+
+	gps_lna_state_oh_pins: gps-lna-state-oh-pins {
+		
+	};
+
+	gps_lna_state_ol_pins: gps-lna-state-ol-pins {
+		
+	};
+};
+
+&btif {
+	status = "okay";
+};
+
+&consys {
+	status = "okay";
+	vcn35-supply = <&mt6392_vcn35_reg>;
+	vcn18-supply = <&mt6392_vcn18_reg>;
+	pinctrl-3 = <&gps_lna_state_ol_pins>;
+	pinctrl-2 = <&gps_lna_state_oh_pins>;
+	pinctrl-1 = <&gps_lna_state_init_pins>;
+	pinctrl-0 = <&gps_lna_default_pins>;
+	pinctrl-names = "default", "gps_lna_state_init", "gps_lna_state_oh", "gps_lna_state_ol";
+};
+
+&wifi {
+	status = "okay";
 };
 
 &pmic {

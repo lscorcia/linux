@@ -111,7 +111,7 @@
 			};
 		};
 
-		watchdog@10007000 {
+		watchdog: watchdog@10007000 {
 			compatible = "mediatek,mt8167-wdt";
 			reg = <0 0x10007000 0 0x1000>;
 			interrupts = <GIC_SPI 198 IRQ_TYPE_LEVEL_LOW>;
@@ -530,5 +530,51 @@
 			clock-names = "apb", "smi";
 			power-domains = <&spm MT8167_POWER_DOMAIN_VDEC>;
 		};
+
+		btif: btif@1100e000 {
+			compatible = "mediatek,btif";
+			reg = <0 0x1100e000 0 0x1000>,	/*btif base*/
+			    <0 0x11000380 0 0x80>,	/*btif tx dma base*/
+			    <0 0x11000400 0 0x80>;	/*btif rx dma base*/
+			interrupts = <GIC_SPI 107 IRQ_TYPE_LEVEL_LOW>,	/*btif irq*/
+				   <GIC_SPI 94 IRQ_TYPE_LEVEL_LOW>,	/*btif tx dma irq*/
+				   <GIC_SPI 95 IRQ_TYPE_LEVEL_LOW>;	/*btif rx dma irq*/
+			clocks = <&topckgen CLK_TOP_BTIF>,	/*btif clock*/
+			       <&topckgen CLK_TOP_APDMA>;	/*ap dma clock*/
+			clock-names = "btifc", "apdmac";
+			status = "disabled";
+		};
+
+		mtk-btcvsd-snd@18000000 {
+			compatible = "mediatek,mtk-btcvsd-snd";
+			reg = <0 0x10001000 0 0x1000>, /*AUDIO_INFRA_BASE_PHYSICAL*/
+			      <0 0x18000000 0 0x10000>, /*PKV_PHYSICAL_BASE*/
+			      <0 0x18080000 0 0x8000>; /*SRAM_BANK2*/
+			interrupts = <GIC_SPI 194 IRQ_TYPE_LEVEL_LOW>;
+			mediatek,infracfg = <&infracfg>;
+			mediatek,offset = <0xf00 0x800 0xfd0 0xfd4 0xfd8>;
+		};
+
+		consys: consys@18070000 {
+			compatible = "mediatek,mt8167-consys";
+			reg = <0 0x18070000 0 0x0200>,  /* CONN_MCU_CONFIG_BASE */
+			      <0 0x10000000 0 0x2000>;  /* TOPCKGEN_BASE */
+			power-domains = <&spm MT8167_POWER_DOMAIN_CONN>;
+			interrupts = <GIC_SPI 195 IRQ_TYPE_LEVEL_LOW>,  /* BGF_EINT */
+				     <GIC_SPI 197 IRQ_TYPE_LEVEL_LOW>;  /* WDT_EINT */
+			resets = <&watchdog MT8167_TOPRGU_CONN_MCU_RST>;
+			reset-names = "connsys";
+			status = "disabled";
+		};
+
+		wifi: wifi@180f0000 {
+			compatible = "mediatek,wifi";
+			reg = <0 0x180f0000 0 0x005c>;
+			interrupts = <GIC_SPI 196 IRQ_TYPE_LEVEL_LOW>;
+			clocks = <&topckgen CLK_TOP_APDMA>;
+			clock-names = "wifi-dma";
+			status = "disabled";
+		};
+
 	};
 };
