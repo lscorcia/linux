@@ -1,5 +1,5 @@
 subdir-ccflags-y += -I$(srctree)/arch/arm/mach-$(MTK_PLATFORM)/$(ARCH_MTK_PROJECT)/dct/dct
-subdir-ccflags-y += -DWMT_PLAT_ALPS=1
+#subdir-ccflags-y += -DWMT_PLAT_ALPS=1
 
 COMBO_CHIP_SUPPORT := false
 ifneq ($(filter MT6620E3,$(CONFIG_MTK_COMBO_CHIP)),)
@@ -37,6 +37,8 @@ ifeq ($(CONFIG_MTK_COMBO),y)
 endif
 
 ifeq ($(CONFIG_MTK_COMBO),m)
+	ccflags-y += -I$(src)/drv_init/inc
+
 	obj-y += mtk_wcn_stub_alps.o
 	obj-y += wmt_gpio.o
 
@@ -44,4 +46,5 @@ ifeq ($(CONFIG_MTK_COMBO),m)
 	mtk_wmt_detect-objs := wmt_detect.o
 	mtk_wmt_detect-objs += sdio_detect.o
 	mtk_wmt_detect-objs += wmt_detect_pwr.o
+	mtk_wmt_detect-objs += mtk_wcn_stub_alps.o
 endif
