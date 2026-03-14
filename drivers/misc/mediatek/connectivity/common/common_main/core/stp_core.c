@@ -116,7 +116,7 @@ static MTK_WCN_BOOL stp_check_crc(PUINT8 buffer, UINT32 length, UINT16 crc);
 static VOID stp_update_tx_queue(UINT32 txseq);
 static VOID stp_rest_ctx_state(VOID);
 static VOID stp_change_rx_state(mtkstp_parser_state next);
-static void stp_tx_timeout_handler(ULONG data);
+static void stp_tx_timeout_handler(struct timer_list *t);
 static VOID stp_dump_data(const PUINT8 buf, const PUINT8 title, const UINT32 len);
 static VOID stp_dump_tx_queue(UINT32 txseq);
 static INT32 stp_is_apply_powersaving(VOID);
@@ -666,7 +666,7 @@ static VOID stp_change_rx_state(mtkstp_parser_state next)
 }
 
 /* static void stp_tx_timeout_handler(void){ */
-static void stp_tx_timeout_handler(ULONG data)
+static void stp_tx_timeout_handler(struct timer_list *t)
 {
 	STP_WARN_FUNC("call retry btm retry wq ...\n");
 	/*shorten the softirq lattency */

@@ -93,7 +93,7 @@ static P_STP_DBG_CPUPCR_T g_stp_dbg_cpupcr;
 /* just show in log at present */
 static P_STP_DBG_DMAREGS_T g_stp_dbg_dmaregs;
 
-static VOID stp_dbg_core_dump_timeout_handler(ULONG data);
+static VOID stp_dbg_core_dump_timeout_handler(struct timer_list *t);
 static _osal_inline_ P_WCN_CORE_DUMP_T stp_dbg_core_dump_init(UINT32 timeout);
 static _osal_inline_ INT32 stp_dbg_core_dump_deinit(P_WCN_CORE_DUMP_T dmp);
 static _osal_inline_ INT32 stp_dbg_core_dump_check_end(PUINT8 buf, INT32 len);
@@ -157,7 +157,7 @@ static struct genl_ops stp_dbg_gnl_ops_array[] = {
  *
  * No return value
  */
-static VOID stp_dbg_core_dump_timeout_handler(ULONG data)
+static VOID stp_dbg_core_dump_timeout_handler(struct timer_list *t)
 {
 
 	STP_DBG_INFO_FUNC(" start\n");
