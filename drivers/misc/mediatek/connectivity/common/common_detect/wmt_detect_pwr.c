@@ -16,7 +16,7 @@
 #ifndef CONFIG_RTC_DRV_MT6397
 #include <mtk_rtc.h>
 #else
-#include <linux/mfd/mt6397/rtc_misc.h>
+//#include <linux/mfd/mt6397/rtc_misc.h>
 #endif
 
 #ifdef DFT_TAG
@@ -138,7 +138,8 @@ static int wmt_detect_chip_pwr_on(void)
 	msleep(MAX_LDO_STABLE_TIME);
 
 	/*export RTC clock, sleep for RTC stable time*/
-	rtc_gpio_enable_32k(RTC_GPIO_USER_GPS);
+	printk("LUCA FIXME: rtc_gpio_enable_32k(RTC_GPIO_USER_GPS)");
+	//rtc_gpio_enable_32k(RTC_GPIO_USER_GPS);
 	msleep(MAX_RTC_STABLE_TIME);
 	/*PMU output low, RST output low, to make chip power off completely*/
 	/*always done*/
