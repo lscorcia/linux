@@ -39,6 +39,7 @@
 #include "osal_typedef.h"
 #include "mtk_wcn_consys_hw.h"
 #include <linux/of_reserved_mem.h>
+#include <linux/pinctrl/consumer.h>
 
 /*******************************************************************************
 *                              C O N S T A N T S
@@ -55,7 +56,7 @@
 ********************************************************************************
 */
 static INT32 mtk_wmt_probe(struct platform_device *pdev);
-static INT32 mtk_wmt_remove(struct platform_device *pdev);
+static void mtk_wmt_remove(struct platform_device *pdev);
 
 /*******************************************************************************
 *                            P U B L I C   D A T A
@@ -163,13 +164,12 @@ static INT32 mtk_wmt_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static INT32 mtk_wmt_remove(struct platform_device *pdev)
+static void mtk_wmt_remove(struct platform_device *pdev)
 {
 	if (wmt_consys_ic_ops->consys_ic_need_store_pdev) {
 		if (wmt_consys_ic_ops->consys_ic_need_store_pdev() == MTK_WCN_BOOL_TRUE)
 			pm_runtime_disable(&pdev->dev);
 	}
-	return 0;
 }
 
 INT32 mtk_wcn_consys_hw_reg_ctrl(UINT32 on, UINT32 co_clock_type)
@@ -292,7 +292,7 @@ UINT32 mtk_wcn_consys_soc_chipid(void)
 }
 
 #if !defined(CONFIG_MTK_GPIO_LEGACY)
-struct pinctrl *mtk_wcn_consys_get_pinctrl()
+struct pinctrl *mtk_wcn_consys_get_pinctrl(void)
 {
 	return consys_pinctrl;
 }
