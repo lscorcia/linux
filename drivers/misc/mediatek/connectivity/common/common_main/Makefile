@@ -13,7 +13,7 @@ subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/eemcs/
 subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/conn_md/include
 subdir-ccflags-y += -I$(srctree)/drivers/mmc/core
 
-subdir-ccflags-y += -D WMT_PLAT_ALPS=1
+#subdir-ccflags-y += -D WMT_PLAT_ALPS=1
 subdir-ccflags-y += -D WMT_UART_RX_MODE_WORK=0 # 1. work thread 0. tasklet
 subdir-ccflags-y += -D WMT_SDIO_MODE=1
 
