@@ -210,7 +210,6 @@ static INT32 stp_uart_tty_open(struct tty_struct *tty)
 	UART_DBG_FUNC("stp_uart_tty_opentty: %p\n", tty);
 
 	tty->receive_room = 65536;
-	tty->port->low_latency = 1;
 
 	/* Flush any pending characters in the driver and line discipline. */
 
@@ -345,7 +344,7 @@ static VOID stp_uart_rx_handling(ULONG func_data)
 		UART_INFO_FUNC("finish, fifolen(%d)\n", kfifo_len(g_stp_uart_rx_fifo));
 }
 
-static VOID stp_uart_tty_receive(struct tty_struct *tty, const unsigned char *data, PINT8 flags, INT32 count)
+static VOID stp_uart_tty_receive(struct tty_struct *tty, const unsigned char *data, const unsigned char *flags, size_t count)
 {
 	UINT32 fifo_avail_len = LDISC_RX_FIFO_SIZE - kfifo_len(g_stp_uart_rx_fifo);
 	UINT32 how_much_put = 0;
@@ -583,7 +582,7 @@ static VOID stp_uart_tty_receive(struct tty_struct *tty, const PUINT8 data, PINT
  *
  * Return Value:    Command dependent
  */
-static INT32 stp_uart_tty_ioctl(struct tty_struct *tty, struct file *file, UINT32 cmd, ULONG arg)
+static INT32 stp_uart_tty_ioctl(struct tty_struct *tty, UINT32 cmd, ULONG arg)
 {
 	INT32 err = 0;
 
@@ -592,12 +591,11 @@ static INT32 stp_uart_tty_ioctl(struct tty_struct *tty, struct file *file, UINT3
 	switch (cmd) {
 	case HCIUARTSETPROTO:
 		UART_DBG_FUNC("<!!> Set low_latency to TRUE <!!>\n");
-		tty->port->low_latency = 1;
 
 		break;
 	default:
 		UART_DBG_FUNC("<!!> n_tty_ioctl_helper <!!>\n");
-		err = n_tty_ioctl_helper(tty, file, cmd, arg);
+		err = n_tty_ioctl_helper(tty, cmd, arg);
 		break;
 	};
 	UART_DBG_FUNC("%s <=\n", __func__);
@@ -609,7 +607,8 @@ static INT32 stp_uart_tty_ioctl(struct tty_struct *tty, struct file *file, UINT3
  * We don't provide read/write/poll interface for user space.
  */
 static ssize_t stp_uart_tty_read(struct tty_struct *tty, struct file *file,
-				 unsigned char __user *buf, size_t nr)
+				 unsigned char __user *buf, size_t nr,
+				 void **cookie, unsigned long offset)
 {
 	return 0;
 }
@@ -722,9 +721,10 @@ INT32 mtk_wcn_uart_tx(const PUINT8 data, const UINT32 size, PUINT32 written_size
 	return 0;
 }
 
+static struct tty_ldisc_ops stp_uart_ldisc;
+
 static INT32 mtk_wcn_stp_uart_init(VOID)
 {
-	static struct tty_ldisc_ops stp_uart_ldisc;
 	INT32 err;
 	INT32 fifo_init_done = 0;
 
@@ -769,7 +769,7 @@ static INT32 mtk_wcn_stp_uart_init(VOID)
 
 	/* Register the tty discipline */
 	memset(&stp_uart_ldisc, 0, sizeof(stp_uart_ldisc));
-	stp_uart_ldisc.magic = TTY_LDISC_MAGIC;
+	stp_uart_ldisc.num = N_MTKSTP;
 	stp_uart_ldisc.name = "n_mtkstp";
 	stp_uart_ldisc.open = stp_uart_tty_open;
 	stp_uart_ldisc.close = stp_uart_tty_close;
@@ -781,7 +781,7 @@ static INT32 mtk_wcn_stp_uart_init(VOID)
 	stp_uart_ldisc.write_wakeup = stp_uart_tty_wakeup;
 	stp_uart_ldisc.owner = THIS_MODULE;
 
-	err = tty_register_ldisc(N_MTKSTP, &stp_uart_ldisc);
+	err = tty_register_ldisc(&stp_uart_ldisc);
 	if (err) {
 		UART_ERR_FUNC("MTK STP line discipline registration failed. (%d)\n", err);
 		goto init_err;
@@ -823,9 +823,7 @@ static VOID mtk_wcn_stp_uart_exit(VOID)
 	mtk_wcn_stp_register_if_tx(STP_UART_IF_TX, NULL);	/* unregister if_tx function */
 
 	/* Release tty registration of line discipline */
-	err = tty_unregister_ldisc(N_MTKSTP);
-	if (err)
-		UART_ERR_FUNC("Can't unregister MTK STP line discipline (%d)\n", err);
+	tty_unregister_ldisc(&stp_uart_ldisc);
 
 #if (LDISC_RX == LDISC_RX_TASKLET)
 	tasklet_kill(&g_stp_uart_rx_fifo_tasklet);
