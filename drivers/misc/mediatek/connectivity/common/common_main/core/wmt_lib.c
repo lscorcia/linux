@@ -2018,6 +2018,8 @@ INT32 wmt_lib_merge_if_flag_ctrl(UINT32 enable)
 {
 #if WMT_PLAT_ALPS
 	return wmt_plat_merge_if_flag_ctrl(enable);
+#else
+	return 0;
 #endif
 }
 
@@ -2026,6 +2028,8 @@ INT32 wmt_lib_merge_if_flag_get(UINT32 enable)
 {
 #if WMT_PLAT_ALPS
 	return wmt_plat_merge_if_flag_get();
+#else
+	return 0;
 #endif
 }
 
