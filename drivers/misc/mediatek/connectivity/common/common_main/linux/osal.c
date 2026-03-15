@@ -32,7 +32,7 @@
 */
 
 #include "osal.h"
-#include "linux/sched/debug.h"
+#include <linux/sched/debug.h>
 
 /*******************************************************************************
 *                              C O N S T A N T S
@@ -309,7 +309,8 @@ UINT16 osal_crc16(const PUINT8 buffer, const UINT32 length)
 
 VOID osal_thread_show_stack(P_OSAL_THREAD pThread)
 {
-	return show_stack(pThread->pThread, NULL, KERN_DEFAULT);
+	printk("LUCA FIXME: return show_stack(pThread->pThread, NULL, KERN_DEFAULT);");
+	//return show_stack(pThread->pThread, NULL, KERN_DEFAULT);
 }
 
 /*
