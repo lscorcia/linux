@@ -253,6 +253,7 @@ const PUINT8 gpio_pin_name[GPIO_PIN_ID_MAX] = {"gpio_combo_ldo_en_pin",
 					};
 
 GPIO_CTRL_INFO gpio_ctrl_info;
+EXPORT_SYMBOL(gpio_ctrl_info);
 
 /*******************************************************************************
 *                              F U N C T I O N S

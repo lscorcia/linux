@@ -268,7 +268,7 @@ ENUM_WMT_CHIP_TYPE wmt_detect_get_chip_type(void)
 {
 	return g_chip_type;
 }
-
+EXPORT_SYMBOL(wmt_detect_get_chip_type);
 
 #ifdef MTK_WCN_COMBO_CHIP_SUPPORT
 static const struct of_device_id wmt_detect_match[] = {
