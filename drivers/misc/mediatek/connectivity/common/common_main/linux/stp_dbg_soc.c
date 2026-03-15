@@ -447,7 +447,7 @@ UINT32 stp_dbg_soc_read_debug_crs(ENUM_CONNSYS_DEBUG_CR cr)
 #define CONSYS_REG_READ(addr) (*((volatile UINT32 *)(addr)))
 	UINT8 *consys_dbg_cr_base = NULL;
 
-	consys_dbg_cr_base = ioremap_nocache(CONSYS_DBG_CR_BASE, 0x500);
+	consys_dbg_cr_base = ioremap(CONSYS_DBG_CR_BASE, 0x500);
 	switch (cr) {
 	case CONNSYS_CPU_CLK:
 		return CONSYS_REG_READ(consys_dbg_cr_base + CONSYS_CPU_CLK_STATUS_OFFSET);
