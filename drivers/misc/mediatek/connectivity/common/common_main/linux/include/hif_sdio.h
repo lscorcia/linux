@@ -296,6 +296,9 @@ do { if (gHifSdioDbgLvl >= HIF_SDIO_LOG_ERR)	\
 #define CCCR_06		(0x06)
 #define CCCR_F0		(0xF0)
 
+#define MMC_CARD_REMOVED	(1<<4)		/* card has been removed */
+#define mmc_card_removed(c)	((c) && ((c)->state & MMC_CARD_REMOVED))
+
 /*******************************************************************************
 *                   F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
