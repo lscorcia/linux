@@ -32,12 +32,14 @@ ifeq ($(CONFIG_MTK_COMBO), m)
 	obj-$(CONFIG_MTK_COMBO) += mtk_stp_wmt$(EXT_FLAG).o
 	# WMT DRIVER-core part
 	mtk_stp_wmt$(EXT_FLAG)-objs	:= core/wmt_core.o core/wmt_ctrl.o core/wmt_func.o core/wmt_ic_soc.o core/wmt_lib.o core/wmt_conf.o
-
+	mtk_stp_wmt$(EXT_FLAG)-objs	+= core/wmt_ic_6620.o core/wmt_ic_6628.o core/wmt_ic_6630.o core/wmt_ic_6632.o
 
 	# WMT DRIVER-linux private part
-	mtk_stp_wmt$(EXT_FLAG)-objs	+= linux/wmt_dev.o core/wmt_exp.o
+	mtk_stp_wmt$(EXT_FLAG)-objs	+= linux/wmt_dev.o core/wmt_exp.o linux/wmt_dbg.o
 	mtk_stp_wmt$(EXT_FLAG)-objs	+= linux/stp_btif.o
 
+	mtk_stp_wmt$(EXT_FLAG)-objs	+= linux/stp_sdio.o linux/stp_uart.o linux/hif_sdio.o
+	mtk_stp_wmt$(EXT_FLAG)-objs	+= linux/stp_dbg.o linux/stp_dbg_combo.o linux/stp_dbg_soc.o
 
 	# WMT DRIVER-OSAL
 	mtk_stp_wmt$(EXT_FLAG)-objs	+= linux/osal.o linux/bgw_desense.o
@@ -45,9 +47,10 @@ ifeq ($(CONFIG_MTK_COMBO), m)
 	mtk_stp_wmt$(EXT_FLAG)-objs += platform/wmt_plat_alps.o
 
 	mtk_stp_wmt$(EXT_FLAG)-objs += platform/mtk_wcn_consys_hw.o
+	mtk_stp_wmt$(EXT_FLAG)-objs += platform/mtk_wcn_cmb_hw.o
 
 
-	mtk_stp_wmt$(EXT_FLAG)-objs	+= core/stp_exp.o core/stp_core.o core/psm_core.o core/btm_core.o linux/stp_dbg.o
+	mtk_stp_wmt$(EXT_FLAG)-objs	+= core/stp_exp.o core/stp_core.o core/psm_core.o core/btm_core.o 
 
 	# WMT stub part (built-in kernel image)
 	# obj-y			+= platform/alps/mtk_wcn_consys_stub_alps.o

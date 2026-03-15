@@ -44,7 +44,11 @@ ifeq ($(CONFIG_MTK_COMBO),m)
 
 	obj-$(CONFIG_MTK_COMBO) += mtk_wmt_detect.o
 	mtk_wmt_detect-objs := wmt_detect.o
+	mtk_wmt_detect-objs += drv_init/conn_drv_init.o drv_init/common_drv_init.o
+	mtk_wmt_detect-objs += drv_init/bluetooth_drv_init.o drv_init/gps_drv_init.o
+	mtk_wmt_detect-objs += drv_init/fm_drv_init.o
 	mtk_wmt_detect-objs += sdio_detect.o
+	mtk_wmt_detect-objs += wmt_gpio.o
 	mtk_wmt_detect-objs += wmt_detect_pwr.o
 	mtk_wmt_detect-objs += mtk_wcn_stub_alps.o
 endif
