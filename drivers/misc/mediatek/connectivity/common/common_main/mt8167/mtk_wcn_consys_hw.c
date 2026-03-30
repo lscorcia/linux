@@ -1030,9 +1030,9 @@ INT32 mtk_wcn_consys_hw_restore(struct device *device)
 				   CONSYS_REG_READ(conn_reg.topckgen_base + CONSYS_EMI_MAPPING_OFFSET));
 
 #if 1
-		pEmibaseaddr = ioremap_nocache(gConEmiPhyBase + SZ_1M / 2, CONSYS_EMI_MEM_SIZE);
+		pEmibaseaddr = ioremap(gConEmiPhyBase + SZ_1M / 2, CONSYS_EMI_MEM_SIZE);
 #else
-		pEmibaseaddr = ioremap_nocache(CONSYS_EMI_AP_PHY_BASE, CONSYS_EMI_MEM_SIZE);
+		pEmibaseaddr = ioremap(CONSYS_EMI_AP_PHY_BASE, CONSYS_EMI_MEM_SIZE);
 #endif
 		if (pEmibaseaddr) {
 			WMT_PLAT_WARN_FUNC("EMI mapping OK(0x%p)\n", pEmibaseaddr);
@@ -1121,11 +1121,11 @@ INT32 mtk_wcn_consys_hw_init(void)
 				   CONSYS_REG_READ(conn_reg.topckgen_base + CONSYS_EMI_MAPPING_OFFSET));
 
 #if 1
-		pEmibaseaddr = ioremap_nocache(gConEmiPhyBase + SZ_1M / 2, CONSYS_EMI_MEM_SIZE);
+		pEmibaseaddr = ioremap(gConEmiPhyBase + SZ_1M / 2, CONSYS_EMI_MEM_SIZE);
 #else
-		pEmibaseaddr = ioremap_nocache(CONSYS_EMI_AP_PHY_BASE, CONSYS_EMI_MEM_SIZE);
+		pEmibaseaddr = ioremap(CONSYS_EMI_AP_PHY_BASE, CONSYS_EMI_MEM_SIZE);
 #endif
-		/* pEmibaseaddr = ioremap_nocache(0x80090400,270*KBYTE); */
+		/* pEmibaseaddr = ioremap(0x80090400,270*KBYTE); */
 		if (pEmibaseaddr) {
 			WMT_PLAT_INFO_FUNC("EMI mapping OK(0x%p)\n", pEmibaseaddr);
 			memset_io(pEmibaseaddr, 0, CONSYS_EMI_MEM_SIZE);
