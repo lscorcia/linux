@@ -151,7 +151,7 @@ static int _sc_rst(int reason)
 	return 0;
 }
 
-static void rx_timeout(unsigned long data)
+static void rx_timeout(struct timer_list *t)
 {
 	DBGPRINT(ELIAN_DBG_DEBUG, ("[msc rx timeout]\n"));
 

@@ -125,7 +125,7 @@ do { \
 ********************************************************************************
 */
 
-typedef VOID(*P_TIMEOUT_HANDLER) (ULONG);
+typedef VOID(*P_TIMEOUT_HANDLER) (struct timer_list *);
 typedef INT32(*P_COND) (PVOID);
 
 typedef struct _OSAL_TIMER_ {

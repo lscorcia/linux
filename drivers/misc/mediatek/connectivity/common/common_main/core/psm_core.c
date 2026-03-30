@@ -1229,9 +1229,9 @@ static inline INT32 _stp_psm_notify_wmt(MTKSTP_PSM_T *stp_psm, const MTKSTP_PSM_
 	return ret;
 }
 
-static inline VOID _stp_psm_stp_is_idle(ULONG data)
+static inline VOID _stp_psm_stp_is_idle(struct timer_list *t)
 {
-	MTKSTP_PSM_T *stp_psm = (MTKSTP_PSM_T *) data;
+	MTKSTP_PSM_T *stp_psm = timer_container_of(stp_psm,t,psm_timer.timer);
 
 	osal_clear_bit(STP_PSM_WMT_EVENT_DISABLE_MONITOR_RX_HIGH_DENSITY, &stp_psm->flag);
 	_stp_psm_dbg_dmp_in(g_stp_psm_dbg, stp_psm->flag.data, __LINE__);
