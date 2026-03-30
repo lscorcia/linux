@@ -196,6 +196,7 @@ struct early_suspend wmt_early_suspend_handler = {
 
 #else
 
+#if 0
 static struct notifier_block wmt_fb_notifier;
 static INT32 wmt_fb_notifier_callback(struct notifier_block *self, ULONG event, PVOID data)
 {
@@ -235,6 +236,7 @@ static INT32 wmt_fb_notifier_callback(struct notifier_block *self, ULONG event, 
 	}
 	return 0;
 }
+#endif
 #endif /* CONFIG_EARLYSUSPEND */
 #endif /* CONFIG_MTK_COMBO_COMM_APO */
 /*******************************************************************************
@@ -1348,12 +1350,14 @@ static INT32 WMT_init(VOID)
 	register_early_suspend(&wmt_early_suspend_handler);
 	WMT_INFO_FUNC("register_early_suspend finished\n");
 #else
+#if 0
 	wmt_fb_notifier.notifier_call = wmt_fb_notifier_callback;
 	ret = fb_register_client(&wmt_fb_notifier);
 	if (ret)
 		WMT_ERR_FUNC("wmt register fb_notifier failed! ret(%d)\n", ret);
 	else
 		WMT_INFO_FUNC("wmt register fb_notifier OK!\n");
+#endif
 #endif /* CONFIG_EARLYSUSPEND */
 #endif /* CONFIG_MTK_COMBO_COMM_APO */
 	WMT_INFO_FUNC("success\n");
@@ -1397,7 +1401,9 @@ static VOID WMT_exit(VOID)
 	unregister_early_suspend(&wmt_early_suspend_handler);
 	WMT_INFO_FUNC("unregister_early_suspend finished\n");
 #else
+#if 0
 	fb_unregister_client(&wmt_fb_notifier);
+#endif
 #endif /* CONFIG_EARLYSUSPEND */
 #endif /* CONFIG_MTK_COMBO_COMM_APO */
 

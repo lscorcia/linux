@@ -4371,6 +4371,7 @@ INT32 __weak kalBoostCpu(UINT_32 core_num)
 	return 0;
 }
 
+#if 0
 static int wlan_fb_notifier_callback(struct notifier_block *self, unsigned long event, void *data)
 {
 	struct fb_event *evdata = data;
@@ -4427,3 +4428,4 @@ VOID kalFbNotifierUnReg(VOID)
 	fb_unregister_client(&wlan_fb_notifier);
 	wlan_fb_notifier_priv_data = NULL;
 }
+#endif
