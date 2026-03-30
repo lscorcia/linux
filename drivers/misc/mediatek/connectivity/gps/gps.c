@@ -969,7 +969,7 @@ static int mt3326_gps_probe(struct platform_device *dev)
 	}
 	memset(drvobj, 0, sizeof(*drvobj));
 
-	devobj->cls = class_create(THIS_MODULE, "gpsdrv");
+	devobj->cls = class_create("gpsdrv");
 	if (IS_ERR(devobj->cls)) {
 		GPS_ERR("Unable to create class, err = %d\n", (int)PTR_ERR(devobj->cls));
 		goto error;

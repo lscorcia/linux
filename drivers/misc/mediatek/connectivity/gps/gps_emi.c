@@ -267,7 +267,7 @@ static int gps_emi_probe(struct platform_device *dev)
 		kfree(devobj);
 		goto err_out;
 	}
-	devobj->cls = class_create(THIS_MODULE, "gpsemi");
+	devobj->cls = class_create("gpsemi");
 	if (IS_ERR(devobj->cls)) {
 		GPS_ERR("Unable to create class, err = %d\n", (int)PTR_ERR(devobj->cls));
 		kfree(devobj);
