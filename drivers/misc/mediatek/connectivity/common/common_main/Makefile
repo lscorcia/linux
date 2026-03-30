@@ -53,7 +53,7 @@ endif
 ifeq ($(CONFIG_MTK_COMBO), y)
 obj-y += core/
 obj-y += linux/
-ifneq ($(filter "CONSYS_%",$(CONFIG_MTK_COMBO_CHIP)),)
+ifneq ($(filter CONSYS_%,$(CONFIG_MTK_COMBO_CHIP)),)
 obj-y += $(subst ",,$(CONFIG_MTK_PLATFORM))/
 else
 obj-y += platform/
