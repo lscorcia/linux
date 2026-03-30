@@ -95,7 +95,7 @@ struct msc_contex {
 };
 
 struct etimer {
-	void (*func) (unsigned long);
+	void (*func) (struct timer_list *);
 	unsigned long data;
 	unsigned long expires;
 };

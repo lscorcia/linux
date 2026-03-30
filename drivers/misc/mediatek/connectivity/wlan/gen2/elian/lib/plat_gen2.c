@@ -748,16 +748,13 @@ void sc_plt_aes128_decrypt(unsigned char *cipher_blk, unsigned int cipher_blk_si
 
 void sc_plt_add_timer(struct etimer *p)
 {
-	init_timer(&rst_timer);
 	rst_timer.expires = jiffies + p->expires * HZ;
-	rst_timer.data = p->data;
-	rst_timer.function = p->func;
-	return add_timer(&rst_timer);
+	return timer_setup(&rst_timer, p->func, 0);
 }
 
 int sc_plt_del_timer(struct etimer *p)
 {
-	return del_timer(&rst_timer);
+	return timer_delete(&rst_timer);
 }
 
 int sc_plt_get_cur_channel(void *priv)
