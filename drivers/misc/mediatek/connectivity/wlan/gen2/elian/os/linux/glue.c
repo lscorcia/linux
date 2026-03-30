@@ -18,12 +18,12 @@ static ssize_t msc_proc_write(struct file *file, const char __user *buf, size_t 
 
 static struct proc_dir_entry *entry=NULL;
 
-const struct file_operations msc_proc_fops = {
-	.open           = msc_proc_open,
-	.read           = seq_read,
-	.write          = msc_proc_write,
-	.llseek         = seq_lseek,
-	.release        = msc_proc_release,
+const struct proc_ops msc_proc_fops = {
+	.proc_open           = msc_proc_open,
+	.proc_read           = seq_read,
+	.proc_write          = msc_proc_write,
+	.proc_lseek         = seq_lseek,
+	.proc_release        = msc_proc_release,
 };
 
 void evt_cb(unsigned int eid, struct msc_result *result)
