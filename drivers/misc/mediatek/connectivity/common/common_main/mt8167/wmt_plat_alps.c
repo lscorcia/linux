@@ -37,6 +37,7 @@
 ********************************************************************************
 */
 #include <linux/delay.h>
+#include <linux/pinctrl/consumer.h>
 
 /* ALPS header files */
 /* #include <mach/mtk_rtc.h> */

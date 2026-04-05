@@ -43,6 +43,7 @@
 #endif
 #include <linux/delay.h>
 #include <linux/memblock.h>
+#include <linux/pinctrl/consumer.h>
 #include <linux/platform_device.h>
 #include "osal_typedef.h"
 #include "mtk_wcn_consys_hw.h"
