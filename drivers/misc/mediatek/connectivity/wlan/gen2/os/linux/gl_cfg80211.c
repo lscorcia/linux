@@ -86,7 +86,7 @@ static UINT_8 gucKeyIndex = 255;
 /*----------------------------------------------------------------------------*/
 int
 mtk_cfg80211_change_iface(struct wiphy *wiphy,
-			  struct net_device *ndev, enum nl80211_iftype type, u32 *flags, struct vif_params *params)
+			  struct net_device *ndev, enum nl80211_iftype type, struct vif_params *params)
 {
 	P_GLUE_INFO_T prGlueInfo = NULL;
 	WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
@@ -137,7 +137,7 @@ mtk_cfg80211_change_iface(struct wiphy *wiphy,
 /*----------------------------------------------------------------------------*/
 int
 mtk_cfg80211_add_key(struct wiphy *wiphy,
-		     struct net_device *ndev,
+		     struct net_device *ndev, int link_id,
 		     u8 key_index, bool pairwise, const u8 *mac_addr, struct key_params *params)
 {
 	PARAM_KEY_T rKey;
@@ -218,7 +218,7 @@ mtk_cfg80211_add_key(struct wiphy *wiphy,
 /*----------------------------------------------------------------------------*/
 int
 mtk_cfg80211_get_key(struct wiphy *wiphy,
-		     struct net_device *ndev,
+		     struct net_device *ndev, int link_id,
 		     u8 key_index,
 		     bool pairwise,
 		     const u8 *mac_addr, void *cookie, void (*callback) (void *cookie, struct key_params *))
@@ -245,7 +245,7 @@ mtk_cfg80211_get_key(struct wiphy *wiphy,
  *         others:  failure
  */
 /*----------------------------------------------------------------------------*/
-int mtk_cfg80211_del_key(struct wiphy *wiphy, struct net_device *ndev, u8 key_index, bool pairwise, const u8 *mac_addr)
+int mtk_cfg80211_del_key(struct wiphy *wiphy, struct net_device *ndev, int link_id, u8 key_index, bool pairwise, const u8 *mac_addr)
 {
 	P_GLUE_INFO_T prGlueInfo = NULL;
 	WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
@@ -298,7 +298,7 @@ int mtk_cfg80211_del_key(struct wiphy *wiphy, struct net_device *ndev, u8 key_in
  */
 /*----------------------------------------------------------------------------*/
 int
-mtk_cfg80211_set_default_key(struct wiphy *wiphy, struct net_device *ndev, u8 key_index, bool unicast, bool multicast)
+mtk_cfg80211_set_default_key(struct wiphy *wiphy, struct net_device *ndev, int link_id, u8 key_index, bool unicast, bool multicast)
 {
 	P_GLUE_INFO_T prGlueInfo = NULL;
 
@@ -322,7 +322,7 @@ mtk_cfg80211_set_default_key(struct wiphy *wiphy, struct net_device *ndev, u8 ke
  *         others:  failure
  */
 /*----------------------------------------------------------------------------*/
-int mtk_cfg80211_set_default_mgmt_key(struct wiphy *wiphy, struct net_device *netdev, u8 key_index)
+int mtk_cfg80211_set_default_mgmt_key(struct wiphy *wiphy, struct net_device *netdev, int link_id, u8 key_index)
 {
 	return 0;
 }
@@ -508,12 +508,14 @@ int mtk_cfg80211_change_station(struct wiphy *wiphy, struct net_device *ndev,
 	TDLS_CMD_PEER_UPDATE_T rCmdUpdate;
 	WLAN_STATUS rStatus;
 	UINT_32 u4BufLen, u4Temp;
+	struct link_station_parameters *prLinkParams =
+			&(params->link_sta_params);
 
 	/* sanity check */
 	if ((wiphy == NULL) || (mac == NULL) || (params == NULL))
 		return -EINVAL;
 
-	DBGLOG(TDLS, INFO, "%s: 0x%p 0x%x\n", __func__, params->supported_rates, params->sta_flags_set);
+	DBGLOG(TDLS, INFO, "%s: 0x%p 0x%x\n", __func__, prLinkParams->supported_rates, params->sta_flags_set);
 
 	if (!(params->sta_flags_set & BIT(NL80211_STA_FLAG_TDLS_PEER)))
 		return -EOPNOTSUPP;
@@ -528,13 +530,13 @@ int mtk_cfg80211_change_station(struct wiphy *wiphy, struct net_device *ndev,
 	kalMemZero(&rCmdUpdate, sizeof(rCmdUpdate));
 	kalMemCopy(rCmdUpdate.aucPeerMac, mac, 6);
 
-	if (params->supported_rates != NULL) {
-		u4Temp = params->supported_rates_len;
+	if (prLinkParams->supported_rates != NULL) {
+		u4Temp = prLinkParams->supported_rates_len;
 		if (u4Temp > TDLS_CMD_PEER_UPDATE_SUP_RATE_MAX) {
 			u4Temp = TDLS_CMD_PEER_UPDATE_SUP_RATE_MAX;
-			DBGLOG(TDLS, ERROR, "%s sup rate too long: %d\n", __func__, params->supported_rates_len);
+			DBGLOG(TDLS, ERROR, "%s sup rate too long: %d\n", __func__, prLinkParams->supported_rates_len);
 		}
-		kalMemCopy(rCmdUpdate.aucSupRate, params->supported_rates, u4Temp);
+		kalMemCopy(rCmdUpdate.aucSupRate, prLinkParams->supported_rates, u4Temp);
 		rCmdUpdate.u2SupRateLen = u4Temp;
 	}
 
@@ -560,18 +562,18 @@ int mtk_cfg80211_change_station(struct wiphy *wiphy, struct net_device *ndev,
 		rCmdUpdate.u2ExtCapLen = u4Temp;
 	}
 
-	if (params->ht_capa != NULL) {
+	if (prLinkParams->ht_capa != NULL) {
 		DBGLOG(TDLS, INFO, "%s: peer is 11n device\n", __func__);
 
-		rCmdUpdate.rHtCap.u2CapInfo = params->ht_capa->cap_info;
-		rCmdUpdate.rHtCap.ucAmpduParamsInfo = params->ht_capa->ampdu_params_info;
-		rCmdUpdate.rHtCap.u2ExtHtCapInfo = params->ht_capa->extended_ht_cap_info;
-		rCmdUpdate.rHtCap.u4TxBfCapInfo = params->ht_capa->tx_BF_cap_info;
-		rCmdUpdate.rHtCap.ucAntennaSelInfo = params->ht_capa->antenna_selection_info;
+		rCmdUpdate.rHtCap.u2CapInfo = prLinkParams->ht_capa->cap_info;
+		rCmdUpdate.rHtCap.ucAmpduParamsInfo = prLinkParams->ht_capa->ampdu_params_info;
+		rCmdUpdate.rHtCap.u2ExtHtCapInfo = prLinkParams->ht_capa->extended_ht_cap_info;
+		rCmdUpdate.rHtCap.u4TxBfCapInfo = prLinkParams->ht_capa->tx_BF_cap_info;
+		rCmdUpdate.rHtCap.ucAntennaSelInfo = prLinkParams->ht_capa->antenna_selection_info;
 		kalMemCopy(rCmdUpdate.rHtCap.rMCS.arRxMask,
-			   params->ht_capa->mcs.rx_mask, sizeof(rCmdUpdate.rHtCap.rMCS.arRxMask));
-		rCmdUpdate.rHtCap.rMCS.u2RxHighest = params->ht_capa->mcs.rx_highest;
-		rCmdUpdate.rHtCap.rMCS.ucTxParams = params->ht_capa->mcs.tx_params;
+			   prLinkParams->ht_capa->mcs.rx_mask, sizeof(rCmdUpdate.rHtCap.rMCS.arRxMask));
+		rCmdUpdate.rHtCap.rMCS.u2RxHighest = prLinkParams->ht_capa->mcs.rx_highest;
+		rCmdUpdate.rHtCap.rMCS.ucTxParams = prLinkParams->ht_capa->mcs.tx_params;
 		rCmdUpdate.fgIsSupHt = TRUE;
 	}
 
@@ -608,6 +610,8 @@ int mtk_cfg80211_add_station(struct wiphy *wiphy, struct net_device *ndev,
 	TDLS_CMD_PEER_ADD_T rCmdCreate;
 	WLAN_STATUS rStatus;
 	UINT_32 u4BufLen;
+	struct link_station_parameters *prLinkParams =
+			&(params->link_sta_params);
 
 	if ((wiphy == NULL) || (mac == NULL) || (params == NULL))
 		return -EINVAL;
@@ -626,7 +630,7 @@ int mtk_cfg80211_add_station(struct wiphy *wiphy, struct net_device *ndev,
 	 * Only MAC address of the peer is valid.
 	 */
 
-	DBGLOG(TDLS, INFO, "%s: 0x%p %d\n", __func__, params->supported_rates, params->supported_rates_len);
+	DBGLOG(TDLS, INFO, "%s: 0x%p %d\n", __func__, prLinkParams->supported_rates, prLinkParams->supported_rates_len);
 
 	/* sanity check */
 	if (!(params->sta_flags_set & BIT(NL80211_STA_FLAG_TDLS_PEER)))
@@ -1489,12 +1493,25 @@ int mtk_cfg80211_flush_pmksa(struct wiphy *wiphy, struct net_device *ndev)
 
 void mtk_cfg80211_mgmt_frame_register(IN struct wiphy *wiphy,
 				      IN struct wireless_dev *wdev,
-				      IN u16 frame_type, IN bool reg)
+				      IN struct mgmt_frame_regs *upd)
 {
 #if 0
 	P_MSG_P2P_MGMT_FRAME_REGISTER_T prMgmtFrameRegister = (P_MSG_P2P_MGMT_FRAME_REGISTER_T) NULL;
 #endif
 	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) NULL;
+	unsigned int i;
+	static const struct {
+		u16 mask, mtk_type;
+	} updates[] = {
+		{
+			.mask = BIT(IEEE80211_STYPE_PROBE_REQ >> 4),
+			.mtk_type = PARAM_PACKET_FILTER_PROBE_REQ,
+		},
+		{
+			.mask = BIT(IEEE80211_STYPE_ACTION >> 4),
+			.mtk_type = PARAM_PACKET_FILTER_ACTION_FRAME,
+		},
+	};
 
 	do {
 
@@ -1502,28 +1519,12 @@ void mtk_cfg80211_mgmt_frame_register(IN struct wiphy *wiphy,
 
 		prGlueInfo = (P_GLUE_INFO_T) wiphy_priv(wiphy);
 
-		switch (frame_type) {
-		case MAC_FRAME_PROBE_REQ:
-			if (reg) {
-				prGlueInfo->u4OsMgmtFrameFilter |= PARAM_PACKET_FILTER_PROBE_REQ;
-				DBGLOG(REQ, LOUD, "Open packet filer probe request\n");
+		for (i = 0; i < ARRAY_SIZE(updates); i++) {
+			if (upd->interface_stypes & updates[i].mask) {
+				prGlueInfo->u4OsMgmtFrameFilter |= updates[i].mtk_type;
 			} else {
-				prGlueInfo->u4OsMgmtFrameFilter &= ~PARAM_PACKET_FILTER_PROBE_REQ;
-				DBGLOG(REQ, LOUD, "Close packet filer probe request\n");
+				prGlueInfo->u4OsMgmtFrameFilter &= ~updates[i].mtk_type;
 			}
-			break;
-		case MAC_FRAME_ACTION:
-			if (reg) {
-				prGlueInfo->u4OsMgmtFrameFilter |= PARAM_PACKET_FILTER_ACTION_FRAME;
-				DBGLOG(REQ, LOUD, "Open packet filer action frame.\n");
-			} else {
-				prGlueInfo->u4OsMgmtFrameFilter &= ~PARAM_PACKET_FILTER_ACTION_FRAME;
-				DBGLOG(REQ, LOUD, "Close packet filer action frame.\n");
-			}
-			break;
-		default:
-			DBGLOG(REQ, TRACE, "Ask frog to add code for mgmt:%x\n", frame_type);
-			break;
 		}
 
 		if (prGlueInfo->prAdapter != NULL) {
@@ -1865,7 +1866,7 @@ mtk_cfg80211_sched_scan_start(IN struct wiphy *wiphy,
 	return 0;
 }
 
-int mtk_cfg80211_sched_scan_stop(IN struct wiphy *wiphy, IN struct net_device *ndev)
+int mtk_cfg80211_sched_scan_stop(IN struct wiphy *wiphy, IN struct net_device *ndev, u64 reqid)
 {
 	P_GLUE_INFO_T prGlueInfo = NULL;
 	WLAN_STATUS rStatus;

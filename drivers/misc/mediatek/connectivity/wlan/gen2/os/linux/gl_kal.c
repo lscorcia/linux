@@ -1003,6 +1003,9 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 	struct cfg80211_bss *bss;
 	UINT_8 ucChannelNum;
 	P_BSS_DESC_T prBssDesc = NULL;
+	struct cfg80211_scan_info scanInfo = {
+		.aborted = false,
+	};
 
 	GLUE_SPIN_LOCK_DECLARATION();
 
@@ -1092,11 +1095,16 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 
 			/* CFG80211 Indication */
 			if (eStatus == WLAN_STATUS_ROAM_OUT_FIND_BEST) {
-				cfg80211_roamed_bss(prGlueInfo->prDevHandler,
-						    bss,
-						    prGlueInfo->aucReqIe,
-						    prGlueInfo->u4ReqIeLength,
-						    prGlueInfo->aucRspIe, prGlueInfo->u4RspIeLength, GFP_KERNEL);
+				struct cfg80211_roam_info rRoamInfo = {0};
+
+				rRoamInfo.req_ie = prGlueInfo->aucReqIe;
+				rRoamInfo.req_ie_len = prGlueInfo->u4ReqIeLength;
+				rRoamInfo.resp_ie = prGlueInfo->aucRspIe;
+				rRoamInfo.resp_ie_len = prGlueInfo->u4RspIeLength;
+
+				cfg80211_roamed(prGlueInfo->prDevHandler,
+								&rRoamInfo,
+								GFP_KERNEL);
 			} else {
 				/*
 				 * to support user space roaming, cfg80211 will change the sme_state to connecting
@@ -1171,7 +1179,7 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 		DBGLOG(SCN, TRACE, "[ais] scan complete %p %d %d\n", prScanRequest, ScanCnt, ScanDoneFailCnt);
 
 		if (prScanRequest != NULL)
-			cfg80211_scan_done(prScanRequest, FALSE);
+			cfg80211_scan_done(prScanRequest, &scanInfo);
 		break;
 	case WLAN_STATUS_CONNECT_INDICATION:
 		prBssDesc = prGlueInfo->prAdapter->rWifiVar.rAisFsmInfo.prTargetBssDesc;
@@ -3962,7 +3970,7 @@ VOID kalSchedScanResults(IN P_GLUE_INFO_T prGlueInfo)
 {
 	ASSERT(prGlueInfo);
 
-	cfg80211_sched_scan_results(priv_to_wiphy(prGlueInfo));
+	cfg80211_sched_scan_results(priv_to_wiphy(prGlueInfo), 0);
 
 }
 

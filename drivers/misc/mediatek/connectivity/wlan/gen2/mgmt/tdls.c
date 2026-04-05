@@ -258,9 +258,9 @@ static void TdlsCmdTestAddPeer(P_GLUE_INFO_T prGlueInfo, UINT_8 *prInBuf, UINT_3
 	CmdStringMacParse(prInBuf, &prInBuf, &u4InBufLen, rCmd.arRspAddr);
 
 	/* init */
-	rCmd.rPeerInfo.supported_rates = NULL;
-	rCmd.rPeerInfo.ht_capa = &rCmd.rHtCapa;
-	rCmd.rPeerInfo.vht_capa = &rCmd.rVhtCapa; /* LINUX_KERNEL_VERSION >= 3.10.0 */
+	rCmd.rPeerInfo.link_sta_params.supported_rates = NULL;
+	rCmd.rPeerInfo.link_sta_params.ht_capa = &rCmd.rHtCapa;
+	rCmd.rPeerInfo.link_sta_params.vht_capa = &rCmd.rVhtCapa; /* LINUX_KERNEL_VERSION >= 3.10.0 */
 	rCmd.rPeerInfo.sta_flags_set = BIT(NL80211_STA_FLAG_TDLS_PEER);
 
 	/* send command to wifi task to handle */
@@ -1756,9 +1756,9 @@ static void TdlsCmdTestUpdatePeer(P_GLUE_INFO_T prGlueInfo, UINT_8 *prInBuf, UIN
 	CmdStringMacParse(prInBuf, &prInBuf, &u4InBufLen, rCmd.arRspAddr);
 
 	/* init */
-	rCmd.rPeerInfo.supported_rates = rCmd.arSupRate;
-	rCmd.rPeerInfo.ht_capa = &rCmd.rHtCapa;
-	rCmd.rPeerInfo.vht_capa = &rCmd.rVhtCapa; /* LINUX_KERNEL_VERSION >= 3.10.0 */
+	rCmd.rPeerInfo.link_sta_params.supported_rates = rCmd.arSupRate;
+	rCmd.rPeerInfo.link_sta_params.ht_capa = &rCmd.rHtCapa;
+	rCmd.rPeerInfo.link_sta_params.vht_capa = &rCmd.rVhtCapa; /* LINUX_KERNEL_VERSION >= 3.10.0 */
 	rCmd.rPeerInfo.sta_flags_set = BIT(NL80211_STA_FLAG_TDLS_PEER);
 	rCmd.rPeerInfo.uapsd_queues = 0xf;	/* all AC */
 	rCmd.rPeerInfo.max_sp = 0;	/* delivery all packets */
@@ -2411,7 +2411,7 @@ TdlsTestTdlsFrameSend(ADAPTER_T *prAdapter, VOID *pvSetBuffer, UINT_32 u4SetBuff
 	prWdev = (struct wireless_dev *)prGlueInfo->prDevHandler->ieee80211_ptr;
 
 	TdlsexCfg80211TdlsMgmt(prWdev->wiphy, NULL,
-			prCmd->arRspAddr, prCmd->ucFmeType, 1,
+			prCmd->arRspAddr, 0, prCmd->ucFmeType, 1,
 			0, 0, /* open/none */
 			FALSE, NULL, 0);
 
@@ -3697,7 +3697,7 @@ VOID TdlsexBssExtCapParse(STA_RECORD_T *prStaRec, UINT_8 *pucIE)
 /*----------------------------------------------------------------------------*/
 int
 TdlsexCfg80211TdlsMgmt(struct wiphy *wiphy, struct net_device *dev,
-		       const u8 *peer, u8 action_code, u8 dialog_token,
+		       const u8 *peer, int link_id, u8 action_code, u8 dialog_token,
 		       u16 status_code, u32 peer_capability,
 		       bool initiator, const u8 *buf, size_t len)
 {
