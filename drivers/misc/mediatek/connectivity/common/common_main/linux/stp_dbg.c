@@ -51,7 +51,7 @@ MTKSTP_DBG_T *g_stp_dbg;
 
 #define STP_DBG_FAMILY_NAME        "STP_DBG"
 #define MAX_BIND_PROCESS    (4)
-#ifdef WMT_PLAT_ALPS
+#if (CFG_SUPPORT_AEE == 1)
 #define STP_DBG_AEE_EXP_API (1)
 #else
 #define STP_DBG_AEE_EXP_API (0)
@@ -645,10 +645,14 @@ INT32 stp_dbg_trigger_collect_ftrace(PUINT8 pbuf, INT32 len)
 
 	if (g_core_dump) {
 		osal_strncpy(&g_core_dump->info[0], pbuf, len);
+#if (CFG_SUPPORT_AEE == 1)		
 		aed_combo_exception(NULL, 0, (const PINT32)pbuf, len, (const PINT8)g_core_dump->info);
+#endif
 	} else {
 		STP_DBG_INFO_FUNC("g_core_dump is not initialized\n");
+#if (CFG_SUPPORT_AEE == 1)
 		aed_combo_exception(NULL, 0, (const PINT32)pbuf, len, (const PINT8)pbuf);
+#endif
 	}
 
 	return 0;

@@ -41,7 +41,7 @@
 #include <linux/kthread.h>
 #include <linux/jiffies.h>
 #include <linux/slab.h>
-#if defined(WMT_PLAT_ALPS) && WMT_PLAT_ALPS
+#if (CFG_SUPPORT_AEE == 1)
 #include <aee.h>
 #endif
 #include <linux/kfifo.h>
