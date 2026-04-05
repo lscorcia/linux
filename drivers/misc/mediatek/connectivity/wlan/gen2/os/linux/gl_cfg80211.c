@@ -1610,10 +1610,10 @@ int mtk_cfg80211_remain_on_channel(struct wiphy *wiphy,
 		prMsgChnlReq->ucChannelNum = nicFreq2ChannelNum(chan->center_freq * 1000);
 
 		switch (chan->band) {
-		case IEEE80211_BAND_2GHZ:
+		case NL80211_BAND_2GHZ:
 			prMsgChnlReq->eBand = BAND_2G4;
 			break;
-		case IEEE80211_BAND_5GHZ:
+		case NL80211_BAND_5GHZ:
 			prMsgChnlReq->eBand = BAND_5G;
 			break;
 		default:

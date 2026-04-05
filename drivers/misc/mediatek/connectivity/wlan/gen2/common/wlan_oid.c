@@ -549,16 +549,16 @@ BOOLEAN wlanoidGetChannelInfo(IN P_ADAPTER_T prAdapter, IN PUINT_8 puPartialScan
 			channel_tmp = scan_req_t->channels[j];
 
 			DBGLOG(OID, TRACE, "set channel band=%d\n", channel_tmp->band);
-			if (channel_tmp->band >= IEEE80211_BAND_60GHZ) {
+			if (channel_tmp->band >= NL80211_BAND_60GHZ) {
 				j++;
 				continue;
 			}
 
 			if (i >= MAXIMUM_OPERATION_CHANNEL_LIST)
 				break;
-			if (channel_tmp->band == IEEE80211_BAND_2GHZ)
+			if (channel_tmp->band == NL80211_BAND_2GHZ)
 				PartialScanChannel->arChnlInfoList[i].eBand = BAND_2G4;
-			else if (channel_tmp->band == IEEE80211_BAND_5GHZ)
+			else if (channel_tmp->band == NL80211_BAND_5GHZ)
 				PartialScanChannel->arChnlInfoList[i].eBand = BAND_5G;
 
 			DBGLOG(OID, TRACE, "set channel channel_center_freq =%d\n",

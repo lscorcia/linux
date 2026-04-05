@@ -1148,12 +1148,12 @@ struct ieee80211_channel *kalP2pFuncGetChannelEntry(IN P_GL_P2P_INFO_T prP2pInfo
 		bands = &prP2pInfo->prWdev->wiphy->bands[0];
 		switch (prChannelInfo->eBand) {
 		case BAND_2G4:
-			prTargetChannelEntry = bands[IEEE80211_BAND_2GHZ]->channels;
-			u4TblSize = bands[IEEE80211_BAND_2GHZ]->n_channels;
+			prTargetChannelEntry = bands[NL80211_BAND_2GHZ]->channels;
+			u4TblSize = bands[NL80211_BAND_2GHZ]->n_channels;
 			break;
 		case BAND_5G:
-			prTargetChannelEntry = bands[IEEE80211_BAND_5GHZ]->channels;
-			u4TblSize = bands[IEEE80211_BAND_5GHZ]->n_channels;
+			prTargetChannelEntry = bands[NL80211_BAND_5GHZ]->channels;
+			u4TblSize = bands[NL80211_BAND_5GHZ]->n_channels;
 			break;
 		default:
 			break;
