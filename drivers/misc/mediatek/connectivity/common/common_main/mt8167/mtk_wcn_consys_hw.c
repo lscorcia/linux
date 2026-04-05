@@ -1182,7 +1182,7 @@ UINT32 mtk_wcn_consys_soc_chipid(void)
 }
 
 #if !defined(CONFIG_MTK_LEGACY)
-struct pinctrl *mtk_wcn_consys_get_pinctrl()
+struct pinctrl *mtk_wcn_consys_get_pinctrl(void)
 {
 	return consys_pinctrl;
 }
