@@ -495,7 +495,7 @@ int msc_get_result(struct msc_result *result)
 	return 0;
 }*/
 
-int msc_reset()
+int msc_reset(void)
 {
 	sccb_disable_input();
 	elian_reset();

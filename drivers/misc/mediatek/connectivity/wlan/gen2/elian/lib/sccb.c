@@ -13,13 +13,13 @@ struct sccb_ctrl_data {
 	sc_sw_filter filter_func;
 } ctrl_data;
 
-int sccb_enable_input()
+int sccb_enable_input(void)
 {
 	ctrl_data.flag |= MSC_ENABLE_RX_BIT;
 	return 0;
 }
 
-int sccb_disable_input()
+int sccb_disable_input(void)
 {
 	ctrl_data.flag &= ~MSC_ENABLE_RX_BIT;
 	return 0;
@@ -33,7 +33,7 @@ int sccb_init(sc_input_func input_func, sc_sw_filter filter_func)
 	return 0;
 }
 
-int sccb_deinit()
+int sccb_deinit(void)
 {
 	ctrl_data.input_func = NULL;
 	ctrl_data.filter_func = NULL;
