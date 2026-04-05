@@ -299,30 +299,30 @@ extern UINT_32 mtk_cipher_suites[6];
 #if CFG_ENABLE_WIFI_DIRECT_CFG_80211
 int mtk_p2p_cfg80211_change_iface(struct wiphy *wiphy,
 				  struct net_device *ndev,
-				  enum nl80211_iftype type, u32 *flags, struct vif_params *params);
+				  enum nl80211_iftype type, struct vif_params *params);
 
 int mtk_p2p_cfg80211_add_key(struct wiphy *wiphy,
-			     struct net_device *ndev,
+			     struct net_device *ndev,  int link_id,
 			     u8 key_index, bool pairwise, const u8 *mac_addr, struct key_params *params);
 
 int mtk_p2p_cfg80211_get_key(struct wiphy *wiphy,
-			     struct net_device *ndev,
+			     struct net_device *ndev, int link_id,
 			     u8 key_index,
 			     bool pairwise,
 			     const u8 *mac_addr, void *cookie, void (*callback) (void *cookie, struct key_params *)
 );
 
 int mtk_p2p_cfg80211_del_key(struct wiphy *wiphy,
-			     struct net_device *ndev, u8 key_index, bool pairwise, const u8 *mac_addr);
+			     struct net_device *ndev, int link_id, u8 key_index, bool pairwise, const u8 *mac_addr);
 
 int
 mtk_p2p_cfg80211_set_default_key(struct wiphy *wiphy,
-				 struct net_device *netdev, u8 key_index, bool unicast, bool multicast);
+				 struct net_device *netdev, int link_id, u8 key_index, bool unicast, bool multicast);
 
 int mtk_p2p_cfg80211_get_station(struct wiphy *wiphy, struct net_device *ndev,
 					const u8 *mac, struct station_info *sinfo);
 
-int mtk_p2p_cfg80211_set_wiphy_params(struct wiphy *wiphy, u32 changed);
+int mtk_p2p_cfg80211_set_wiphy_params(struct wiphy *wiphy, int link_id, u32 changed);
 
 int mtk_p2p_cfg80211_connect(struct wiphy *wiphy, struct net_device *dev, struct cfg80211_connect_params *sme);
 
@@ -345,9 +345,9 @@ int mtk_p2p_cfg80211_scan(struct wiphy *wiphy, struct cfg80211_scan_request *req
 int mtk_p2p_cfg80211_cancel_remain_on_channel(struct wiphy *wiphy, struct wireless_dev *wdev, u64 cookie);
 
 int mtk_p2p_cfg80211_set_txpower(struct wiphy *wiphy,
-				 struct wireless_dev *wdev, enum nl80211_tx_power_setting type, int mbm);
+				 struct wireless_dev *wdev, int link_id, enum nl80211_tx_power_setting type, int mbm);
 
-int mtk_p2p_cfg80211_get_txpower(struct wiphy *wiphy, struct wireless_dev *wdev, int *dbm);
+int mtk_p2p_cfg80211_get_txpower(struct wiphy *wiphy, struct wireless_dev *wdev, int radio_idx, unsigned int link_id, int *dbm);
 
 int mtk_p2p_cfg80211_deauth(struct wiphy *wiphy, struct net_device *dev, struct cfg80211_deauth_request *req);
 
@@ -355,24 +355,24 @@ int mtk_p2p_cfg80211_disassoc(struct wiphy *wiphy, struct net_device *dev, struc
 
 int mtk_p2p_cfg80211_start_ap(struct wiphy *wiphy, struct net_device *dev, struct cfg80211_ap_settings *settings);
 
-int mtk_p2p_cfg80211_change_beacon(struct wiphy *wiphy, struct net_device *dev, struct cfg80211_beacon_data *info);
+int mtk_p2p_cfg80211_change_beacon(struct wiphy *wiphy, struct net_device *dev, struct cfg80211_ap_update *update);
 
 int mtk_p2p_cfg80211_mgmt_tx(struct wiphy *wiphy,
 			     struct wireless_dev *wdev,
 			     struct cfg80211_mgmt_tx_params *params,
 			     u64 *cookie);
 
-int mtk_p2p_cfg80211_stop_ap(struct wiphy *wiphy, struct net_device *dev);
+int mtk_p2p_cfg80211_stop_ap(struct wiphy *wiphy, struct net_device *dev, unsigned int link_id);
 
 int mtk_p2p_cfg80211_del_station(struct wiphy *wiphy, struct net_device *dev, struct station_del_parameters *params);
 
-int mtk_p2p_cfg80211_set_channel(struct wiphy *wiphy, struct cfg80211_chan_def *chandef);
+int mtk_p2p_cfg80211_set_channel(struct wiphy *wiphy, struct net_device *dev, struct cfg80211_chan_def *chandef);
 
-void mtk_p2p_cfg80211_mgmt_frame_register(struct wiphy *wiphy, struct wireless_dev *wdev, u16 frame_type, bool reg);
+void mtk_p2p_cfg80211_mgmt_frame_register(struct wiphy *wiphy, struct wireless_dev *wdev, IN struct mgmt_frame_regs *upd);
 
 int
 mtk_p2p_cfg80211_set_bitrate_mask(IN struct wiphy *wiphy,
-				  IN struct net_device *dev,
+				  IN struct net_device *dev, IN unsigned int link_id,
 				  IN const u8 *peer, IN const struct cfg80211_bitrate_mask *mask);
 
 #if CONFIG_NL80211_TESTMODE

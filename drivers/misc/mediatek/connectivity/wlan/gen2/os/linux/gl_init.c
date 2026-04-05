@@ -270,7 +270,7 @@ static struct cfg80211_ops mtk_wlan_ops = {
 	.cancel_remain_on_channel = mtk_cfg80211_cancel_remain_on_channel,
 	.mgmt_tx = mtk_cfg80211_mgmt_tx,
 /* .mgmt_tx_cancel_wait        = mtk_cfg80211_mgmt_tx_cancel_wait, */
-	.mgmt_frame_register = mtk_cfg80211_mgmt_frame_register,
+	.update_mgmt_frame_registrations = mtk_cfg80211_mgmt_frame_register,
 #ifdef CONFIG_NL80211_TESTMODE
 	.testmode_cmd = mtk_cfg80211_testmode_cmd,
 #endif
@@ -555,7 +555,7 @@ unsigned int _cfg80211_classify8021d(struct sk_buff *skb)
 static const UINT_16 au16Wlan1dToQueueIdx[8] = { 1, 0, 0, 1, 2, 2, 3, 3 };
 
 static UINT_16 wlanSelectQueue(struct net_device *dev, struct sk_buff *skb,
-				void *accel_priv, select_queue_fallback_t fallback)
+				struct net_device *sb_dev)
 {
 	skb->priority = _cfg80211_classify8021d(skb);
 
@@ -1248,7 +1248,7 @@ VOID wlanSchedScanStoppedWorkQueue(struct work_struct *work)
 
 	/* 2. indication to cfg80211 */
 	/* 20150205 change cfg80211_sched_scan_stopped to work queue due to sched_scan_mtx dead lock issue */
-	cfg80211_sched_scan_stopped(priv_to_wiphy(prGlueInfo));
+	cfg80211_sched_scan_stopped(priv_to_wiphy(prGlueInfo), 0);
 	DBGLOG(SCN, INFO,
 		"cfg80211_sched_scan_stopped event send done\n");
 
@@ -1539,6 +1539,9 @@ static int wlanStop(struct net_device *prDev)
 {
 	P_GLUE_INFO_T prGlueInfo = NULL;
 	struct cfg80211_scan_request *prScanRequest = NULL;
+	struct cfg80211_scan_info info = {
+		.aborted = true,
+	};
 
 	GLUE_SPIN_LOCK_DECLARATION();
 
@@ -1555,7 +1558,7 @@ static int wlanStop(struct net_device *prDev)
 	GLUE_RELEASE_SPIN_LOCK(prGlueInfo, SPIN_LOCK_NET_DEV);
 
 	if (prScanRequest)
-		cfg80211_scan_done(prScanRequest, TRUE);
+		cfg80211_scan_done(prScanRequest, &info);
 	netif_tx_stop_all_queues(prDev);
 
 	return 0;		/* success */
@@ -2579,7 +2582,7 @@ bailout:
 				DBGLOG(INIT, WARN, "set MAC addr fail 0x%x\n", rStatus);
 				prGlueInfo->u4ReadyFlag = 0;
 			} else {
-				ether_addr_copy(prGlueInfo->prDevHandler->dev_addr, (const u8 *)&(MacAddr.sa_data));
+				ether_addr_copy((u8 *)prGlueInfo->prDevHandler->dev_addr, (const u8 *)&(MacAddr.sa_data));
 				ether_addr_copy(prGlueInfo->prDevHandler->perm_addr,
 					prGlueInfo->prDevHandler->dev_addr);
 

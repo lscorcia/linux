@@ -875,6 +875,9 @@ VOID kalP2PIndicateScanDone(IN P_GLUE_INFO_T prGlueInfo, IN BOOLEAN fgIsAbort)
 {
 	P_GL_P2P_INFO_T prGlueP2pInfo = (P_GL_P2P_INFO_T) NULL;
 	struct cfg80211_scan_request *prScanRequest = NULL;
+	struct cfg80211_scan_info info = {
+		.aborted = fgIsAbort,
+	};
 
 	GLUE_SPIN_LOCK_DECLARATION();
 
@@ -909,7 +912,7 @@ VOID kalP2PIndicateScanDone(IN P_GLUE_INFO_T prGlueInfo, IN BOOLEAN fgIsAbort)
 			scanReportBss2Cfg80211(prGlueInfo->prAdapter, BSS_TYPE_P2P_DEVICE, NULL);
 
 			DBGLOG(INIT, TRACE, "DBG:p2p_cfg_scan_done\n");
-			cfg80211_scan_done(prScanRequest, fgIsAbort);
+			cfg80211_scan_done(prScanRequest, &info);
 		}
 
 	} while (FALSE);

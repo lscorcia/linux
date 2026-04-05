@@ -74,7 +74,7 @@ static struct cfg80211_ops mtk_p2p_ops = {
 	.del_station = mtk_p2p_cfg80211_del_station,
 	.set_monitor_channel = mtk_p2p_cfg80211_set_channel,
 	.set_bitrate_mask = mtk_p2p_cfg80211_set_bitrate_mask,
-	.mgmt_frame_register = mtk_p2p_cfg80211_mgmt_frame_register,
+	.update_mgmt_frame_registrations = mtk_p2p_cfg80211_mgmt_frame_register,
 	.get_station = mtk_p2p_cfg80211_get_station,
 	.add_key = mtk_p2p_cfg80211_add_key,
 	.get_key = mtk_p2p_cfg80211_get_key,
@@ -357,7 +357,7 @@ unsigned int _p2p_cfg80211_classify8021d(struct sk_buff *skb)
 static const UINT_16 au16Wlan1dToQueueIdx[8] = { 1, 0, 0, 1, 2, 2, 3, 3 };
 
 static UINT_16 p2pSelectQueue(struct net_device *dev, struct sk_buff *skb,
-				void *accel_priv, select_queue_fallback_t fallback)
+				struct net_device *sb_dev)
 {
 	skb->priority = _p2p_cfg80211_classify8021d(skb);
 
@@ -1060,6 +1060,9 @@ static int p2pStop(IN struct net_device *prDev)
 	/* P_ADAPTER_T prAdapter = NULL; */
 /* P_MSG_P2P_FUNCTION_SWITCH_T prFuncSwitch; */
 	P_GL_P2P_INFO_T prGlueP2pInfo = (P_GL_P2P_INFO_T) NULL;
+	struct cfg80211_scan_info info = {
+		.aborted = true,
+	};
 
 	struct cfg80211_scan_request *prScanRequest = NULL;
 
@@ -1081,7 +1084,7 @@ static int p2pStop(IN struct net_device *prDev)
 	GLUE_RELEASE_SPIN_LOCK(prGlueInfo, SPIN_LOCK_NET_DEV);
 
 	if (prScanRequest)
-		cfg80211_scan_done(prScanRequest, TRUE);
+		cfg80211_scan_done(prScanRequest, &info);
 #if 0
 
 	/* 1. stop TX queue */
