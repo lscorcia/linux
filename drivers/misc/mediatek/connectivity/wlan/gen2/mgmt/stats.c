@@ -20,6 +20,7 @@
  *						E X T E R N A L	R E F E R E N C E S
  ********************************************************************************
  */
+#include <linux/sched/clock.h>
 #include "precomp.h"
 
 enum EVENT_TYPE {
