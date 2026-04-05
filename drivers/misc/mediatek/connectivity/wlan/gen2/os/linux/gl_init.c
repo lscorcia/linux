@@ -72,7 +72,7 @@ typedef struct _WLANDEV_INFO_T {
 
 #define CHAN2G(_channel, _freq, _flags)         \
 {                                           \
-	.band               = IEEE80211_BAND_2GHZ,  \
+	.band               = NL80211_BAND_2GHZ,  \
 	.center_freq        = (_freq),              \
 	.hw_value           = (_channel),           \
 	.flags              = (_flags),             \
@@ -99,7 +99,7 @@ static struct ieee80211_channel mtk_2ghz_channels[] = {
 
 #define CHAN5G(_channel, _flags)                    \
 {                                               \
-	.band               = IEEE80211_BAND_5GHZ,      \
+	.band               = NL80211_BAND_5GHZ,      \
 	.center_freq        = (((_channel >= 182) && (_channel <= 196)) ? \
 				 (4000 + (5 * (_channel))) : (5000 + (5 * (_channel)))),  \
 	.hw_value           = (_channel),               \
@@ -183,7 +183,7 @@ static struct ieee80211_rate mtk_rates[] = {
 * Public for both legacy Wi-Fi and P2P to access
 **********************************************************/
 struct ieee80211_supported_band mtk_band_2ghz = {
-	.band = IEEE80211_BAND_2GHZ,
+	.band = NL80211_BAND_2GHZ,
 	.channels = mtk_2ghz_channels,
 	.n_channels = ARRAY_SIZE(mtk_2ghz_channels),
 	.bitrates = mtk_g_rates,
@@ -192,7 +192,7 @@ struct ieee80211_supported_band mtk_band_2ghz = {
 };
 
 struct ieee80211_supported_band mtk_band_5ghz = {
-	.band = IEEE80211_BAND_5GHZ,
+	.band = NL80211_BAND_5GHZ,
 	.channels = mtk_5ghz_channels,
 	.n_channels = ARRAY_SIZE(mtk_5ghz_channels),
 	.bitrates = mtk_a_rates,
@@ -1022,12 +1022,12 @@ static void createWirelessDevice(void)
 	prWiphy->max_sched_scan_ie_len	= CFG_CFG80211_IE_BUF_LEN;
 
 	prWiphy->interface_modes	= BIT(NL80211_IFTYPE_STATION) | BIT(NL80211_IFTYPE_ADHOC);
-	prWiphy->bands[IEEE80211_BAND_2GHZ] = &mtk_band_2ghz;
+	prWiphy->bands[NL80211_BAND_2GHZ] = &mtk_band_2ghz;
 	/*
 	 * always assign 5Ghz bands here, if the chip is not support 5Ghz,
-	 * bands[IEEE80211_BAND_5GHZ] will be assign to NULL
+	 * bands[NL80211_BAND_5GHZ] will be assign to NULL
 	 */
-	prWiphy->bands[IEEE80211_BAND_5GHZ] = &mtk_band_5ghz;
+	prWiphy->bands[NL80211_BAND_5GHZ] = &mtk_band_5ghz;
 	prWiphy->signal_type = CFG80211_SIGNAL_TYPE_MBM;
 	prWiphy->cipher_suites = mtk_cipher_suites;
 	prWiphy->n_cipher_suites = ARRAY_SIZE(mtk_cipher_suites);
@@ -2528,9 +2528,9 @@ bailout:
 		}
 #endif
 		if (prAdapter->fgEnable5GBand == FALSE)
-			prWdev->wiphy->bands[IEEE80211_BAND_5GHZ] = NULL;
+			prWdev->wiphy->bands[NL80211_BAND_5GHZ] = NULL;
 		else
-			prWdev->wiphy->bands[IEEE80211_BAND_5GHZ] = &mtk_band_5ghz;
+			prWdev->wiphy->bands[NL80211_BAND_5GHZ] = &mtk_band_5ghz;
 
 		prGlueInfo->main_thread = kthread_run(tx_thread, prGlueInfo->prDevHandler, "tx_thread");
 		kalSetHalted(FALSE);
