@@ -11,6 +11,7 @@
 
 #include "precomp.h"
 #include "gl_kal.h"
+#include <linux/sched/clock.h>
 
 struct COMMAND {
 	UINT_8 ucCID;
