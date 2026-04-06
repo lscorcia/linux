@@ -590,9 +590,12 @@ VOID kalUpdateMACAddress(IN P_GLUE_INFO_T prGlueInfo, IN PUINT_8 pucMacAddr)
 	ASSERT(prGlueInfo);
 	ASSERT(pucMacAddr);
 
+#if 0
 	if (UNEQUAL_MAC_ADDR(prGlueInfo->prDevHandler->dev_addr, pucMacAddr))
-		memcpy(prGlueInfo->prDevHandler->dev_addr, pucMacAddr, PARAM_MAC_ADDR_LEN);
-
+		memcpy((unsigned char *)prGlueInfo->prDevHandler->dev_addr, pucMacAddr, PARAM_MAC_ADDR_LEN);
+#else
+	dev_addr_set(prGlueInfo->prDevHandler, pucMacAddr);
+#endif
 }
 
 #if CFG_TCP_IP_CHKSUM_OFFLOAD
