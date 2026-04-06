@@ -842,6 +842,11 @@ kalDevPortRead(IN P_GLUE_INFO_T GlueInfo, IN UINT_16 Port, IN UINT_32 Size, OUT 
 		/* DMA_FROM_DEVICE invalidated (without writeback) the cache */
 		/* TODO: if dst_off was not cacheline aligned */
 		DmaConf.Dst = dma_map_single(HifInfo->Dev, Buf, Size, DMA_FROM_DEVICE);
+		if (dma_mapping_error(HifInfo->Dev, DmaConf.Dst)) {
+			DBGLOG(TX, ERROR, "fatal error1! reset DMA!\n");
+			return FALSE;
+		}
+
 #endif /* MTK_DMA_BUF_MEMCPY_SUP */
 
 		/* start to read data */
