@@ -859,8 +859,12 @@ BOOLEAN glRegisterP2P(P_GLUE_INFO_T prGlueInfo, const char *prDevName, BOOLEAN f
 	/* 4.2 fill hardware address */
 	COPY_MAC_ADDR(rMacAddr, prAdapter->rMyMacAddr);
 	rMacAddr[0] ^= 0x2;	/* change to local administrated address */
-	ether_addr_copy(prDevHandler->dev_addr, rMacAddr);
+#if 0
+	ether_addr_copy((unsigned char *) prDevHandler->dev_addr, rMacAddr);
 	ether_addr_copy(prDevHandler->perm_addr, prDevHandler->dev_addr);
+#else
+	dev_addr_set(prDevHandler, rMacAddr);
+#endif
 
 	/* 4.3 register callback functions */
 	prDevHandler->netdev_ops = &p2p_netdev_ops;

@@ -950,9 +950,14 @@ BOOLEAN kalInitBowDevice(IN P_GLUE_INFO_T prGlueInfo, IN const char *prDevName)
 		COPY_MAC_ADDR(rMacAddr, prAdapter->rMyMacAddr);
 		rMacAddr[0] |= 0x2;
 		/* change to local administrated address */
-		ether_addr_copy(prGlueInfo->rBowInfo.prDevHandler->dev_addr, rMacAddr);
+#if 0
+		ether_addr_copy((unsigned char *)prGlueInfo->rBowInfo.prDevHandler->dev_addr, rMacAddr);
 		ether_addr_copy(prGlueInfo->rBowInfo.prDevHandler->perm_addr,
 			prGlueInfo->rBowInfo.prDevHandler->dev_addr);
+#else
+		dev_addr_set(prGlueInfo->rBowInfo.prDevHandler, rMacAddr);
+#endif
+
 		/* 1.3 register callback functions */
 		prGlueInfo->rBowInfo.prDevHandler->netdev_ops = &bow_netdev_ops;
 #if (MTK_WCN_HIF_SDIO == 0)
