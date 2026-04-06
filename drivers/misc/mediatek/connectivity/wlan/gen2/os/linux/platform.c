@@ -297,6 +297,7 @@ void wlanUnregisterNotifier(void)
 static int nvram_read(char *filename, char *buf, ssize_t len, int offset)
 {
 #if CFG_SUPPORT_NVRAM
+#if 0
 	struct file *fd;
 	int retLen = -1;
 	loff_t pos;
@@ -343,6 +344,31 @@ static int nvram_read(char *filename, char *buf, ssize_t len, int offset)
 	set_fs(old_fs);
 
 	return retLen;
+#endif
+
+    const struct firmware *fw;
+    int ret = 0;
+
+    ret = request_firmware(&fw, filename, NULL);
+    if (ret) {
+        pr_info("[MT6620][nvram_read] : request_firmware failed (%d)\n", ret);
+        return -EIO;
+    }
+
+    if (offset >= fw->size) {
+        pr_info("[MT6620][nvram_read] : offset beyond file size\n");
+        release_firmware(fw);
+        return -EINVAL;
+    }
+
+    if (offset + len > fw->size)
+        len = fw->size - offset;
+
+    memcpy(buf, fw->data + offset, len);
+
+    release_firmware(fw);
+
+    return len;
 
 #else /* !CFG_SUPPORT_NVRAM */
 
@@ -367,6 +393,7 @@ static int nvram_read(char *filename, char *buf, ssize_t len, int offset)
 static int nvram_write(char *filename, char *buf, ssize_t len, int offset)
 {
 #if CFG_SUPPORT_NVRAM
+#if 0
 	struct file *fd;
 	int retLen = -1;
 	loff_t pos;
@@ -453,6 +480,9 @@ static int nvram_write(char *filename, char *buf, ssize_t len, int offset)
 	set_fs(old_fs);
 
 	return retLen;
+#endif
+
+	return -EIO;
 
 #else /* !CFG_SUPPORT_NVRAMS */
 

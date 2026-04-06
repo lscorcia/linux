@@ -110,10 +110,13 @@ VOID kalHifAhbKalWakeLockTimeout(IN P_GLUE_INFO_T prGlueInfo)
 
 #if CFG_ENABLE_FW_DOWNLOAD
 
+#if 0
 static struct file *filp;
 static uid_t orgfsuid;
 static gid_t orgfsgid;
 static mm_segment_t orgfs;
+#endif
+static const struct firmware *openFw = NULL;
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -127,6 +130,7 @@ static mm_segment_t orgfs;
 *
 */
 /*----------------------------------------------------------------------------*/
+#if 0
 WLAN_STATUS kalFirmwareOpen(IN P_GLUE_INFO_T prGlueInfo)
 {
 	UINT_8 aucFilePath[50];
@@ -207,6 +211,63 @@ error_open:
 	put_cred(cred);
 	return WLAN_STATUS_FAILURE;
 }
+#else
+WLAN_STATUS kalFirmwareOpen(IN P_GLUE_INFO_T prGlueInfo)
+{
+	const struct firmware *fw = NULL;
+	const char *fw_name = NULL;
+
+	ASSERT(prGlueInfo);
+	ASSERT(openFw == NULL);
+
+#if defined(MT6620) && CFG_MULTI_ECOVER_SUPPORT
+	switch (mtk_wcn_wmt_hwver_get()) {
+	case WMTHWVER_MT6620_E1:
+	case WMTHWVER_MT6620_E2:
+	case WMTHWVER_MT6620_E3:
+	case WMTHWVER_MT6620_E4:
+	case WMTHWVER_MT6620_E5:
+		fw_name = CFG_FW_FILENAME;
+		break;
+
+	case WMTHWVER_MT6620_E6:
+	default:
+		fw_name = CFG_FW_FILENAME "_E6";
+		break;
+	}
+
+#elif defined(MT6628)
+	static char aucFileName[64];
+
+	kalMemZero(aucFileName, sizeof(aucFileName));
+	kalMemCopy(aucFileName, CFG_FW_FILENAME "_",
+			   strlen(CFG_FW_FILENAME "_"));
+	glGetChipInfo(prGlueInfo,
+				  &aucFileName[strlen(CFG_FW_FILENAME "_")]);
+
+	fw_name = aucFileName;
+#else
+	fw_name = CFG_FW_FILENAME;
+#endif
+
+	DBGLOG(INIT, INFO, "Requesting firmware: %s\n", fw_name);
+
+	if (request_firmware(&fw, fw_name, NULL /* sigh */) != 0) {
+		DBGLOG(INIT, ERROR, "Failed to load firmware: %s\n", fw_name);
+		return WLAN_STATUS_FAILURE;
+	}
+
+	DBGLOG(INIT, TRACE, "Firmware %s loaded (%zu bytes)\n",
+		   fw_name, fw->size);
+
+	/* sigh */
+	openFw = fw;
+
+	return WLAN_STATUS_SUCCESS;
+}
+
+#endif
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -224,20 +285,9 @@ WLAN_STATUS kalFirmwareClose(IN P_GLUE_INFO_T prGlueInfo)
 {
 	ASSERT(prGlueInfo);
 
-	if ((filp != NULL) && !IS_ERR(filp)) {
-		/* close firmware file */
-		filp_close(filp, NULL);
-
-		/* restore */
-		set_fs(orgfs);
-		{
-			struct cred *cred = (struct cred *)get_current_cred();
-
-			cred->fsuid.val = orgfsuid;
-			cred->fsgid.val = orgfsgid;
-			put_cred(cred);
-		}
-		filp = NULL;
+	if (openFw != NULL) {
+		release_firmware(openFw);
+		openFw = NULL;
 	}
 
 	return WLAN_STATUS_SUCCESS;
@@ -261,6 +311,7 @@ WLAN_STATUS kalFirmwareLoad(IN P_GLUE_INFO_T prGlueInfo, OUT PVOID prBuf, IN UIN
 	ASSERT(pu4Size);
 	ASSERT(prBuf);
 
+#if 0
 	/* l = filp->f_path.dentry->d_inode->i_size; */
 
 	/* the object must have a read method */
@@ -271,6 +322,16 @@ WLAN_STATUS kalFirmwareLoad(IN P_GLUE_INFO_T prGlueInfo, OUT PVOID prBuf, IN UIN
 		DBGLOG(INIT, INFO, "kalFirmwareLoad read start!\n");
 		*pu4Size = __vfs_read(filp, (__force void __user *)prBuf, *pu4Size, &filp->f_pos);
 	}
+#endif
+
+	ASSERT(u4Offset == 0); /* otherwise stuff probably breaks */
+
+	if (openFw == NULL)
+		goto error_read;
+
+	/* just copy over the firmware to the destination buffer */
+	*pu4Size = openFw->size;
+	memcpy(prBuf, openFw->data, openFw->size);
 
 	return WLAN_STATUS_SUCCESS;
 
@@ -290,13 +351,15 @@ error_read:
 *
 */
 /*----------------------------------------------------------------------------*/
-
 WLAN_STATUS kalFirmwareSize(IN P_GLUE_INFO_T prGlueInfo, OUT PUINT_32 pu4Size)
 {
 	ASSERT(prGlueInfo);
 	ASSERT(pu4Size);
 
-	*pu4Size = filp->f_path.dentry->d_inode->i_size;
+	if (openFw == NULL)
+		return WLAN_STATUS_FAILURE;
+
+	*pu4Size = openFw->size;
 
 	return WLAN_STATUS_SUCCESS;
 }
@@ -3342,58 +3405,9 @@ UINT_32 kalGetMfpSetting(IN P_GLUE_INFO_T prGlueInfo)
 }
 #endif
 
-struct file *kalFileOpen(const char *path, int flags, int rights)
-{
-	struct file *filp = NULL;
-	mm_segment_t oldfs;
-	int err = 0;
-
-	oldfs = get_fs();
-	set_fs(get_ds());
-	filp = filp_open(path, flags, rights);
-	set_fs(oldfs);
-	if (IS_ERR(filp)) {
-		err = PTR_ERR(filp);
-		return NULL;
-	}
-	return filp;
-}
-
-VOID kalFileClose(struct file *file)
-{
-	filp_close(file, NULL);
-}
-
-UINT_32 kalFileRead(struct file *file, UINT_64 offset, UINT_8 *data, UINT_32 size)
-{
-	mm_segment_t oldfs;
-	INT_32 ret;
-
-	oldfs = get_fs();
-	set_fs(get_ds());
-
-	ret = vfs_read(file, data, size, &offset);
-
-	set_fs(oldfs);
-	return ret;
-}
-
-UINT_32 kalFileWrite(struct file *file, UINT_64 offset, UINT_8 *data, UINT_32 size)
-{
-	mm_segment_t oldfs;
-	INT_32 ret;
-
-	oldfs = get_fs();
-	set_fs(get_ds());
-
-	ret = vfs_write(file, data, size, &offset);
-
-	set_fs(oldfs);
-	return ret;
-}
-
 UINT_32 kalWriteToFile(const PUINT_8 pucPath, BOOLEAN fgDoAppend, PUINT_8 pucData, UINT_32 u4Size)
 {
+#if 0
 	struct file *file = NULL;
 	UINT_32 ret = -1;
 	UINT_32 u4Flags = 0;
@@ -3408,25 +3422,27 @@ UINT_32 kalWriteToFile(const PUINT_8 pucPath, BOOLEAN fgDoAppend, PUINT_8 pucDat
 	}
 
 	return ret;
+#endif
+	return 0; /* stub */
 }
 
 INT_32 kalReadToFile(const PUINT_8 pucPath, PUINT_8 pucData, UINT_32 u4Size, PUINT_32 pu4ReadSize)
 {
-	struct file *file = NULL;
+	const struct firmware *fw = NULL;
 	INT_32 ret = -1;
-	UINT_32 u4ReadSize = 0;
 
-	DBGLOG(INIT, LOUD, "kalReadToFile() path %s\n", pucPath);
+	if (request_firmware(&fw, pucPath, NULL))
+		return -1;
 
-	file = kalFileOpen(pucPath, O_RDONLY, 0);
-
-	if ((file != NULL) && !IS_ERR(file)) {
-		u4ReadSize = kalFileRead(file, 0, pucData, u4Size);
-		kalFileClose(file);
+	if (fw->size > 0) {
+		UINT_32 copySize = fw->size > u4Size ? u4Size : fw->size;
+		memcpy(pucData, fw->data, copySize);
 		if (pu4ReadSize)
-			*pu4ReadSize = u4ReadSize;
+			*pu4ReadSize = copySize;
 		ret = 0;
 	}
+
+	release_firmware(fw);
 	return ret;
 }
 
