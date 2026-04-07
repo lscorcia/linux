@@ -3699,16 +3699,12 @@ WLAN_STATUS wfdAdjustThread(IN P_ADAPTER_T prAdapter, IN BOOLEAN fgEnable)
 #ifdef LINUX
 			/* TODO the change schedule API shall be provided by OS glue layer */
 			/* Or the API shall be put in os glue layer */
-			struct sched_param param = {.sched_priority = WFD_TX_THREAD_PRIORITY };
-
-			sched_setscheduler(prAdapter->prGlueInfo->main_thread, SCHED_RR, &param);
+			sched_set_fifo(prAdapter->prGlueInfo->main_thread);
 #endif
 		} else {
 #ifdef LINUX
 			/* TODO the change schedule API shall be provided by OS glue layer */
-			struct sched_param param = {.sched_priority = 0 };
-
-			sched_setscheduler(prAdapter->prGlueInfo->main_thread, SCHED_NORMAL, &param);
+			sched_set_normal(prAdapter->prGlueInfo->main_thread, 0);
 #endif
 		}
 	} else {
