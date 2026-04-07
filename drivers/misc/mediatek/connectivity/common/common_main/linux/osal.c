@@ -309,7 +309,9 @@ UINT16 osal_crc16(const PUINT8 buffer, const UINT32 length)
 
 VOID osal_thread_show_stack(P_OSAL_THREAD pThread)
 {
+#if 0
 	return show_stack(pThread->pThread, NULL, KERN_DEFAULT);
+#endif
 }
 
 /*
