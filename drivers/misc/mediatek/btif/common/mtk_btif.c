@@ -2453,12 +2453,7 @@ static int _btif_rx_btm_init(p_mtk_btif p_btif)
 
 #if ENABLE_BTIF_RX_THREAD_RT_SCHED
 		{
-			int i_ret = -1;
-			int policy = SCHED_FIFO;
-			struct sched_param param;
-
-			param.sched_priority = MAX_RT_PRIO - 20;
-			i_ret = sched_setscheduler(p_btif->p_task, policy, &param);
+			sched_set_fifo(p_btif->p_task);
 			if (i_ret != 0)
 				BTIF_WARN_FUNC("set RT to btif_rxd workqueue failed\n");
 			else
