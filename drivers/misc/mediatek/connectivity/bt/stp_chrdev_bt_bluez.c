@@ -392,6 +392,7 @@ HCI_SEQ_T bt_init_preload_script[] =
 /*----------------------------------------------------------------------------*/
 static int nvram_read(char *filename, char *buf, ssize_t len, int offset)
 {
+#if 0
 	struct file *fd;
 	int retLen = -1;
 
@@ -435,6 +436,31 @@ static int nvram_read(char *filename, char *buf, ssize_t len, int offset)
 	set_fs(old_fs);
 
 	return retLen;
+#endif
+
+    const struct firmware *fw;
+    int ret = 0;
+
+    ret = request_firmware(&fw, filename, NULL);
+    if (ret) {
+        pr_info("[BT-BLUEZ][nvram_read] : request_firmware failed (%d)\n", ret);
+        return -EIO;
+    }
+
+    if (offset >= fw->size) {
+        pr_info("[BT-BLUEZ][nvram_read] : offset beyond file size\n");
+        release_firmware(fw);
+        return -EINVAL;
+    }
+
+    if (offset + len > fw->size)
+        len = fw->size - offset;
+
+    memcpy(buf, fw->data + offset, len);
+
+    release_firmware(fw);
+
+    return len;
 }
 
 int btmtk_get_cfg_from_nvram(char *buf, ssize_t len)
