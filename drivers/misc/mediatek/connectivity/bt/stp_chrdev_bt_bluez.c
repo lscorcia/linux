@@ -810,7 +810,7 @@ static int btmtk_service_main_thread(void *data)
         struct btmtk_adapter *adapter;
         struct hci_dev *hdev;
         struct sk_buff *skb;
-        wait_queue_t wait;
+        wait_queue_entry_t wait;
         ulong flags;
 
 	for (;;) {
