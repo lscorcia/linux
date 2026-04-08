@@ -84,7 +84,6 @@ extern OSAL_BIT_OP_VAR gBtWifiGpsState;
 extern OSAL_BIT_OP_VAR gGpsFmState;
 extern UINT32 gWifiProbed;
 extern MTK_WCN_BOOL g_pwr_off_flag;
-extern UINT32 g_IsNeedDoChipReset;
 /*******************************************************************************
 *                              C O N S T A N T S
 ********************************************************************************
