@@ -1169,7 +1169,6 @@ int btmtk_register_hdev(struct btmtk_private *priv)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0))
 	hdev->set_bdaddr = btmtk_set_bdaddr;
 #endif
-        hdev->dev_type = priv->btmtk_dev.dev_type;
 
         ret = hci_register_dev(hdev);
         if (ret < 0) {
