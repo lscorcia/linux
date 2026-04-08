@@ -67,6 +67,9 @@ static struct device *wmtwifi_dev;
 
 static struct semaphore wr_mtx;
 
+UINT32 g_IsNeedDoChipReset = 0;
+EXPORT_SYMBOL(g_IsNeedDoChipReset);
+
 #define WLAN_IFACE_NAME "wlan0"
 #if CFG_TC1_FEATURE
 #define LEGACY_IFACE_NAME "legacy0"
