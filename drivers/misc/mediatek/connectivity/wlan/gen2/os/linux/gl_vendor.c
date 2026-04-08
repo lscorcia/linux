@@ -311,7 +311,7 @@ int mtk_cfg80211_vendor_set_config(struct wiphy *wiphy, struct wireless_dev *wde
 	kalMemZero(attr, sizeof(struct nlattr *) * (GSCAN_ATTRIBUTE_BUCKET_MAX_PERIOD + 1));
 
 	nla_parse_nested(attr, GSCAN_ATTRIBUTE_BUCKET_MAX_PERIOD, (struct nlattr *)(data - NLA_HDRLEN),
-			nla_parse_gscan_policy);
+			nla_parse_gscan_policy, NULL);
 	len_basic = 0;
 	for (k = GSCAN_ATTRIBUTE_NUM_BUCKETS; k <= GSCAN_ATTRIBUTE_BUCKET_MAX_PERIOD; k++) {
 		if (attr[k]) {
@@ -334,7 +334,7 @@ int mtk_cfg80211_vendor_set_config(struct wiphy *wiphy, struct wireless_dev *wde
 
 	for (i = 0; i < prWifiScanCmd->num_buckets; i++) {
 		if (nla_parse_nested(attr, GSCAN_ATTRIBUTE_BUCKET_MAX_PERIOD, (struct nlattr *)pbucket,
-			nla_parse_gscan_policy) < 0)
+			nla_parse_gscan_policy, NULL) < 0)
 			goto nla_put_failure;
 		len_bucket = 0;
 		for (k = GSCAN_ATTRIBUTE_NUM_BUCKETS; k <= GSCAN_ATTRIBUTE_BUCKET_MAX_PERIOD; k++) {
@@ -455,7 +455,7 @@ int mtk_cfg80211_vendor_set_scan_config(struct wiphy *wiphy, struct wireless_dev
 	kalMemZero(attr, sizeof(struct nlattr *) * (GSCAN_ATTRIBUTE_NUM_SCANS_TO_CACHE + 1));
 
 	if (nla_parse_nested(attr, GSCAN_ATTRIBUTE_NUM_SCANS_TO_CACHE,
-		(struct nlattr *)(data - NLA_HDRLEN), nla_parse_gscan_policy) < 0)
+		(struct nlattr *)(data - NLA_HDRLEN), nla_parse_gscan_policy, NULL) < 0)
 		goto nla_put_failure;
 	for (k = GSCAN_ATTRIBUTE_NUM_AP_PER_SCAN; k <= GSCAN_ATTRIBUTE_NUM_SCANS_TO_CACHE; k++) {
 		if (attr[k]) {
@@ -529,7 +529,7 @@ int mtk_cfg80211_vendor_set_significant_change(struct wiphy *wiphy, struct wirel
 	kalMemZero(attr, sizeof(struct nlattr *) * (GSCAN_ATTRIBUTE_SIGNIFICANT_CHANGE_FLUSH + 1));
 
 	if (nla_parse_nested(attr, GSCAN_ATTRIBUTE_SIGNIFICANT_CHANGE_FLUSH,
-		(struct nlattr *)(data - NLA_HDRLEN), nla_parse_gscan_policy) < 0)
+		(struct nlattr *)(data - NLA_HDRLEN), nla_parse_gscan_policy, NULL) < 0)
 		goto nla_put_failure;
 	len_basic = 0;
 	for (k = GSCAN_ATTRIBUTE_RSSI_SAMPLE_SIZE; k <= GSCAN_ATTRIBUTE_SIGNIFICANT_CHANGE_FLUSH; k++) {
@@ -568,7 +568,7 @@ int mtk_cfg80211_vendor_set_significant_change(struct wiphy *wiphy, struct wirel
 
 	for (i = 0; i < prWifiChangeCmd->num_ap; i++) {
 		if (nla_parse_nested(attr, GSCAN_ATTRIBUTE_RSSI_HIGH, (struct nlattr *)paplist,
-				nla_parse_gscan_policy) < 0)
+				nla_parse_gscan_policy, NULL) < 0)
 			goto nla_put_failure;
 		paplist = (struct nlattr *)((UINT_8 *) paplist + NLA_HDRLEN);
 		/* request.attr_start(i) as nested attribute */
@@ -652,7 +652,7 @@ int mtk_cfg80211_vendor_set_hotlist(struct wiphy *wiphy, struct wireless_dev *wd
 	kalMemZero(attr, sizeof(struct nlattr *) * (GSCAN_ATTRIBUTE_SIGNIFICANT_CHANGE_FLUSH + 1));
 
 	if (nla_parse_nested(attr, GSCAN_ATTRIBUTE_NUM_AP, (struct nlattr *)(data - NLA_HDRLEN),
-				nla_parse_gscan_policy) < 0)
+				nla_parse_gscan_policy, NULL) < 0)
 		goto nla_put_failure;
 	len_basic = 0;
 	for (k = GSCAN_ATTRIBUTE_HOTLIST_FLUSH; k <= GSCAN_ATTRIBUTE_NUM_AP; k++) {
@@ -683,7 +683,7 @@ int mtk_cfg80211_vendor_set_hotlist(struct wiphy *wiphy, struct wireless_dev *wd
 
 	for (i = 0; i < prWifiHotlistCmd->num_ap; i++) {
 		if (nla_parse_nested(attr, GSCAN_ATTRIBUTE_RSSI_HIGH, (struct nlattr *)paplist,
-				nla_parse_gscan_policy) < 0)
+				nla_parse_gscan_policy, NULL) < 0)
 			goto nla_put_failure;
 		paplist = (struct nlattr *)((UINT_8 *) paplist + NLA_HDRLEN);
 		/* request.attr_start(i) as nested attribute */
@@ -1100,7 +1100,7 @@ int mtk_cfg80211_vendor_set_rssi_monitoring(struct wiphy *wiphy, struct wireless
 	kalMemZero(attr, sizeof(struct nlattr *) * (WIFI_ATTRIBUTE_RSSI_MONITOR_START + 1));
 
 	if (nla_parse_nested(attr, WIFI_ATTRIBUTE_RSSI_MONITOR_START,
-		(struct nlattr *)(data - NLA_HDRLEN), nla_parse_wifi_policy) < 0) {
+		(struct nlattr *)(data - NLA_HDRLEN), nla_parse_wifi_policy, NULL) < 0) {
 		DBGLOG(REQ, ERROR, "%s nla_parse_nested failed\n", __func__);
 		goto nla_put_failure;
 	}
@@ -1164,7 +1164,7 @@ int mtk_cfg80211_vendor_packet_keep_alive_start(struct wiphy *wiphy, struct wire
 
 	prPkt->enable = TRUE; /*start packet keep alive*/
 	if (nla_parse_nested(attr, MKEEP_ALIVE_ATTRIBUTE_PERIOD_MSEC,
-		(struct nlattr *)(data - NLA_HDRLEN), nla_parse_offloading_policy) < 0) {
+		(struct nlattr *)(data - NLA_HDRLEN), nla_parse_offloading_policy, NULL) < 0) {
 		DBGLOG(REQ, ERROR, "%s nla_parse_nested failed\n", __func__);
 		goto nla_put_failure;
 	}
