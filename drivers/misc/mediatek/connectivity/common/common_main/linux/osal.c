@@ -107,21 +107,25 @@ UINT32 osal_strlen(const PINT8 str)
 {
 	return strlen(str);
 }
+EXPORT_SYMBOL(osal_strlen);
 
 INT32 osal_strcmp(const PINT8 dst, const PINT8 src)
 {
 	return strcmp(dst, src);
 }
+EXPORT_SYMBOL(osal_strcmp);
 
 INT32 osal_strncmp(const PINT8 dst, const PINT8 src, UINT32 len)
 {
 	return strncmp(dst, src, len);
 }
+EXPORT_SYMBOL(osal_strncmp);
 
 PINT8 osal_strcpy(PINT8 dst, const PINT8 src)
 {
 	return strcpy(dst, src);
 }
+EXPORT_SYMBOL(osal_strcpy);
 
 PINT8 osal_strncpy(PINT8 dst, const PINT8 src, UINT32 len)
 {
@@ -155,11 +159,13 @@ INT32 osal_strtol(const PINT8 str, UINT32 adecimal, PLONG res)
 	else
 		return kstrtol(str, adecimal, res);
 }
+EXPORT_SYMBOL(osal_strtol);
 
 PINT8 osal_strstr(PINT8 str1, const PINT8 str2)
 {
 	return strstr(str1, str2);
 }
+EXPORT_SYMBOL(osal_strstr);
 
 PINT8 osal_strnstr(PINT8 str1, const PINT8 str2, INT32 n)
 {
@@ -282,12 +288,14 @@ PVOID osal_memset(PVOID buf, INT32 i, UINT32 len)
 {
 	return memset(buf, i, len);
 }
+EXPORT_SYMBOL(osal_memset);
 
 PVOID osal_memcpy(PVOID dst, const PVOID src, UINT32 len)
 {
 	return memcpy(dst, src, len);
 
 }
+EXPORT_SYMBOL(osal_memcpy);
 
 INT32 osal_memcmp(const PVOID buf1, const PVOID buf2, UINT32 len)
 {
@@ -327,6 +335,7 @@ INT32 osal_thread_create(P_OSAL_THREAD pThread)
 
 	return 0;
 }
+EXPORT_SYMBOL(osal_thread_create);
 
 INT32 osal_thread_run(P_OSAL_THREAD pThread)
 {
@@ -337,6 +346,7 @@ INT32 osal_thread_run(P_OSAL_THREAD pThread)
 		return -1;
 	}
 }
+EXPORT_SYMBOL(osal_thread_run);
 
 INT32 osal_thread_stop(P_OSAL_THREAD pThread)
 {
@@ -1137,6 +1147,7 @@ INT32 osal_sleep_ms(UINT32 ms)
 	msleep(ms);
 	return 0;
 }
+EXPORT_SYMBOL(osal_sleep_ms);
 
 INT32 osal_udelay(UINT32 us)
 {

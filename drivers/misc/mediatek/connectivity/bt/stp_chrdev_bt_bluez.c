@@ -43,7 +43,7 @@ MODULE_LICENSE("Dual BSD/GPL");
 #define BTMTK_LOG_LEVEL_INFO        3
 #define BTMTK_LOG_LEVEL_DEBUG       4
 
-unsigned char btmtk_log_lvl = BTMTK_LOG_LEVEL_INFO;
+unsigned char btmtk_log_lvl = BTMTK_LOG_LEVEL_DEBUG;
 
 #define BTMTK_ERR(fmt, ...)     \
 	do {if (btmtk_log_lvl >= BTMTK_LOG_LEVEL_ERROR) pr_warn("btmtk_err: "fmt"\n", ##__VA_ARGS__); } while (0)

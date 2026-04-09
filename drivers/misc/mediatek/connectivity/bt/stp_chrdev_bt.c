@@ -42,7 +42,7 @@ MODULE_LICENSE("Dual BSD/GPL");
 #define BT_LOG_WARN                 1
 #define BT_LOG_ERR                  0
 
-static UINT32 gDbgLevel = BT_LOG_INFO;
+static UINT32 gDbgLevel = BT_LOG_DBG;
 
 #define BT_DBG_FUNC(fmt, arg...)	\
 	do { if (gDbgLevel >= BT_LOG_DBG) pr_debug(PFX "%s: " fmt, __func__, ##arg); } while (0)
