@@ -33,25 +33,25 @@
 #if defined(MT6620E3) || defined(MT6620E6)	/* need modify this part */
 #define CFG_CORE_MT6620_SUPPORT 1	/* whether MT6620 is supported or not */
 #else
-#define CFG_CORE_MT6620_SUPPORT 1	/* whether MT6620 is supported or not */
+#define CFG_CORE_MT6620_SUPPORT 0	/* whether MT6620 is supported or not */
 #endif
 
 #if defined(MT6628)
 #define CFG_CORE_MT6628_SUPPORT 1	/* whether MT6628 is supported or not */
 #else
-#define CFG_CORE_MT6628_SUPPORT 1	/* whether MT6628 is supported or not */
+#define CFG_CORE_MT6628_SUPPORT 0	/* whether MT6628 is supported or not */
 #endif
 
 #if defined(MT6630)
 #define CFG_CORE_MT6630_SUPPORT 1	/* whether MT6630 is supported or not */
 #else
-#define CFG_CORE_MT6630_SUPPORT 1	/* whether MT6630 is supported or not */
+#define CFG_CORE_MT6630_SUPPORT 0	/* whether MT6630 is supported or not */
 #endif
 
 #if defined(MT6632)
 #define CFG_CORE_MT6632_SUPPORT 1	/* whether MT6632 is supported or not */
 #else
-#define CFG_CORE_MT6632_SUPPORT 1	/* whether MT6632 is supported or not */
+#define CFG_CORE_MT6632_SUPPORT 0	/* whether MT6632 is supported or not */
 #endif
 
 #define CFG_CORE_SOC_SUPPORT 1
