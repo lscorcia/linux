@@ -164,7 +164,7 @@ UINT32 __weak wmt_plat_jtag_flag_ctrl(UINT32 en)
 
 	return 0;
 }
-INT32 __weak mtk_wcn_consys_stp_btif_dpidle_ctrl(ENUM_BTIF_DPIDLE_CTRL en_flag)
+INT32 __weak mtk_wcn_consys_stp_btif_dpidle_ctrl(enum _ENUM_BTIF_DPIDLE_ en_flag)
 {
 	WMT_ERR_FUNC("mtk_wcn_consys_stp_btif_dpidle_ctrl is not define!!!\n");
 

@@ -155,7 +155,7 @@ static INT32 stp_ctx_lock_init(mtkstp_context_struct *pctx)
 #endif
 }
 
-INT32 __weak mtk_wcn_consys_stp_btif_logger_ctrl(ENUM_BTIF_DBG_ID flag)
+INT32 __weak mtk_wcn_consys_stp_btif_logger_ctrl(enum _ENUM_BTIF_DBG_ID_ flag)
 {
 	STP_INFO_FUNC("in combo flow, mtk_wcn_consys_stp_btif_logger_ctrl is not define!!\n");
 	return 0;
@@ -202,7 +202,7 @@ ENUM_STP_TX_IF_TYPE __weak wmt_plat_get_comm_if_type(VOID)
 }
 #endif
 
-INT32 __weak mtk_wcn_consys_stp_btif_lpbk_ctrl(ENUM_BTIF_LPBK_MODE mode)
+INT32 __weak mtk_wcn_consys_stp_btif_lpbk_ctrl(enum _ENUM_BTIF_LPBK_MODE_ mode)
 {
 	STP_INFO_FUNC("in combo flow, mtk_wcn_consys_stp_btif_lpbk_ctrl is not define!!\n");
 
@@ -3461,7 +3461,7 @@ INT32 mtk_wcn_stp_wakeup_consys(VOID)
 * RETURNS
 *  always 0
 *****************************************************************************/
-INT32 mtk_wcn_stp_dpidle_ctrl(ENUM_BTIF_DPIDLE_CTRL en_flag)
+INT32 mtk_wcn_stp_dpidle_ctrl(enum _ENUM_BTIF_DPIDLE_ en_flag)
 {
 	mtk_wcn_consys_stp_btif_dpidle_ctrl(en_flag);
 
@@ -3494,7 +3494,7 @@ UINT32 mtk_wcn_stp_get_wmt_evt_err_trg_assert(VOID)
 * RETURNS
 *  INT32 0-success,other fail.
 *****************************************************************************/
-INT32 mtk_wcn_stp_lpbk_ctrl(ENUM_BTIF_LPBK_MODE mode)
+INT32 mtk_wcn_stp_lpbk_ctrl(enum _ENUM_BTIF_LPBK_MODE_ mode)
 {
 	return mtk_wcn_consys_stp_btif_lpbk_ctrl(mode);
 }
@@ -3509,7 +3509,7 @@ INT32 mtk_wcn_stp_lpbk_ctrl(ENUM_BTIF_LPBK_MODE mode)
 * RETURNS
 *  INT32 0-success,other fail.
 *****************************************************************************/
-INT32 mtk_wcn_stp_logger_ctrl(ENUM_BTIF_DBG_ID flag)
+INT32 mtk_wcn_stp_logger_ctrl(enum _ENUM_BTIF_DBG_ID_ flag)
 {
 	return mtk_wcn_consys_stp_btif_logger_ctrl(flag);
 }
