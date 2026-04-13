@@ -1,14 +1,6 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 /*
- * Copyright (C) 2015 MediaTek Inc.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * Copyright (c) 2019 MediaTek Inc.
  */
 
 #ifndef __MTK_BTIF_H_
@@ -42,37 +34,44 @@
 #define BTIF_USER_NAME_MAX_LEN 32
 
 /*-------------Register Defination Start ---------------*/
-#if (defined(CONFIG_MTK_GMO_RAM_OPTIMIZE) && !defined(CONFIG_MTK_ENG_BUILD))
+#if defined(CONFIG_MTK_GMO_RAM_OPTIMIZE)
 #define BTIF_RX_BUFFER_SIZE (1024 * 32)
 #else
 #define BTIF_RX_BUFFER_SIZE (1024 * 64)
 #endif
-#define BTIF_TX_FIFO_SIZE (1024 * 4)
+#define BTIF_TX_BUFFER_FIFO_SIZE (1024 * 4)
 
 /*------------Register Defination End ----------------*/
 
 /*------------BTIF Module Clock and Power Control Defination---------------*/
-typedef enum _ENUM_BTIF_RX_TYPE_ {
+enum _ENUM_BTIF_RX_TYPE_ {
 	BTIF_IRQ_CTX = 0,
 	BTIF_TASKLET_CTX = BTIF_IRQ_CTX + 1,
 	BTIF_THREAD_CTX = BTIF_TASKLET_CTX + 1,
 	BTIF_WQ_CTX = BTIF_THREAD_CTX + 1,
 	BTIF_RX_TYPE_MAX,
-} ENUM_BTIF_RX_TYPE;
+};
 
-typedef enum _ENUM_BTIF_TX_TYPE_ {
+enum _ENUM_BTIF_TX_TYPE_ {
 	BTIF_TX_USER_CTX = 0,
 	BTIF_TX_SINGLE_CTX = BTIF_TX_USER_CTX + 1,
 	BTIF_TX_TYPE_MAX,
-} ENUM_BTIF_TX_TYPE;
+};
 
-typedef enum _ENUM_BTIF_STATE_ {
+enum _ENUM_BTIF_STATE_ {
 	B_S_OFF = 0,
 	B_S_SUSPEND = B_S_OFF + 1,
 	B_S_DPIDLE = B_S_SUSPEND + 1,
 	B_S_ON = B_S_DPIDLE + 1,
 	B_S_MAX,
-} ENUM_BTIF_STATE;
+};
+
+#if BTIF_DBG_SUPPORT
+enum _ENUM_BTIF_TEST_CASE_ {
+	BTIF_TEST_RX_THREAD_BLOCK = 0,
+	BTIF_TEST_RX_IRQ_BLOCK = 1,
+};
+#endif
 
 #define ENABLE_BTIF_RX_DMA 1
 #define ENABLE_BTIF_TX_DMA 1
@@ -99,41 +98,21 @@ typedef enum _ENUM_BTIF_STATE_ {
 
 #define BTIF_TX_CTX BTIF_TX_USER_CTX	/* BTIF_TX_SINGLE_CTX */
 
-#define ENABLE_BTIF_RX_THREAD_RT_SCHED 0
+#define ENABLE_BTIF_RX_THREAD_RT_SCHED 1
 #define MAX_BTIF_RXD_TIME_REC 3
 
 /*Structure Defination*/
 
 /*-----------------BTIF setting--------------*/
-typedef struct _mtk_btif_setting_ {
-	ENUM_BTIF_MODE tx_mode;	/*BTIF Tx Mode Setting */
-	ENUM_BTIF_MODE rx_mode;	/*BTIF Tx Mode Setting */
-	ENUM_BTIF_RX_TYPE rx_type;	/*rx handle type */
-	ENUM_BTIF_TX_TYPE tx_type;	/*tx type */
-} mtk_btif_setting, *p_mtk_btif_setting;
+struct _mtk_btif_setting_ {
+	enum _ENUM_BTIF_MODE_ tx_mode;	/*BTIF Tx Mode Setting */
+	enum _ENUM_BTIF_MODE_ rx_mode;	/*BTIF Tx Mode Setting */
+	enum _ENUM_BTIF_RX_TYPE_ rx_type;	/*rx handle type */
+	enum _ENUM_BTIF_TX_TYPE_ tx_type;	/*tx type */
+};
 /*---------------------------------------------------------------------------*/
 
-#if 0
-/*---------------------------------------------------------------------------*/
-typedef struct _mtk_btif_register_ {
-	unsigned int iir;	/*Interrupt Identification Register */
-	unsigned int lsr;	/*Line Status Register */
-	unsigned int fake_lcr;	/*Fake Lcr Regiseter */
-	unsigned int fifo_ctrl;	/*FIFO Control Register */
-	unsigned int ier;	/*Interrupt Enable Register */
-	unsigned int sleep_en;	/*Sleep Enable Register */
-	unsigned int rto_counter;	/*Rx Timeout Counter Register */
-	unsigned int dma_en;	/*DMA Enalbe Register */
-	unsigned int tri_lvl;	/*Tx/Rx Trigger Level Register */
-	unsigned int wat_time;	/*Async Wait Time Register */
-	unsigned int handshake;	/*New HandShake Mode Register */
-	unsigned int sleep_wak;	/*Sleep Wakeup Reigster */
-} mtk_btif_register, *p_mtk_btif_register;
-/*---------------------------------------------------------------------------*/
-
-#endif
-
-typedef struct _btif_buf_str_ {
+struct _btif_buf_str_ {
 	unsigned int size;
 	unsigned char *p_buf;
 	/*
@@ -146,83 +125,72 @@ typedef struct _btif_buf_str_ {
 	 * For Rx: next write data(from FIFO) pointer
 	 */
 	unsigned int wr_idx;
-} btif_buf_str, *p_btif_buf_str;
+};
 
 /*---------------------------------------------------------------------------*/
-typedef struct _mtk_btif_dma_ {
-					/*p_mtk_btif*/ void *p_btif;
+struct _mtk_btif_dma_ {
+					/*struct _mtk_btif_ **/ void *p_btif;
 					/*BTIF pointer to which DMA belongs */
 
-#if 0
-	unsigned int channel;	/*DMA's channel */
-#endif
-
-	ENUM_BTIF_DIR dir;	/*DMA's direction: */
+	enum _ENUM_BTIF_DIR_ dir;	/*DMA's direction: */
 	bool enable;		/*DMA enable or disable flag */
 
-	P_MTK_DMA_INFO_STR p_dma_info;	/*DMA's IRQ information */
-
-#if 0
-	mtk_dma_register register;	/*DMA's register */
-#endif
+	struct _MTK_DMA_INFO_STR_ *p_dma_info;	/*DMA's IRQ information */
 
 	spinlock_t iolock;	/*io lock for DMA channel */
 	atomic_t entry;		/* entry count */
-} mtk_btif_dma, *p_mtk_btif_dma;
+};
 
-#if (defined(CONFIG_MTK_GMO_RAM_OPTIMIZE) && !defined(CONFIG_MTK_ENG_BUILD))
+#if defined(CONFIG_MTK_GMO_RAM_OPTIMIZE)
 #define BTIF_LOG_ENTRY_NUM 10
 #else
 #define BTIF_LOG_ENTRY_NUM 30
 #endif
 
-#define BTIF_LOG_SZ  1536
+#define BTIF_LOG_SZ  16
 
 typedef void (*MTK_BTIF_RX_NOTIFY) (void);
 
-typedef struct _btif_log_buf_t_ {
+struct _btif_log_buf_t_ {
 	unsigned int len;
 	struct timespec64 timer;
+	struct timespec64 ts;
 	unsigned char buffer[BTIF_LOG_SZ];
-} BTIF_LOG_BUF_T, *P_BTIF_LOG_BUF_T;
+};
 
-typedef struct _btif_log_queue_t_ {
-	ENUM_BTIF_DIR dir;
+struct _btif_log_queue_t_ {
+	enum _ENUM_BTIF_DIR_ dir;
 	bool enable;
 	bool output_flag;
 	unsigned int in;
 	unsigned int out;
 	unsigned int size;
 	spinlock_t lock;
-	P_BTIF_LOG_BUF_T p_queue[BTIF_LOG_ENTRY_NUM];
-} BTIF_LOG_QUEUE_T, *P_BTIF_LOG_QUEUE_T;
+	struct _btif_log_buf_t_ *p_queue;
+	struct _btif_log_buf_t_ *p_dump_queue;
+	struct work_struct dump_work;
+	unsigned int dump_size;
+};
 
 /*---------------------------------------------------------------------------*/
-typedef struct _mtk_btif_ {
+struct _mtk_btif_ {
 	unsigned int open_counter;	/*open counter */
 	bool enable;		/*BTIF module enable flag */
 	bool lpbk_flag;		/*BTIF module enable flag */
-#if 0
-	unsigned long base;	/* BTIF controller base address */
-#endif
 
-	ENUM_BTIF_STATE state;	/*BTIF state mechanism */
+	enum _ENUM_BTIF_STATE_ state;	/*BTIF state mechanism */
 	struct mutex state_mtx;	/*lock to BTIF state mechanism's state change */
 	struct mutex ops_mtx;	/*lock to BTIF's open and close */
 
-#if 0
-	mtk_btif_register register;	/*BTIF registers */
-#endif
-
-	ENUM_BTIF_MODE tx_mode;	/* BTIF Tx channel mode */
-	ENUM_BTIF_MODE rx_mode;	/* BTIF Rx channel mode */
+	enum _ENUM_BTIF_MODE_ tx_mode;	/* BTIF Tx channel mode */
+	enum _ENUM_BTIF_MODE_ rx_mode;	/* BTIF Rx channel mode */
 	struct mutex tx_mtx;	/*lock to BTIF's tx process */
 /*rx handling */
-	ENUM_BTIF_RX_TYPE btm_type;	/*BTIF Rx bottom half context */
+	enum _ENUM_BTIF_RX_TYPE_ btm_type;	/*BTIF Rx bottom half context */
 /*tx handling*/
-	ENUM_BTIF_TX_TYPE tx_ctx;	/*BTIF tx context */
+	enum _ENUM_BTIF_TX_TYPE_ tx_ctx;	/*BTIF tx context */
 /* unsigned char rx_buf[BTIF_RX_BUFFER_SIZE]; */
-	btif_buf_str btif_buf;
+	struct _btif_buf_str_ btif_buf;
 	spinlock_t rx_irq_spinlock;	/*lock for rx irq handling */
 
 /*rx workqueue information*/
@@ -241,65 +209,49 @@ typedef struct _mtk_btif_ {
 	spinlock_t rx_tasklet_spinlock;
 
 /*rx thread information*/
+	struct mutex rx_thread_mtx;
 	struct task_struct *p_task;
 	struct completion rx_comp;
 
-	mtk_btif_setting *setting;	/*BTIF setting */
+	struct _mtk_btif_setting_ *setting;	/*BTIF setting */
 
-	p_mtk_btif_dma p_tx_dma;	/*BTIF Tx channel DMA */
-	p_mtk_btif_dma p_rx_dma;	/*BTIF Rx channel DMA */
+	struct _mtk_btif_dma_ *p_tx_dma;	/*BTIF Tx channel DMA */
+	struct _mtk_btif_dma_ *p_rx_dma;	/*BTIF Rx channel DMA */
+	void __iomem *dma_clk_addr;		/*APDMA clock address */
+	void __iomem *dma_idle_en_addr;		/*APDMA idle en address */
 
 	MTK_WCN_BTIF_RX_CB rx_cb;	/*Rx callback function */
 	MTK_BTIF_RX_NOTIFY rx_notify;
 
-	P_MTK_BTIF_INFO_STR p_btif_info;	/*BTIF's information */
+	struct _MTK_BTIF_INFO_STR_ *p_btif_info;	/*BTIF's information */
 
 /*Log Tx data to buffer*/
-	BTIF_LOG_QUEUE_T tx_log;
+	struct _btif_log_queue_t_ tx_log;
 
 /*Log Rx data to buffer*/
-	BTIF_LOG_QUEUE_T rx_log;
+	struct _btif_log_queue_t_ rx_log;
 
 /* struct list_head *p_user_list; */
 	struct list_head user_list;
 /* get btif dev pointer*/
 	void *private_data;
-} mtk_btif, *p_mtk_btif;
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-#if 0
-/*---------------------------------------------------------------------------*/
-typedef struct _mtk_dma_register_ {
-	unsigned int int_flag;	/*Tx offset:0x0     Rx offset:0x0 */
-	unsigned int int_enable;	/*Tx offset:0x4     Rx offset:0x4 */
-	unsigned int dma_enable;	/*Tx offset:0x8     Rx offset:0x8 */
-	unsigned int dma_reset;	/*Tx offset:0xc     Rx offset:0xc */
-	unsigned int dma_stop;	/*Tx offset:0x10     Rx offset:0x10 */
-	unsigned int dma_flush;	/*Tx offset:0x14     Rx offset:0x14 */
-	unsigned int vff_addr;	/*Tx offset:0x1c     Rx offset:0x1c */
-	unsigned int vff_len;	/*Tx offset:0x24     Rx offset:0x24 */
-	unsigned int vff_thr;	/*Tx offset:0x28     Rx offset:0x28 */
-	unsigned int vff_wpt;	/*Tx offset:0x2c     Rx offset:0x2c */
-	unsigned int vff_rpt;	/*Tx offset:0x30     Rx offset:0x30 */
-	unsigned int rx_fc_thr;	/*Tx:No this register     Rx offset:0x34 */
-	unsigned int int_buf_size;	/*Tx offset:0x38     Rx offset:0x38 */
-	unsigned int vff_valid_size;	/*Tx offset:0x3c     Rx offset:0x3c */
-	unsigned int vff_left_size;	/*Tx offset:0x40     Rx offset:0x40 */
-	unsigned int debug_status;	/*Tx offset:0x50     Rx offset:0x50 */
-} mtk_dma_register, *p_mtk_dma_register;
-/*---------------------------------------------------------------------------*/
+#if BTIF_DBG_SUPPORT
+/* Test btif thread */
+	struct delayed_work btif_rx_test_work;
+	enum _ENUM_BTIF_TEST_CASE_ test_case;
+	int delay_sched_time;
 #endif
+};
 
 /*---------------------------------------------------------------------------*/
-typedef struct _mtk_btif_user_ {
+struct _mtk_btif_user_ {
 	bool enable;		/*register its state */
 	struct list_head entry;	/*btif_user's bi-direction list table */
 	/*BTIF's user, static allocation */
 	char u_name[BTIF_USER_NAME_MAX_LEN];
 	unsigned long u_id;
-	p_mtk_btif p_btif;
-} mtk_btif_user, *p_mtk_btif_user;
+	struct _mtk_btif_ *p_btif;
+};
 
 /*---------------------------------------------------------------------------*/
 #define BBS_PTR(ptr, idx) ((ptr->p_buf) + idx)
@@ -332,39 +284,49 @@ typedef struct _mtk_btif_user_ {
 
 #define BTIF_MUTEX_UNLOCK(x) mutex_unlock(x)
 
-extern mtk_btif g_btif[];
+extern struct _mtk_btif_ g_btif[];
 
-int btif_open(p_mtk_btif p_btif);
-int btif_close(p_mtk_btif p_btif);
-int btif_send_data(p_mtk_btif p_btif,
+int btif_open(struct _mtk_btif_ *p_btif);
+int btif_close(struct _mtk_btif_ *p_btif);
+int btif_send_data(struct _mtk_btif_ *p_btif,
 		   const unsigned char *p_buf, unsigned int buf_len);
-int btif_enter_dpidle(p_mtk_btif p_btif);
-int btif_exit_dpidle(p_mtk_btif p_btif);
-int btif_rx_cb_reg(p_mtk_btif p_btif, MTK_WCN_BTIF_RX_CB rx_cb);
+int btif_enter_dpidle(struct _mtk_btif_ *p_btif);
+int btif_exit_dpidle(struct _mtk_btif_ *p_btif);
+int btif_rx_cb_reg(struct _mtk_btif_ *p_btif, MTK_WCN_BTIF_RX_CB rx_cb);
 
 /*for test purpose*/
-int _btif_suspend(p_mtk_btif p_btif);
-int _btif_resume(p_mtk_btif p_btif);
-int _btif_restore_noirq(p_mtk_btif p_btif);
+int _btif_suspend(struct _mtk_btif_ *p_btif);
+int _btif_resume(struct _mtk_btif_ *p_btif);
+int _btif_restore_noirq(struct _mtk_btif_ *p_btif);
 
-int btif_lpbk_ctrl(p_mtk_btif p_btif, bool flag);
-int btif_log_buf_dmp_in(P_BTIF_LOG_QUEUE_T p_log_que, const char *p_buf,
+int btif_lpbk_ctrl(struct _mtk_btif_ *p_btif, bool flag);
+int btif_log_buf_dmp_in(struct _btif_log_queue_t_ *p_log_que, const char *p_buf,
 			int len);
-int btif_dump_data(char *p_buf, int len);
-int btif_log_buf_dmp_out(P_BTIF_LOG_QUEUE_T p_log_que);
-int btif_log_buf_enable(P_BTIF_LOG_QUEUE_T p_log_que);
-int btif_log_buf_disable(P_BTIF_LOG_QUEUE_T p_log_que);
-int btif_log_output_enable(P_BTIF_LOG_QUEUE_T p_log_que);
-int btif_log_output_disable(P_BTIF_LOG_QUEUE_T p_log_que);
-int btif_log_buf_reset(P_BTIF_LOG_QUEUE_T p_log_que);
-int btif_log_buf_init(p_mtk_btif p_btif);
-int btif_dump_reg(p_mtk_btif p_btif);
-int btif_rx_notify_reg(p_mtk_btif p_btif, MTK_BTIF_RX_NOTIFY rx_notify);
-int btif_raise_wak_signal(p_mtk_btif p_btif);
-int btif_clock_ctrl(p_mtk_btif p_btif, int en);
-bool btif_parser_wmt_evt(p_mtk_btif p_btif,
+int btif_dump_data(const char *p_buf, int len);
+int btif_log_buf_dmp_out(struct _btif_log_queue_t_ *p_log_que);
+int btif_log_buf_enable(struct _btif_log_queue_t_ *p_log_que);
+int btif_log_buf_disable(struct _btif_log_queue_t_ *p_log_que);
+int btif_log_output_enable(struct _btif_log_queue_t_ *p_log_que);
+int btif_log_output_disable(struct _btif_log_queue_t_ *p_log_que);
+int btif_log_buf_reset(struct _btif_log_queue_t_ *p_log_que);
+int btif_log_buf_init(struct _mtk_btif_ *p_btif);
+int btif_dump_reg(struct _mtk_btif_ *p_btif, enum _ENUM_BTIF_REG_ID_ flag);
+int btif_rx_notify_reg(struct _mtk_btif_ *p_btif, MTK_BTIF_RX_NOTIFY rx_notify);
+int btif_raise_wak_signal(struct _mtk_btif_ *p_btif);
+int btif_clock_ctrl(struct _mtk_btif_ *p_btif, int en);
+bool btif_parser_wmt_evt(struct _mtk_btif_ *p_btif,
 				const char *sub_str,
 				unsigned int sub_len);
 void mtk_btif_read_cpu_sw_rst_debug(void);
-
+int btif_rx_data_path_lock(struct _mtk_btif_ *p_btif);
+int btif_rx_data_path_unlock(struct _mtk_btif_ *p_btif);
+int btif_rx_buf_has_pending_data(struct _mtk_btif_ *p_btif);
+int btif_rx_dma_has_pending_data(struct _mtk_btif_ *p_btif);
+int btif_tx_dma_has_pending_data(struct _mtk_btif_ *p_btif);
+void btif_dump_dma_vfifo(struct _mtk_btif_ *p_btif);
+bool btif_is_tx_complete(struct _mtk_btif_ *p_btif);
+bool btif_is_rx_complete(struct _mtk_btif_ *p_btif);
+struct task_struct *btif_rx_thread_get(struct _mtk_btif_ *p_btif);
+void btif_do_gettimeofday(struct timespec64 *tv);
+int btif_dump_array(const char *string, const char *p_buf, int len);
 #endif /*__MTK_BTIF_H_*/
