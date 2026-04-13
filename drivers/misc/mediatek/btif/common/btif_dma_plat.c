@@ -1,18 +1,9 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright (C) 2015 MediaTek Inc.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * Copyright (c) 2019 MediaTek Inc.
  */
 
 #include <linux/kernel.h>
-#include <mtk_lpae.h>
 
 #ifdef DFT_TAG
 #undef DFT_TAG
@@ -20,12 +11,13 @@
 #define DFT_TAG "MTK-BTIF-DMA"
 
 #include "btif_dma_priv.h"
+#include "mtk_btif.h"
 
 #define DMA_USER_ID "btif_driver"
 
-/************************************Global variable***********************************/
+/********************************Global variable*******************************/
 
-static MTK_BTIF_DMA_VFIFO mtk_tx_dma_vfifo = {
+static struct _MTK_BTIF_DMA_VFIFO_ mtk_tx_dma_vfifo = {
 	.vfifo = {
 		  .p_vir_addr = NULL,
 		  .phy_addr = 0,
@@ -38,7 +30,7 @@ static MTK_BTIF_DMA_VFIFO mtk_tx_dma_vfifo = {
 	.last_rpt_wrap = 0,
 };
 
-static MTK_BTIF_IRQ_STR mtk_btif_tx_dma_irq = {
+static struct _MTK_BTIF_IRQ_STR_ mtk_btif_tx_dma_irq = {
 	.name = "mtk btif tx dma irq",
 	.is_irq_sup = true,
 	.reg_flag = false,
@@ -52,7 +44,7 @@ static MTK_BTIF_IRQ_STR mtk_btif_tx_dma_irq = {
 	.p_irq_handler = NULL,
 };
 
-static MTK_BTIF_DMA_VFIFO mtk_rx_dma_vfifo = {
+static struct _MTK_BTIF_DMA_VFIFO_ mtk_rx_dma_vfifo = {
 	.vfifo = {
 		  .p_vir_addr = NULL,
 		  .phy_addr = 0,
@@ -66,7 +58,7 @@ static MTK_BTIF_DMA_VFIFO mtk_rx_dma_vfifo = {
 	.last_rpt_wrap = 0,
 };
 
-static MTK_BTIF_IRQ_STR mtk_btif_rx_dma_irq = {
+static struct _MTK_BTIF_IRQ_STR_ mtk_btif_rx_dma_irq = {
 	.name = "mtk btif rx dma irq",
 	.is_irq_sup = true,
 	.reg_flag = false,
@@ -80,7 +72,7 @@ static MTK_BTIF_IRQ_STR mtk_btif_rx_dma_irq = {
 	.p_irq_handler = NULL,
 };
 
-static MTK_DMA_INFO_STR mtk_btif_tx_dma = {
+static struct _MTK_DMA_INFO_STR_ mtk_btif_tx_dma = {
 #ifndef CONFIG_OF
 	.base = AP_DMA_BASE + BTIF_TX_DMA_OFFSET,
 #endif
@@ -89,7 +81,7 @@ static MTK_DMA_INFO_STR mtk_btif_tx_dma = {
 	.p_vfifo = &(mtk_tx_dma_vfifo.vfifo),
 };
 
-static MTK_DMA_INFO_STR mtk_btif_rx_dma = {
+static struct _MTK_DMA_INFO_STR_ mtk_btif_rx_dma = {
 #ifndef CONFIG_OF
 	.base = AP_DMA_BASE + BTIF_RX_DMA_OFFSET,
 #endif
@@ -100,116 +92,138 @@ static MTK_DMA_INFO_STR mtk_btif_rx_dma = {
 
 static spinlock_t g_clk_cg_spinlock;	/*dma clock's spinlock */
 
-/************************************Function declearation***********************************/
-static int _is_tx_dma_in_flush(P_MTK_DMA_INFO_STR p_dma_info);
-static int _tx_dma_flush(P_MTK_DMA_INFO_STR p_dma_info);
-static int btif_rx_dma_ctrl(P_MTK_DMA_INFO_STR p_dma_info,
-			    ENUM_DMA_CTRL ctrl_id);
-static int btif_tx_dma_ctrl(P_MTK_DMA_INFO_STR p_dma_info,
-			    ENUM_DMA_CTRL ctrl_id);
-static int btif_rx_dma_ier_ctrl(P_MTK_DMA_INFO_STR p_dma_info, bool en);
-static int btif_tx_dma_ier_ctrl(P_MTK_DMA_INFO_STR p_dma_info, bool en);
-static int hal_rx_dma_dump_reg(P_MTK_DMA_INFO_STR p_dma_info,
-			       ENUM_BTIF_REG_ID flag);
-static int hal_tx_dma_dump_reg(P_MTK_DMA_INFO_STR p_dma_info,
-			       ENUM_BTIF_REG_ID flag);
-static int is_tx_dma_irq_finish_done(P_MTK_DMA_INFO_STR p_dma_info);
+/****************************Function declearation*****************************/
+static int _is_tx_dma_in_flush(struct _MTK_DMA_INFO_STR_ *p_dma_info);
+static int _tx_dma_flush(struct _MTK_DMA_INFO_STR_ *p_dma_info);
+static int btif_rx_dma_ctrl(struct _MTK_DMA_INFO_STR_ *p_dma_info,
+			    enum _ENUM_DMA_CTRL_  ctrl_id);
+static int btif_tx_dma_ctrl(struct _MTK_DMA_INFO_STR_ *p_dma_info,
+			    enum _ENUM_DMA_CTRL_  ctrl_id);
+static int btif_rx_dma_ier_ctrl(struct _MTK_DMA_INFO_STR_ *p_dma_info, bool en);
+static int btif_tx_dma_ier_ctrl(struct _MTK_DMA_INFO_STR_ *p_dma_info, bool en);
+static int hal_rx_dma_dump_reg(struct _MTK_DMA_INFO_STR_ *p_dma_info,
+			       enum _ENUM_BTIF_REG_ID_ flag);
+static int hal_tx_dma_dump_reg(struct _MTK_DMA_INFO_STR_ *p_dma_info,
+			       enum _ENUM_BTIF_REG_ID_ flag);
+static int is_tx_dma_irq_finish_done(struct _MTK_DMA_INFO_STR_ *p_dma_info);
 static int _btif_dma_dump_dbg_reg(void);
-static void hal_btif_tx_dma_vff_set_for_4g(void);
-static void hal_btif_rx_dma_vff_set_for_4g(void);
 
 /*****************************************************************************
-* FUNCTION
-*  hal_tx_dma_ier_ctrl
-* DESCRIPTION
-*  BTIF Tx DMA's interrupt enable/disable
-* PARAMETERS
-* p_dma_info   [IN]        pointer to BTIF dma channel's information
-* enable    [IN]        control if tx interrupt enabled or not
-* dma_dir  [IN]         DMA's direction
-* RETURNS
-*  0 means success, negative means fail
-*****************************************************************************/
-static int hal_btif_dma_ier_ctrl(P_MTK_DMA_INFO_STR p_dma_info, bool en);
+ * FUNCTION
+ *  hal_tx_dma_ier_ctrl
+ * DESCRIPTION
+ *  BTIF Tx DMA's interrupt enable/disable
+ * PARAMETERS
+ *  p_dma_info   [IN]        pointer to BTIF dma channel's information
+ *  enable       [IN]        control if tx interrupt enabled or not
+ *  dma_dir      [IN]        DMA's direction
+ * RETURNS
+ *  0 means success, negative means fail
+ *****************************************************************************/
+static int hal_btif_dma_ier_ctrl(struct _MTK_DMA_INFO_STR_ *p_dma_info,
+				 bool en);
 
 /*****************************************************************************
-* FUNCTION
-*  hal_dma_receive_data
-* DESCRIPTION
-*  receive data from btif module in DMA polling mode
-* PARAMETERS
-* p_dma_info   [IN]        pointer to BTIF dma channel's information
-* p_buf     [IN/OUT] pointer to rx data buffer
-* max_len  [IN]        max length of rx buffer
-* RETURNS
-*  positive means data is available, 0 means no data available
-*****************************************************************************/
+ * FUNCTION
+ *  hal_dma_receive_data
+ * DESCRIPTION
+ *  receive data from btif module in DMA polling mode
+ * PARAMETERS
+ *  p_dma_info   [IN]        pointer to BTIF dma channel's information
+ *  p_buf        [IN/OUT]    pointer to rx data buffer
+ *  max_len      [IN]        max length of rx buffer
+ * RETURNS
+ *  positive means data is available, 0 means no data available
+ *****************************************************************************/
 #ifndef MTK_BTIF_MARK_UNUSED_API
-static int hal_dma_receive_data(P_MTK_DMA_INFO_STR p_dma_info,
+static int hal_dma_receive_data(struct _MTK_DMA_INFO_STR_ *p_dma_info,
 				unsigned char *p_buf,
 				const unsigned int max_len);
 
-/************************************Function***********************************/
+/***********************************Function***********************************/
 #endif
 
+void hal_dma_dump_clk_reg(void)
+{
+	if (!g_btif[0].dma_clk_addr) {
+		BTIF_INFO_FUNC("g_btif[0].dma_clk_addr is NULL");
+		return;
+	}
+	BTIF_INFO_FUNC("clk reg = 0x%x\n", BTIF_READ32(g_btif[0].dma_clk_addr));
+}
+
 #ifdef CONFIG_OF
-static void hal_dma_set_default_setting(ENUM_DMA_DIR dma_dir)
+static void hal_dma_set_default_setting(enum _ENUM_DMA_DIR_ dma_dir)
 {
 	struct device_node *node = NULL;
-	unsigned int irq_info[3] = {0, 0, 0};
 	unsigned int phy_base;
 
+	if (!g_btif[0].private_data) {
+		BTIF_INFO_FUNC("g_btif[0].private_data is NULL");
+		return;
+	}
+
+	node = ((struct device *)(g_btif[0].private_data))->of_node;
+	if (!node) {
+		BTIF_ERR_FUNC("get device node fail\n");
+		return;
+	}
+
+	if (!g_btif[0].dma_clk_addr) {
+		g_btif[0].dma_clk_addr = of_iomap(node, 3);
+		BTIF_INFO_FUNC("dma clock reg (0x%p)\n", g_btif[0].dma_clk_addr);
+	}
+
+	if (!g_btif[0].dma_idle_en_addr) {
+		g_btif[0].dma_idle_en_addr = of_iomap(node, 4);
+		if (g_btif[0].dma_idle_en_addr != NULL) {
+			BTIF_SET_BIT(g_btif[0].dma_idle_en_addr, 0x1);
+			BTIF_INFO_FUNC("set idle en (0x%p)\n", g_btif[0].dma_idle_en_addr);
+		}
+	}
+
 	if (dma_dir == DMA_DIR_RX) {
-		node = of_find_compatible_node(NULL, NULL, "mediatek,btif_rx");
-		if (node) {
-			mtk_btif_rx_dma.p_irq->irq_id = irq_of_parse_and_map(node, 0);
-			/*fixme, be compitable arch 64bits*/
-			mtk_btif_rx_dma.base = (unsigned long)of_iomap(node, 0);
-			BTIF_INFO_FUNC("get rx_dma irq(%d),register base(0x%lx)\n",
-				mtk_btif_rx_dma.p_irq->irq_id, mtk_btif_rx_dma.base);
-		} else {
-			BTIF_ERR_FUNC("get rx_dma device node fail\n");
-		}
-		/* get the interrupt line behaviour */
-		if (of_property_read_u32_array(node, "interrupts", irq_info, ARRAY_SIZE(irq_info))) {
-			BTIF_ERR_FUNC("get interrupt flag from DTS fail\n");
-		} else {
-			mtk_btif_rx_dma.p_irq->irq_flags = irq_info[2];
-			BTIF_INFO_FUNC("get interrupt flag(0x%x)\n",
-				mtk_btif_rx_dma.p_irq->irq_flags);
-		}
-		if (of_property_read_u32_index(node, "reg", 0, &phy_base)) {
-			BTIF_ERR_FUNC("get register phy base from DTS fail,dma_dir(%d)\n",
+		mtk_btif_rx_dma.p_irq->irq_id =
+				irq_of_parse_and_map(node, 2);
+		/*fixme, be compitable arch 64bits*/
+		mtk_btif_rx_dma.base = (unsigned long)of_iomap(node, 2);
+		BTIF_INFO_FUNC("rx_dma irq(%d),register base(0x%lx)\n",
+				mtk_btif_rx_dma.p_irq->irq_id,
+				mtk_btif_rx_dma.base);
+
+		/* get the IRQ flags */
+		mtk_btif_rx_dma.p_irq->irq_flags =
+				irq_get_trigger_type(mtk_btif_rx_dma.p_irq->irq_id);
+		BTIF_INFO_FUNC("get interrupt flag(0x%x)\n",
+			mtk_btif_rx_dma.p_irq->irq_flags);
+
+		if (of_property_read_u32_index(node, "reg", 9, &phy_base)) {
+			BTIF_ERR_FUNC("get phy base fail,dma_dir(%d)\n",
 					dma_dir);
 		} else {
-			BTIF_INFO_FUNC("get register phy base dma_dir(%d)(0x%x)\n",
+			BTIF_INFO_FUNC("get phy base dma_dir(%d)(0x%x)\n",
 					dma_dir, (unsigned int)phy_base);
 		}
 	} else if (dma_dir == DMA_DIR_TX) {
-		node = of_find_compatible_node(NULL, NULL, "mediatek,btif_tx");
-		if (node) {
-			mtk_btif_tx_dma.p_irq->irq_id = irq_of_parse_and_map(node, 0);
-			/*fixme, be compitable arch 64bits*/
-			mtk_btif_tx_dma.base = (unsigned long)of_iomap(node, 0);
-			BTIF_INFO_FUNC("get tx_dma irq(%d),register base(0x%lx)\n",
-				mtk_btif_tx_dma.p_irq->irq_id, mtk_btif_tx_dma.base);
-		} else {
-			BTIF_ERR_FUNC("get tx_dma device node fail\n");
-		}
-		/* get the interrupt line behaviour */
-		if (of_property_read_u32_array(node, "interrupts", irq_info, ARRAY_SIZE(irq_info))) {
-			BTIF_ERR_FUNC("get interrupt flag from DTS fail\n");
-		} else {
-			mtk_btif_tx_dma.p_irq->irq_flags = irq_info[2];
-			BTIF_INFO_FUNC("get interrupt flag(0x%x)\n",
-				mtk_btif_tx_dma.p_irq->irq_flags);
-		}
+		mtk_btif_tx_dma.p_irq->irq_id =
+				irq_of_parse_and_map(node, 1);
+		/*fixme, be compitable arch 64bits*/
+		mtk_btif_tx_dma.base = (unsigned long)of_iomap(node, 1);
+		BTIF_INFO_FUNC("tx_dma irq(%d),register base(0x%lx)\n",
+				mtk_btif_tx_dma.p_irq->irq_id,
+				mtk_btif_tx_dma.base);
 
-		if (of_property_read_u32_index(node, "reg", 0, &phy_base)) {
-			BTIF_ERR_FUNC("get register phy base from DTS fail,dma_dir(%d)\n",
+		/* get the IRQ flags */
+		mtk_btif_tx_dma.p_irq->irq_flags =
+				irq_get_trigger_type(mtk_btif_tx_dma.p_irq->irq_id);
+		BTIF_INFO_FUNC("get interrupt flag(0x%x)\n",
+			mtk_btif_tx_dma.p_irq->irq_flags);
+
+		if (of_property_read_u32_index(node, "reg", 5, &phy_base)) {
+			BTIF_ERR_FUNC("get phy base fail,dma_dir(%d)\n",
 				dma_dir);
 		} else {
-			BTIF_INFO_FUNC("get register phy base dma_dir(%d)(0x%x)\n",
+			BTIF_INFO_FUNC("get phy base dma_dir(%d)(0x%x)\n",
 					dma_dir, (unsigned int)phy_base);
 		}
 	}
@@ -218,18 +232,18 @@ static void hal_dma_set_default_setting(ENUM_DMA_DIR dma_dir)
 #endif
 
 /*****************************************************************************
-* FUNCTION
-*  hal_tx_dma_info_get
-* DESCRIPTION
-*  get btif tx dma channel's information
-* PARAMETERS
-* dma_dir        [IN]         DMA's direction
-* RETURNS
-*  pointer to btif dma's information structure
-*****************************************************************************/
-P_MTK_DMA_INFO_STR hal_btif_dma_info_get(ENUM_DMA_DIR dma_dir)
+ * FUNCTION
+ *  hal_tx_dma_info_get
+ * DESCRIPTION
+ *  get btif tx dma channel's information
+ * PARAMETERS
+ *  dma_dir        [IN]         DMA's direction
+ * RETURNS
+ *  pointer to btif dma's information structure
+ *****************************************************************************/
+struct _MTK_DMA_INFO_STR_ *hal_btif_dma_info_get(enum _ENUM_DMA_DIR_ dma_dir)
 {
-	P_MTK_DMA_INFO_STR p_dma_info = NULL;
+	struct _MTK_DMA_INFO_STR_ *p_dma_info = NULL;
 
 	BTIF_TRC_FUNC();
 #ifdef CONFIG_OF
@@ -250,26 +264,29 @@ P_MTK_DMA_INFO_STR hal_btif_dma_info_get(ENUM_DMA_DIR dma_dir)
 }
 
 /*****************************************************************************
-* FUNCTION
-*  hal_btif_clk_ctrl
-* DESCRIPTION
-*  control clock output enable/disable of DMA module
-* PARAMETERS
-* p_dma_info   [IN]        pointer to BTIF dma channel's information
-* RETURNS
-*  0 means success, negative means fail
-*****************************************************************************/
-int hal_btif_dma_clk_ctrl(P_MTK_DMA_INFO_STR p_dma_info, ENUM_CLOCK_CTRL flag)
+ * FUNCTION
+ *  hal_btif_clk_ctrl
+ * DESCRIPTION
+ *  control clock output enable/disable of DMA module
+ * PARAMETERS
+ *  p_dma_info   [IN]        pointer to BTIF dma channel's information
+ * RETURNS
+ *  0 means success, negative means fail
+ *****************************************************************************/
+int hal_btif_dma_clk_ctrl(struct _MTK_DMA_INFO_STR_ *p_dma_info,
+			  enum _ENUM_CLOCK_CTRL_ flag)
 {
-/*In MTK DMA BTIF channel, there's only one global CG on AP_DMA, no sub channel's CG bit*/
-/*according to Artis's comment, clock of DMA and BTIF is default off, so we assume it to be off by default*/
+/*In MTK DMA BTIF channel, there's only one global CG on AP_DMA,*/
+/*no sub channel's CG bit*/
+/*according to Artis's comment, clock of DMA and BTIF is default off,*/
+/*so we assume it to be off by default*/
 	int i_ret = 0;
 	unsigned long irq_flag = 0;
 
 #if MTK_BTIF_ENABLE_CLK_REF_COUNTER
 	static atomic_t s_clk_ref = ATOMIC_INIT(0);
 #else
-	static ENUM_CLOCK_CTRL status = CLK_OUT_DISABLE;
+	static enum _ENUM_CLOCK_CTRL_ status = CLK_OUT_DISABLE;
 #endif
 
 	spin_lock_irqsave(&(g_clk_cg_spinlock), irq_flag);
@@ -281,28 +298,28 @@ int hal_btif_dma_clk_ctrl(P_MTK_DMA_INFO_STR p_dma_info, ENUM_CLOCK_CTRL flag)
 	if (flag == CLK_OUT_ENABLE) {
 		if (atomic_inc_return(&s_clk_ref) == 1) {
 #if defined(CONFIG_MTK_CLKMGR)
-			i_ret = enable_clock(MTK_BTIF_APDMA_CLK_CG, DMA_USER_ID);
+			i_ret = enable_clock(MTK_BTIF_APDMA_CLK_CG,
+					DMA_USER_ID);
 #else
 			BTIF_DBG_FUNC("[CCF]enable clk_btif_apdma\n");
 			i_ret = clk_enable(clk_btif_apdma);
 #endif /* defined(CONFIG_MTK_CLKMGR) */
 			if (i_ret) {
 				BTIF_WARN_FUNC
-					("enable_clock for MTK_BTIF_APDMA_CLK_CG failed, ret:%d",
-					 i_ret);
+					("enable_clock failed, ret:%d", i_ret);
 			}
 		}
 	} else if (flag == CLK_OUT_DISABLE) {
 		if (atomic_dec_return(&s_clk_ref) == 0) {
 #if defined(CONFIG_MTK_CLKMGR)
-			i_ret = disable_clock(MTK_BTIF_APDMA_CLK_CG, DMA_USER_ID);
+			i_ret = disable_clock(MTK_BTIF_APDMA_CLK_CG,
+					DMA_USER_ID);
 			if (i_ret) {
 				BTIF_WARN_FUNC
-					("disable_clock for MTK_BTIF_APDMA_CLK_CG failed, ret:%d",
-					 i_ret);
+					("disable_clock failed, ret:%d", i_ret);
 			}
 #else
-			BTIF_DBG_FUNC("[CCF] clk_disable(clk_btif_apdma) calling\n");
+			BTIF_DBG_FUNC("clk_disable(clk_btif_apdma) calling\n");
 			clk_disable(clk_btif_apdma);
 #endif /* defined(CONFIG_MTK_CLKMGR) */
 		}
@@ -321,7 +338,8 @@ int hal_btif_dma_clk_ctrl(P_MTK_DMA_INFO_STR p_dma_info, ENUM_CLOCK_CTRL flag)
 	} else {
 		if (flag == CLK_OUT_ENABLE) {
 #if defined(CONFIG_MTK_CLKMGR)
-			i_ret = enable_clock(MTK_BTIF_APDMA_CLK_CG, DMA_USER_ID);
+			i_ret = enable_clock(MTK_BTIF_APDMA_CLK_CG,
+					DMA_USER_ID);
 #else
 			BTIF_DBG_FUNC("[CCF]enable clk_btif_apdma\n");
 			i_ret = clk_enable(clk_btif_apdma);
@@ -329,20 +347,19 @@ int hal_btif_dma_clk_ctrl(P_MTK_DMA_INFO_STR p_dma_info, ENUM_CLOCK_CTRL flag)
 			status = (i_ret == 0) ? flag : status;
 			if (i_ret) {
 				BTIF_WARN_FUNC
-					("enable_clock for MTK_BTIF_APDMA_CLK_CG failed, ret:%d",
-					 i_ret);
+					("enable_clock failed, ret:%d", i_ret);
 			}
 		} else if (flag == CLK_OUT_DISABLE) {
 #if defined(CONFIG_MTK_CLKMGR)
-			i_ret = disable_clock(MTK_BTIF_APDMA_CLK_CG, DMA_USER_ID);
+			i_ret = disable_clock(MTK_BTIF_APDMA_CLK_CG,
+					DMA_USER_ID);
 			status = (i_ret == 0) ? flag : status;
 			if (i_ret) {
 				BTIF_WARN_FUNC
-					("disable_clock for MTK_BTIF_APDMA_CLK_CG failed, ret:%d",
-					 i_ret);
+					("disable_clock failed, ret:%d", i_ret);
 			}
 #else
-			BTIF_DBG_FUNC("[CCF] clk_disable_unprepare(clk_btif_apdma) calling\n");
+			BTIF_DBG_FUNC("clk_disable(clk_btif_apdma) calling\n");
 			clk_disable(clk_btif_apdma);
 #endif /* defined(CONFIG_MTK_CLKMGR) */
 		} else {
@@ -368,36 +385,40 @@ int hal_btif_dma_clk_ctrl(P_MTK_DMA_INFO_STR p_dma_info, ENUM_CLOCK_CTRL flag)
 
 #if MTK_BTIF_ENABLE_CLK_REF_COUNTER
 	if (i_ret == 0) {
-		BTIF_DBG_FUNC("dma clock %s\n", flag == CLK_OUT_ENABLE ? "enabled" : "disabled");
+		BTIF_DBG_FUNC("dma clock %s\n", flag == CLK_OUT_ENABLE ?
+				"enabled" : "disabled");
 	} else {
 		BTIF_ERR_FUNC("%s dma clock failed, ret(%d)\n",
-				flag == CLK_OUT_ENABLE ? "enable" : "disable", i_ret);
+				flag == CLK_OUT_ENABLE ? "enable" : "disable",
+				i_ret);
 	}
 #else
 
 	if (i_ret == 0) {
-		BTIF_DBG_FUNC("dma clock %s\n", flag == CLK_OUT_ENABLE ? "enabled" : "disabled");
+		BTIF_DBG_FUNC("dma clock %s\n", flag == CLK_OUT_ENABLE ?
+				"enabled" : "disabled");
 	} else {
 		BTIF_ERR_FUNC("%s dma clock failed, ret(%d)\n",
-				flag == CLK_OUT_ENABLE ? "enable" : "disable", i_ret);
+				flag == CLK_OUT_ENABLE ? "enable" : "disable",
+				i_ret);
 	}
 #endif
 #if defined(CONFIG_MTK_CLKMGR)
-	BTIF_DBG_FUNC("DMA's clock is %s\n", (clock_is_on(MTK_BTIF_APDMA_CLK_CG) == 0) ? "off" : "on");
+	BTIF_DBG_FUNC("DMA's clock is %s\n", (clock_is_on(MTK_BTIF_APDMA_CLK_CG)
+			== 0) ? "off" : "on");
 #endif
 	return i_ret;
 }
 
-int hal_btif_dma_hw_init(P_MTK_DMA_INFO_STR p_dma_info)
+int hal_btif_dma_hw_init(struct _MTK_DMA_INFO_STR_ *p_dma_info)
 {
 	int i_ret = 0;
-	unsigned int dat = 0;
+	unsigned int dat = 0, count = 0;
 	unsigned long base = p_dma_info->base;
 	unsigned long addr_h = 0;
-	P_DMA_VFIFO p_vfifo = p_dma_info->p_vfifo;
-	P_MTK_BTIF_DMA_VFIFO p_mtk_dma_vfifo = container_of(p_vfifo,
-							    MTK_BTIF_DMA_VFIFO,
-							    vfifo);
+	struct _DMA_VFIFO_ *p_vfifo = p_dma_info->p_vfifo;
+	struct _MTK_BTIF_DMA_VFIFO_ *p_mtk_dma_vfifo = container_of(p_vfifo,
+			struct _MTK_BTIF_DMA_VFIFO_, vfifo);
 
 	if (p_dma_info->dir == DMA_DIR_RX) {
 		/*Rx DMA*/
@@ -407,16 +428,23 @@ int hal_btif_dma_hw_init(P_MTK_DMA_INFO_STR p_dma_info)
 		BTIF_SET_BIT(RX_DMA_RST(base), DMA_WARM_RST);
 		do {
 			dat = BTIF_READ32(RX_DMA_EN(base));
-		} while (0x01 & dat);
+			if ((0x01 & dat) == 0)
+				break;
+			udelay(100);
+			count++;
+		} while (count < 10);
+
+		/* do hard reset in case some registers not reset. */
+		BTIF_SET_BIT(RX_DMA_RST(base), DMA_HARD_RST);
+		BTIF_CLR_BIT(RX_DMA_RST(base), DMA_HARD_RST);
+		BTIF_INFO_FUNC("RX dma hard reset\n");
+
 		/*write vfifo base address to VFF_ADDR*/
 		btif_reg_sync_writel(p_vfifo->phy_addr, RX_DMA_VFF_ADDR(base));
-		if (enable_4G())
-			hal_btif_rx_dma_vff_set_for_4g();
-		else {
-			addr_h = p_vfifo->phy_addr >> 16;
-			addr_h = addr_h >> 16;
-			btif_reg_sync_writel(addr_h, RX_DMA_VFF_ADDR_H(base));
-		}
+		addr_h = p_vfifo->phy_addr >> 16;
+		addr_h = addr_h >> 16;
+		btif_reg_sync_writel(addr_h, RX_DMA_VFF_ADDR_H(base));
+
 		/*write vfifo length to VFF_LEN*/
 		btif_reg_sync_writel(p_vfifo->vfifo_size, RX_DMA_VFF_LEN(base));
 		/*write wpt to VFF_WPT*/
@@ -440,16 +468,23 @@ int hal_btif_dma_hw_init(P_MTK_DMA_INFO_STR p_dma_info)
 		BTIF_SET_BIT(TX_DMA_RST(base), DMA_WARM_RST);
 		do {
 			dat = BTIF_READ32(TX_DMA_EN(base));
-		} while (0x01 & dat);
+			if ((0x01 & dat) == 0)
+				break;
+			udelay(100);
+			count++;
+		} while (count < 10);
+
+		/* do hard reset in case some registers not reset. */
+		BTIF_SET_BIT(TX_DMA_RST(base), DMA_HARD_RST);
+		BTIF_CLR_BIT(TX_DMA_RST(base), DMA_HARD_RST);
+		BTIF_INFO_FUNC("TX dma hard reset\n");
+
 /*write vfifo base address to VFF_ADDR*/
 		btif_reg_sync_writel(p_vfifo->phy_addr, TX_DMA_VFF_ADDR(base));
-		if (enable_4G())
-			hal_btif_tx_dma_vff_set_for_4g();
-		else {
-			addr_h = p_vfifo->phy_addr >> 16;
-			addr_h = addr_h >> 16;
-			btif_reg_sync_writel(addr_h, TX_DMA_VFF_ADDR_H(base));
-		}
+		addr_h = p_vfifo->phy_addr >> 16;
+		addr_h = addr_h >> 16;
+		btif_reg_sync_writel(addr_h, TX_DMA_VFF_ADDR_H(base));
+
 /*write vfifo length to VFF_LEN*/
 		btif_reg_sync_writel(p_vfifo->vfifo_size, TX_DMA_VFF_LEN(base));
 /*write wpt to VFF_WPT*/
@@ -469,20 +504,21 @@ int hal_btif_dma_hw_init(P_MTK_DMA_INFO_STR p_dma_info)
 }
 
 /*****************************************************************************
-* FUNCTION
-*  hal_tx_dma_ctrl
-* DESCRIPTION
-* enable/disable Tx DMA channel
-* PARAMETERS
-* p_dma_info   [IN]        pointer to BTIF dma channel's information
-* ctrl_id          [IN]        enable/disable ID
-* RETURNS
-*  0 means success; negative means fail
-*****************************************************************************/
-int hal_btif_dma_ctrl(P_MTK_DMA_INFO_STR p_dma_info, ENUM_DMA_CTRL ctrl_id)
+ * FUNCTION
+ *  hal_tx_dma_ctrl
+ * DESCRIPTION
+ *  enable/disable Tx DMA channel
+ * PARAMETERS
+ *  p_dma_info   [IN]        pointer to BTIF dma channel's information
+ *  ctrl_id      [IN]        enable/disable ID
+ * RETURNS
+ *  0 means success; negative means fail
+ *****************************************************************************/
+int hal_btif_dma_ctrl(struct _MTK_DMA_INFO_STR_ *p_dma_info,
+		      enum _ENUM_DMA_CTRL_  ctrl_id)
 {
 	unsigned int i_ret = -1;
-	ENUM_DMA_DIR dir = p_dma_info->dir;
+	enum _ENUM_DMA_DIR_ dir = p_dma_info->dir;
 
 	if (dir == DMA_DIR_RX)
 		i_ret = btif_rx_dma_ctrl(p_dma_info, ctrl_id);
@@ -496,7 +532,7 @@ int hal_btif_dma_ctrl(P_MTK_DMA_INFO_STR p_dma_info, ENUM_DMA_CTRL ctrl_id)
 	return i_ret;
 }
 
-int hal_btif_dma_rx_cb_reg(P_MTK_DMA_INFO_STR p_dma_info,
+int hal_btif_dma_rx_cb_reg(struct _MTK_DMA_INFO_STR_ *p_dma_info,
 			   dma_rx_buf_write rx_cb)
 {
 	if (p_dma_info->rx_cb != NULL) {
@@ -508,23 +544,35 @@ int hal_btif_dma_rx_cb_reg(P_MTK_DMA_INFO_STR p_dma_info,
 	return 0;
 }
 
-int btif_tx_dma_ctrl(P_MTK_DMA_INFO_STR p_dma_info, ENUM_DMA_CTRL ctrl_id)
+#define BTIF_STOP_DMA_TIME (HZ/100) /* 10ms */
+
+int btif_tx_dma_ctrl(struct _MTK_DMA_INFO_STR_ *p_dma_info,
+		     enum _ENUM_DMA_CTRL_  ctrl_id)
 {
 	unsigned int i_ret = -1;
 	unsigned long base = p_dma_info->base;
 	unsigned int dat;
+	unsigned long timeout;
 
 	BTIF_TRC_FUNC();
 	if (ctrl_id == DMA_CTRL_DISABLE) {
 		/*if write 0 to EN bit, DMA will be stopped imediately*/
-		/*if write 1 to STOP bit, DMA will be stopped after current transaction finished*/
+		/*if write 1 to STOP bit, DMA will be stopped after current*/
+		/*transaction finished*/
 		/*BTIF_CLR_BIT(TX_DMA_EN(base), DMA_EN_BIT);*/
-		BTIF_SET_BIT(TX_DMA_STOP(base), DMA_STOP_BIT);
+		timeout = jiffies + BTIF_STOP_DMA_TIME;
 		do {
-			dat = BTIF_READ32(TX_DMA_STOP(base));
+			if (time_before(jiffies, timeout)) {
+				BTIF_SET_BIT(TX_DMA_STOP(base), DMA_STOP_BIT);
+				dat = BTIF_READ32(TX_DMA_STOP(base));
+			} else {
+				BTIF_ERR_FUNC("stop dma timeout!\n");
+				break;
+			}
 		} while (0x1 & dat);
 		BTIF_DBG_FUNC("BTIF Tx DMA disabled,EN(0x%x),STOP(0x%x)\n",
-			BTIF_READ32(TX_DMA_EN(base)), BTIF_READ32(TX_DMA_STOP(base)));
+				BTIF_READ32(TX_DMA_EN(base)),
+				BTIF_READ32(TX_DMA_STOP(base)));
 		i_ret = 0;
 	} else if (ctrl_id == DMA_CTRL_ENABLE) {
 		BTIF_SET_BIT(TX_DMA_EN(base), DMA_EN_BIT);
@@ -539,24 +587,34 @@ int btif_tx_dma_ctrl(P_MTK_DMA_INFO_STR p_dma_info, ENUM_DMA_CTRL ctrl_id)
 	return i_ret;
 }
 
-int btif_rx_dma_ctrl(P_MTK_DMA_INFO_STR p_dma_info, ENUM_DMA_CTRL ctrl_id)
+int btif_rx_dma_ctrl(struct _MTK_DMA_INFO_STR_ *p_dma_info,
+		     enum _ENUM_DMA_CTRL_  ctrl_id)
 {
 	unsigned int i_ret = -1;
 	unsigned long base = p_dma_info->base;
 	unsigned int dat;
+	unsigned long timeout;
 
 	BTIF_TRC_FUNC();
 
 	if (ctrl_id == DMA_CTRL_DISABLE) {
 		/*if write 0 to EN bit, DMA will be stopped imediately*/
-		/*if write 1 to STOP bit, DMA will be stopped after current transaction finished*/
+		/*if write 1 to STOP bit, DMA will be stopped after current*/
+		/*transaction finished*/
 		/*BTIF_CLR_BIT(RX_DMA_EN(base), DMA_EN_BIT);*/
-		BTIF_SET_BIT(RX_DMA_STOP(base), DMA_STOP_BIT);
+		timeout = jiffies + BTIF_STOP_DMA_TIME;
 		do {
-			dat = BTIF_READ32(RX_DMA_STOP(base));
+			if (time_before(jiffies, timeout)) {
+				BTIF_SET_BIT(RX_DMA_STOP(base), DMA_STOP_BIT);
+				dat = BTIF_READ32(RX_DMA_STOP(base));
+			} else {
+				BTIF_ERR_FUNC("stop dma timeout!\n");
+				break;
+			}
 		} while (0x1 & dat);
 		BTIF_DBG_FUNC("BTIF Rx DMA disabled,EN(0x%x),STOP(0x%x)\n",
-			BTIF_READ32(RX_DMA_EN(base)), BTIF_READ32(RX_DMA_STOP(base)));
+				BTIF_READ32(RX_DMA_EN(base)),
+				BTIF_READ32(RX_DMA_STOP(base)));
 		i_ret = 0;
 	} else if (ctrl_id == DMA_CTRL_ENABLE) {
 		BTIF_SET_BIT(RX_DMA_EN(base), DMA_EN_BIT);
@@ -573,22 +631,21 @@ int btif_rx_dma_ctrl(P_MTK_DMA_INFO_STR p_dma_info, ENUM_DMA_CTRL ctrl_id)
 }
 
 /*****************************************************************************
-* FUNCTION
-*  hal_tx_vfifo_reset
-* DESCRIPTION
-*  reset tx virtual fifo information, except memory information
-* PARAMETERS
-* p_dma_info   [IN]        pointer to BTIF dma channel's information
-* RETURNS
-*  0 means success, negative means fail
-*****************************************************************************/
-int hal_btif_vfifo_reset(P_MTK_DMA_INFO_STR p_dma_info)
+ * FUNCTION
+ *  hal_tx_vfifo_reset
+ * DESCRIPTION
+ *  reset tx virtual fifo information, except memory information
+ * PARAMETERS
+ *  p_dma_info   [IN]        pointer to BTIF dma channel's information
+ * RETURNS
+ *  0 means success, negative means fail
+ *****************************************************************************/
+int hal_btif_vfifo_reset(struct _MTK_DMA_INFO_STR_ *p_dma_info)
 {
 	unsigned int i_ret = -1;
-	P_DMA_VFIFO p_vfifo = p_dma_info->p_vfifo;
-	P_MTK_BTIF_DMA_VFIFO p_mtk_dma_vfifo = container_of(p_vfifo,
-							    MTK_BTIF_DMA_VFIFO,
-							    vfifo);
+	struct _DMA_VFIFO_ *p_vfifo = p_dma_info->p_vfifo;
+	struct _MTK_BTIF_DMA_VFIFO_ *p_mtk_dma_vfifo = container_of(p_vfifo,
+			struct _MTK_BTIF_DMA_VFIFO_, vfifo);
 
 	BTIF_TRC_FUNC();
 	p_mtk_dma_vfifo->rpt = 0;
@@ -600,20 +657,20 @@ int hal_btif_vfifo_reset(P_MTK_DMA_INFO_STR p_dma_info)
 }
 
 /*****************************************************************************
-* FUNCTION
-*  hal_tx_dma_ier_ctrl
-* DESCRIPTION
-*  BTIF Tx DMA's interrupt enable/disable
-* PARAMETERS
-* p_dma_info   [IN]        pointer to BTIF dma channel's information
-* enable    [IN]        control if tx interrupt enabled or not
-* RETURNS
-*  0 means success, negative means fail
-*****************************************************************************/
-int hal_btif_dma_ier_ctrl(P_MTK_DMA_INFO_STR p_dma_info, bool en)
+ * FUNCTION
+ *  hal_tx_dma_ier_ctrl
+ * DESCRIPTION
+ *  BTIF Tx DMA's interrupt enable/disable
+ * PARAMETERS
+ *  p_dma_info   [IN]        pointer to BTIF dma channel's information
+ *  enable       [IN]        control if tx interrupt enabled or not
+ * RETURNS
+ *  0 means success, negative means fail
+ *****************************************************************************/
+int hal_btif_dma_ier_ctrl(struct _MTK_DMA_INFO_STR_ *p_dma_info, bool en)
 {
 	unsigned int i_ret = -1;
-	ENUM_DMA_DIR dir = p_dma_info->dir;
+	enum _ENUM_DMA_DIR_ dir = p_dma_info->dir;
 
 	if (dir == DMA_DIR_RX) {
 		i_ret = btif_rx_dma_ier_ctrl(p_dma_info, en);
@@ -628,7 +685,7 @@ int hal_btif_dma_ier_ctrl(P_MTK_DMA_INFO_STR p_dma_info, bool en)
 	return i_ret;
 }
 
-int btif_rx_dma_ier_ctrl(P_MTK_DMA_INFO_STR p_dma_info, bool en)
+int btif_rx_dma_ier_ctrl(struct _MTK_DMA_INFO_STR_ *p_dma_info, bool en)
 {
 	unsigned int i_ret = -1;
 	unsigned long base = p_dma_info->base;
@@ -647,7 +704,7 @@ int btif_rx_dma_ier_ctrl(P_MTK_DMA_INFO_STR p_dma_info, bool en)
 	return i_ret;
 }
 
-int btif_tx_dma_ier_ctrl(P_MTK_DMA_INFO_STR p_dma_info, bool en)
+int btif_tx_dma_ier_ctrl(struct _MTK_DMA_INFO_STR_ *p_dma_info, bool en)
 {
 	unsigned int i_ret = -1;
 	unsigned long base = p_dma_info->base;
@@ -663,36 +720,38 @@ int btif_tx_dma_ier_ctrl(P_MTK_DMA_INFO_STR p_dma_info, bool en)
 	return i_ret;
 }
 
-static int is_tx_dma_irq_finish_done(P_MTK_DMA_INFO_STR p_dma_info)
+static int is_tx_dma_irq_finish_done(struct _MTK_DMA_INFO_STR_ *p_dma_info)
 {
 	int tx_irq_done = 0;
 #if MTK_BTIF_ENABLE_CLK_REF_COUNTER
-/*if we enable this clock reference couner, just return , because when enter IRQ handler, DMA's clock will be opened*/
+/*if we enable this clock reference couner, just return , because when enter*/
+/*IRQ handler, DMA's clock will be opened*/
 	tx_irq_done = 1;
 #else
 	unsigned long flag = 0;
 	unsigned long base = p_dma_info->base;
 
 	spin_lock_irqsave(&(g_clk_cg_spinlock), flag);
-	tx_irq_done = ((BTIF_READ32(TX_DMA_INT_FLAG(base)) & TX_DMA_INT_FLAG_MASK) == 0) ? 1 : 0;
+	tx_irq_done = ((BTIF_READ32(TX_DMA_INT_FLAG(base)) &
+			TX_DMA_INT_FLAG_MASK) == 0) ? 1 : 0;
 	spin_unlock_irqrestore(&(g_clk_cg_spinlock), flag);
 #endif
 	return tx_irq_done;
 }
 
 /*****************************************************************************
-* FUNCTION
-*  hal_tx_dma_irq_handler
-* DESCRIPTION
-*  lower level tx interrupt handler
-* PARAMETERS
-* p_dma_info   [IN]        pointer to BTIF dma channel's information
-* RETURNS
-*  0 means success, negative means fail
-*****************************************************************************/
-int hal_tx_dma_irq_handler(P_MTK_DMA_INFO_STR p_dma_info)
+ * FUNCTION
+ *  hal_tx_dma_irq_handler
+ * DESCRIPTION
+ *  lower level tx interrupt handler
+ * PARAMETERS
+ *  p_dma_info   [IN]        pointer to BTIF dma channel's information
+ * RETURNS
+ *  0 means success, negative means fail
+ *****************************************************************************/
+int hal_tx_dma_irq_handler(struct _MTK_DMA_INFO_STR_ *p_dma_info)
 {
-#define MAX_CONTINIOUS_TIMES 512
+#define MAX_CONTINUOUS_TIMES 512
 	unsigned int i_ret = -1;
 	unsigned int valid_size = 0;
 	unsigned int vff_len = 0;
@@ -719,16 +778,18 @@ int hal_tx_dma_irq_handler(P_MTK_DMA_INFO_STR p_dma_info)
 	valid_size = BTIF_READ32(TX_DMA_VFF_VALID_SIZE(base));
 	left_len = BTIF_READ32(TX_DMA_VFF_LEFT_SIZE(base));
 	if (flush_irq_counter == 0)
-		ktime_get_real_ts64(&start_timer);
+		btif_do_gettimeofday(&start_timer);
 	if ((valid_size > 0) && (valid_size < 8)) {
 		i_ret = _tx_dma_flush(p_dma_info);
 		flush_irq_counter++;
-		if (flush_irq_counter >= MAX_CONTINIOUS_TIMES) {
-			ktime_get_real_ts64(&end_timer);
+		if (flush_irq_counter >= MAX_CONTINUOUS_TIMES) {
+			btif_do_gettimeofday(&end_timer);
 /*
- * when btif tx fifo cannot accept any data and counts of bytes left in tx vfifo < 8 for a while
+ * when btif tx fifo cannot accept any data and counts of bytes left
+ * in tx vfifo < 8 for a while
  * we assume that btif cannot send data for a long time
- * in order not to generate interrupt continiously, which may effect system's performance.
+ * in order not to generate interrupt continuously,
+ * which may effect system's performance.
  * we clear tx flag and disable btif tx interrupt
  */
 /*clear interrupt flag*/
@@ -737,12 +798,12 @@ int hal_tx_dma_irq_handler(P_MTK_DMA_INFO_STR p_dma_info)
 /*vFIFO data has been read by DMA controller, just disable tx dma's irq*/
 			i_ret = hal_btif_dma_ier_ctrl(p_dma_info, false);
 			BTIF_ERR_FUNC
-			    ("**********************ERROR, ERROR, ERROR**************************\n");
-			BTIF_ERR_FUNC
-			    ("BTIF Tx IRQ happened %d times (continiously), between %d.%d and %d.%d\n",
-			     MAX_CONTINIOUS_TIMES, start_timer.tv_sec,
-			     start_timer.tv_nsec / 1000, end_timer.tv_nsec / 1000,
-			     end_timer.tv_nsec / 1000);
+			    ("*************ERROR, ERROR, ERROR************\n");
+			BTIF_ERR_FUNC(
+			     "Tx happened %d times, between %ld.%ld and %ld.%ld\n",
+			     MAX_CONTINUOUS_TIMES, start_timer.tv_sec,
+			     start_timer.tv_nsec, end_timer.tv_sec,
+			     end_timer.tv_nsec);
 		}
 	} else if (vff_len == left_len) {
 		flush_irq_counter = 0;
@@ -751,14 +812,8 @@ int hal_tx_dma_irq_handler(P_MTK_DMA_INFO_STR p_dma_info)
 /*vFIFO data has been read by DMA controller, just disable tx dma's irq*/
 		i_ret = hal_btif_dma_ier_ctrl(p_dma_info, false);
 	} else {
-#if 0
-		BTIF_ERR_FUNC
-		    ("**********************WARNING**************************\n");
-		BTIF_ERR_FUNC("invalid irq condition, dump register\n");
-		hal_dma_dump_reg(p_dma_info, REG_TX_DMA_ALL);
-#endif
-		BTIF_DBG_FUNC
-		    ("superious IRQ occurs, vff_len(%d), valid_size(%d), left_len(%d)\n",
+		BTIF_INFO_FUNC
+		    ("superious IRQ:vff_len(%d),valid_size(%d),left_len(%d)\n",
 		     vff_len, valid_size, left_len);
 	}
 
@@ -768,32 +823,31 @@ int hal_tx_dma_irq_handler(P_MTK_DMA_INFO_STR p_dma_info)
 }
 
 /*****************************************************************************
-* FUNCTION
-*  hal_dma_send_data
-* DESCRIPTION
-*  send data through btif in DMA mode
-* PARAMETERS
-* p_dma_info   [IN]        pointer to BTIF dma channel's information
-* p_buf     [IN]        pointer to rx data buffer
-* max_len  [IN]        tx buffer length
-* RETURNS
-*  0 means success, negative means fail
-*****************************************************************************/
-int hal_dma_send_data(P_MTK_DMA_INFO_STR p_dma_info,
+ * FUNCTION
+ *  hal_dma_send_data
+ * DESCRIPTION
+ *  send data through btif in DMA mode
+ * PARAMETERS
+ *  p_dma_info   [IN]        pointer to BTIF dma channel's information
+ *  p_buf        [IN]        pointer to rx data buffer
+ *  max_len      [IN]        tx buffer length
+ * RETURNS
+ *  0 means success, negative means fail
+ *****************************************************************************/
+int hal_dma_send_data(struct _MTK_DMA_INFO_STR_ *p_dma_info,
 		      const unsigned char *p_buf, const unsigned int buf_len)
 {
 	unsigned int i_ret = -1;
 	unsigned long base = p_dma_info->base;
-	P_DMA_VFIFO p_vfifo = p_dma_info->p_vfifo;
+	struct _DMA_VFIFO_ *p_vfifo = p_dma_info->p_vfifo;
 	unsigned int len_to_send = buf_len;
 	unsigned int ava_len = 0;
 	unsigned int wpt = 0;
 	unsigned int last_wpt_wrap = 0;
 	unsigned int vff_size = 0;
 	unsigned char *p_data = (unsigned char *)p_buf;
-	P_MTK_BTIF_DMA_VFIFO p_mtk_vfifo = container_of(p_vfifo,
-							MTK_BTIF_DMA_VFIFO,
-							vfifo);
+	struct _MTK_BTIF_DMA_VFIFO_ *p_mtk_vfifo = container_of(p_vfifo,
+			struct _MTK_BTIF_DMA_VFIFO_, vfifo);
 
 	BTIF_TRC_FUNC();
 	if ((p_buf == NULL) || (buf_len == 0)) {
@@ -802,7 +856,8 @@ int hal_dma_send_data(P_MTK_DMA_INFO_STR p_dma_info,
 			      p_buf, buf_len);
 		return i_ret;
 	}
-/*check if tx dma in flush operation? if yes, should wait until DMA finish flush operation*/
+/*check if tx dma in flush operation?*/
+/*if yes, should wait until DMA finish flush operation*/
 /*currently uplayer logic will make sure this pre-condition*/
 /*disable Tx IER, in case Tx irq happens, flush bit may be set in irq handler*/
 	btif_tx_dma_ier_ctrl(p_dma_info, false);
@@ -818,9 +873,9 @@ int hal_dma_send_data(P_MTK_DMA_INFO_STR p_dma_info,
  */
 	if (buf_len > ava_len) {
 		BTIF_ERR_FUNC
-		    ("length to send:(%d) < length available(%d), abnormal!!!---!!!\n",
+		    ("length to send:(%d) < length available(%d), abnormal!\n",
 		     buf_len, ava_len);
-		WARN_ON(buf_len > ava_len);	/* this will cause kernel panic */
+		WARN_ON(buf_len > ava_len); /* this will cause kernel panic */
 	}
 
 	len_to_send = buf_len < ava_len ? buf_len : ava_len;
@@ -849,7 +904,7 @@ int hal_dma_send_data(P_MTK_DMA_INFO_STR p_dma_info,
 	p_mtk_vfifo->wpt = wpt;
 	p_mtk_vfifo->last_wpt_wrap = last_wpt_wrap;
 
-/*make sure tx dma is allowed(tx flush bit is not set) to use before update WPT*/
+/*make sure tx dma is allowed(tx flush bit not set) to use before update WPT*/
 	if (hal_dma_is_tx_allow(p_dma_info)) {
 		/*make sure tx dma enabled*/
 		hal_btif_dma_ctrl(p_dma_info, DMA_CTRL_ENABLE);
@@ -860,7 +915,8 @@ int hal_dma_send_data(P_MTK_DMA_INFO_STR p_dma_info,
 		if ((BTIF_READ32(TX_DMA_VFF_VALID_SIZE(base)) < 8) &&
 		    (BTIF_READ32(TX_DMA_VFF_VALID_SIZE(base)) > 0)) {
 			/*
-			 * 0 < valid size in Tx vFIFO < 8 && TX Flush is not in process<should always be done>?
+			 * 0 < valid size in Tx vFIFO < 8 && TX Flush is not in
+			 * process<should always be done>?
 			 * if yes, set flush bit to DMA
 			 */
 			_tx_dma_flush(p_dma_info);
@@ -868,8 +924,10 @@ int hal_dma_send_data(P_MTK_DMA_INFO_STR p_dma_info,
 		i_ret = len_to_send;
 	} else {
 /*TODO: print error log*/
-		BTIF_ERR_FUNC("Tx DMA flush operation is in process, this case should never happen,",
-		"please check if tx operation is allowed before call this API\n");
+		BTIF_ERR_FUNC("Tx DMA flush operation is in process,%s%s%s",
+				" this case should never happen,",
+				" please check if tx operation",
+				" is allowed before before call this API\n");
 /*if flush operation is in process , we will return 0*/
 		i_ret = 0;
 	}
@@ -882,16 +940,16 @@ int hal_dma_send_data(P_MTK_DMA_INFO_STR p_dma_info,
 }
 
 /*****************************************************************************
-* FUNCTION
-*  hal_dma_is_tx_complete
-* DESCRIPTION
-*  get tx complete flag
-* PARAMETERS
-* p_dma_info   [IN]        pointer to BTIF dma channel's information
-* RETURNS
-*  true means tx complete, false means tx in process
-*****************************************************************************/
-bool hal_dma_is_tx_complete(P_MTK_DMA_INFO_STR p_dma_info)
+ * FUNCTION
+ *  hal_dma_is_tx_complete
+ * DESCRIPTION
+ *  get tx complete flag
+ * PARAMETERS
+ *  p_dma_info   [IN]        pointer to BTIF dma channel's information
+ * RETURNS
+ *  true means tx complete, false means tx in process
+ *****************************************************************************/
+bool hal_dma_is_tx_complete(struct _MTK_DMA_INFO_STR_ *p_dma_info)
 {
 	bool b_ret = -1;
 	unsigned long base = p_dma_info->base;
@@ -900,7 +958,8 @@ bool hal_dma_is_tx_complete(P_MTK_DMA_INFO_STR p_dma_info)
 	unsigned int tx_done = is_tx_dma_irq_finish_done(p_dma_info);
 
 /*
- * only when virtual FIFO valid size and Tx channel internal buffer size are both becomes to be 0,
+ * only when virtual FIFO valid size and Tx channel internal buffer size are
+ * both becomes to be 0,
  * we can identify tx operation finished
  * confirmed with DE.
  */
@@ -908,9 +967,8 @@ bool hal_dma_is_tx_complete(P_MTK_DMA_INFO_STR p_dma_info)
 		b_ret = true;
 		BTIF_DBG_FUNC("DMA tx finished.\n");
 	} else {
-		BTIF_DBG_FUNC
-		    ("DMA tx is in process. vfifo valid size(%d), dma internal size (%d), tx_done(%d)\n",
-		     valid_size, inter_size, tx_done);
+		BTIF_DBG_FUNC("valid size(%d), inter size (%d), tx_done(%d)\n",
+				valid_size, inter_size, tx_done);
 		b_ret = false;
 	}
 
@@ -918,16 +976,16 @@ bool hal_dma_is_tx_complete(P_MTK_DMA_INFO_STR p_dma_info)
 }
 
 /*****************************************************************************
-* FUNCTION
-*  hal_dma_get_ava_room
-* DESCRIPTION
-*  get tx available room
-* PARAMETERS
-* p_dma_info   [IN]        pointer to BTIF dma channel's information
-* RETURNS
-*  available room  size
-*****************************************************************************/
-int hal_dma_get_ava_room(P_MTK_DMA_INFO_STR p_dma_info)
+ * FUNCTION
+ *  hal_dma_get_ava_room
+ * DESCRIPTION
+ *  get tx available room
+ * PARAMETERS
+ *  p_dma_info   [IN]        pointer to BTIF dma channel's information
+ * RETURNS
+ *  available room  size
+ *****************************************************************************/
+int hal_dma_get_ava_room(struct _MTK_DMA_INFO_STR_ *p_dma_info)
 {
 	int i_ret = -1;
 	unsigned long base = p_dma_info->base;
@@ -942,16 +1000,16 @@ int hal_dma_get_ava_room(P_MTK_DMA_INFO_STR p_dma_info)
 }
 
 /*****************************************************************************
-* FUNCTION
-*  hal_dma_is_tx_allow
-* DESCRIPTION
-*  is tx operation allowed by DMA
-* PARAMETERS
-* p_dma_info   [IN]        pointer to BTIF dma channel's information
-* RETURNS
-*  true if tx operation is allowed; false if tx is not allowed
-*****************************************************************************/
-bool hal_dma_is_tx_allow(P_MTK_DMA_INFO_STR p_dma_info)
+ * FUNCTION
+ *  hal_dma_is_tx_allow
+ * DESCRIPTION
+ *  is tx operation allowed by DMA
+ * PARAMETERS
+ *  p_dma_info   [IN]        pointer to BTIF dma channel's information
+ * RETURNS
+ *  true if tx operation is allowed; false if tx is not allowed
+ *****************************************************************************/
+bool hal_dma_is_tx_allow(struct _MTK_DMA_INFO_STR_ *p_dma_info)
 {
 #define MIN_TX_MB ((26 * 1000000 / 13) / 1000000)
 #define AVE_TX_MB ((26 * 1000000 / 8) / 1000000)
@@ -972,18 +1030,18 @@ bool hal_dma_is_tx_allow(P_MTK_DMA_INFO_STR p_dma_info)
 
 
 /*****************************************************************************
-* FUNCTION
-*  hal_rx_dma_irq_handler
-* DESCRIPTION
-*  lower level rx interrupt handler
-* PARAMETERS
-* p_dma_info   [IN]        pointer to BTIF dma channel's information
-* p_buf     [IN/OUT] pointer to rx data buffer
-* max_len  [IN]        max length of rx buffer
-* RETURNS
-*  0 means success, negative means fail
-*****************************************************************************/
-int hal_rx_dma_irq_handler(P_MTK_DMA_INFO_STR p_dma_info,
+ * FUNCTION
+ *  hal_rx_dma_irq_handler
+ * DESCRIPTION
+ *  lower level rx interrupt handler
+ * PARAMETERS
+ *  p_dma_info   [IN]        pointer to BTIF dma channel's information
+ *  p_buf        [IN/OUT] pointer to rx data buffer
+ *  max_len      [IN]        max length of rx buffer
+ * RETURNS
+ *  0 means success, negative means fail
+ *****************************************************************************/
+int hal_rx_dma_irq_handler(struct _MTK_DMA_INFO_STR_ *p_dma_info,
 			   unsigned char *p_buf, const unsigned int max_len)
 {
 	int i_ret = -1;
@@ -995,14 +1053,13 @@ int hal_rx_dma_irq_handler(P_MTK_DMA_INFO_STR p_dma_info,
 	unsigned int tail_len = 0;
 	unsigned int real_len = 0;
 	unsigned long base = p_dma_info->base;
-	P_DMA_VFIFO p_vfifo = p_dma_info->p_vfifo;
+	struct _DMA_VFIFO_ *p_vfifo = p_dma_info->p_vfifo;
 	dma_rx_buf_write rx_cb = p_dma_info->rx_cb;
 	unsigned char *p_vff_buf = NULL;
 	unsigned char *vff_base = p_vfifo->p_vir_addr;
 	unsigned int vff_size = p_vfifo->vfifo_size;
-	P_MTK_BTIF_DMA_VFIFO p_mtk_vfifo = container_of(p_vfifo,
-							MTK_BTIF_DMA_VFIFO,
-							vfifo);
+	struct _MTK_BTIF_DMA_VFIFO_ *p_mtk_vfifo = container_of(p_vfifo,
+			struct _MTK_BTIF_DMA_VFIFO_, vfifo);
 	unsigned long flag = 0;
 
 	spin_lock_irqsave(&(g_clk_cg_spinlock), flag);
@@ -1017,7 +1074,7 @@ int hal_rx_dma_irq_handler(P_MTK_DMA_INFO_STR p_dma_info,
 /*disable DMA Rx IER*/
 	hal_btif_dma_ier_ctrl(p_dma_info, false);
 
-/*clear Rx DMA's interrupt status*/
+	/*clear Rx DMA's interrupt status*/
 	BTIF_SET_BIT(RX_DMA_INT_FLAG(base), RX_DMA_INT_DONE | RX_DMA_INT_THRE);
 
 	valid_len = BTIF_READ32(RX_DMA_VFF_VALID_SIZE(base));
@@ -1025,8 +1082,8 @@ int hal_rx_dma_irq_handler(P_MTK_DMA_INFO_STR p_dma_info,
 	wpt = BTIF_READ32(RX_DMA_VFF_WPT(base));
 	if ((valid_len == 0) && (rpt == wpt)) {
 		BTIF_DBG_FUNC
-		    ("rx interrupt, no data available in Rx DMA, wpt(0x%08x), rpt(0x%08x)\n",
-		     rpt, wpt);
+		("no data in DMA, wpt(0x%08x), rpt(0x%08x), flg(0x%x)\n",
+			 rpt, wpt, BTIF_READ32(RX_DMA_INT_FLAG(base)));
 	}
 
 	i_ret = 0;
@@ -1056,8 +1113,8 @@ int hal_rx_dma_irq_handler(P_MTK_DMA_INFO_STR p_dma_info,
 			}
 			i_ret += real_len;
 		} else
-			BTIF_ERR_FUNC("no rx_cb found, please check your init process\n");
-		mb();
+			BTIF_ERR_FUNC("no rx_cb found, check init process\n");
+		mb(); /* for dma irq */
 		rpt += real_len;
 		if (rpt >= vff_size) {
 			/*read wrap bit should be revert*/
@@ -1090,8 +1147,8 @@ int hal_rx_dma_irq_handler(P_MTK_DMA_INFO_STR p_dma_info,
 	return i_ret;
 }
 
-static int hal_tx_dma_dump_reg(P_MTK_DMA_INFO_STR p_dma_info,
-			       ENUM_BTIF_REG_ID flag)
+static int hal_tx_dma_dump_reg(struct _MTK_DMA_INFO_STR_ *p_dma_info,
+			       enum _ENUM_BTIF_REG_ID_ flag)
 {
 	int i_ret = -1;
 	unsigned long base = p_dma_info->base;
@@ -1124,11 +1181,8 @@ static int hal_tx_dma_dump_reg(P_MTK_DMA_INFO_STR p_dma_info,
 	valid_size = BTIF_READ32(TX_DMA_VFF_VALID_SIZE(base));
 	/*spin_unlock_irqrestore(&(g_clk_cg_spinlock), irq_flag);*/
 
-	BTIF_INFO_FUNC("DMA's clock is on\n");
-	BTIF_INFO_FUNC("Tx DMA's base address: 0x%lx\n", base);
-
-	if (flag == REG_TX_DMA_ALL) {
-		BTIF_INFO_FUNC("TX_EN(:0x%x\n", enable);
+	if (flag == REG_ALL) {
+		BTIF_INFO_FUNC("TX_EN:0x%x\n", enable);
 		BTIF_INFO_FUNC("INT_FLAG:0x%x\n", int_flag);
 		BTIF_INFO_FUNC("TX_STOP:0x%x\n", stop);
 		BTIF_INFO_FUNC("TX_FLUSH:0x%x\n", flush);
@@ -1152,20 +1206,24 @@ static int hal_tx_dma_dump_reg(P_MTK_DMA_INFO_STR p_dma_info,
 		BTIF_INFO_FUNC("DBG_STATUS:0x%x\n",
 			       BTIF_READ32(TX_DMA_DEBUG_STATUS(base)));
 		i_ret = 0;
+	} else if (flag == REG_IRQ) {
+		BTIF_INFO_FUNC("TX EN:0x%x,IEN:0x%x,FLG:0x%x,WR:0x%x,RD:0x%x\n",
+			       enable, BTIF_READ32(TX_DMA_INT_EN(base)),
+			       int_flag, wpt, rpt);
 	} else {
 		BTIF_WARN_FUNC("unknown flag:%d\n", flag);
 	}
-	BTIF_INFO_FUNC("tx dma %s\n", (enable & DMA_EN_BIT) &&
-		       (!(stop && DMA_STOP_BIT)) ? "enabled" : "stopped");
-	BTIF_INFO_FUNC("data in tx dma is %s sent by HW\n",
-		       ((wpt == rpt) &&
-			(int_buf == 0)) ? "completely" : "not completely");
+	BTIF_INFO_FUNC("tx dma %s,data in tx dma is %s sent by HW\n",
+		       (enable & DMA_EN_BIT) && (!(stop & DMA_STOP_BIT)) ?
+			"enabled" : "stopped",
+		       ((wpt == rpt) && (int_buf == 0)) ?
+			"completely" : "not completely");
 
 	return i_ret;
 }
 
-static int hal_rx_dma_dump_reg(P_MTK_DMA_INFO_STR p_dma_info,
-			       ENUM_BTIF_REG_ID flag)
+static int hal_rx_dma_dump_reg(struct _MTK_DMA_INFO_STR_ *p_dma_info,
+			       enum _ENUM_BTIF_REG_ID_ flag)
 {
 	int i_ret = -1;
 	unsigned long base = p_dma_info->base;
@@ -1200,11 +1258,8 @@ static int hal_rx_dma_dump_reg(P_MTK_DMA_INFO_STR p_dma_info,
 	valid_size = BTIF_READ32(RX_DMA_VFF_VALID_SIZE(base));
 	/*spin_unlock_irqrestore(&(g_clk_cg_spinlock), irq_flag);*/
 
-	BTIF_INFO_FUNC("DMA's clock is on\n");
-	BTIF_INFO_FUNC("Rx DMA's base address: 0x%lx\n", base);
-
-	if (flag == REG_RX_DMA_ALL) {
-		BTIF_INFO_FUNC("RX_EN(:0x%x\n", enable);
+	if (flag == REG_ALL) {
+		BTIF_INFO_FUNC("RX_EN:0x%x\n", enable);
 		BTIF_INFO_FUNC("RX_STOP:0x%x\n", stop);
 		BTIF_INFO_FUNC("RX_FLUSH:0x%x\n", flush);
 		BTIF_INFO_FUNC("INT_FLAG:0x%x\n", int_flag);
@@ -1228,30 +1283,35 @@ static int hal_rx_dma_dump_reg(P_MTK_DMA_INFO_STR p_dma_info,
 		BTIF_INFO_FUNC("DBG_STATUS:0x%x\n",
 			       BTIF_READ32(RX_DMA_DEBUG_STATUS(base)));
 		i_ret = 0;
+	}  else if (flag == REG_IRQ) {
+		BTIF_INFO_FUNC("RXEN:0x%x,IEN:0x%x,FLG:0x%x,WR:0x%x,RD:0x%x\n",
+			       enable, BTIF_READ32(RX_DMA_INT_EN(base)),
+			       int_flag, wpt, rpt);
 	} else {
 		BTIF_WARN_FUNC("unknown flag:%d\n", flag);
 	}
-	BTIF_INFO_FUNC("rx dma %s\n", (enable & DMA_EN_BIT) &&
-		       (!(stop && DMA_STOP_BIT)) ? "enabled" : "stopped");
-	BTIF_INFO_FUNC("data in rx dma is %s by driver\n",
-		       ((wpt == rpt) &&
-			(int_buf == 0)) ? "received" : "not received");
+	BTIF_INFO_FUNC("rx dma %s,data in rx dma is %s by driver\n",
+		       (enable & DMA_EN_BIT) && (!(stop & DMA_STOP_BIT)) ?
+			"enabled" : "stopped",
+		       ((wpt == rpt) && (int_buf == 0)) ?
+			"received" : "not received");
 
 	return i_ret;
 }
 
 /*****************************************************************************
-* FUNCTION
-*  hal_dma_dump_reg
-* DESCRIPTION
-*  dump BTIF module's information when needed
-* PARAMETERS
-* p_dma_info   [IN]        pointer to BTIF dma channel's information
-* flag             [IN]        register id flag
-* RETURNS
-*  0 means success, negative means fail
-*****************************************************************************/
-int hal_dma_dump_reg(P_MTK_DMA_INFO_STR p_dma_info, ENUM_BTIF_REG_ID flag)
+ * FUNCTION
+ *  hal_dma_dump_reg
+ * DESCRIPTION
+ *  dump BTIF module's information when needed
+ * PARAMETERS
+ *  p_dma_info   [IN]        pointer to BTIF dma channel's information
+ *  flag         [IN]        register id flag
+ * RETURNS
+ *  0 means success, negative means fail
+ *****************************************************************************/
+int hal_dma_dump_reg(struct _MTK_DMA_INFO_STR_ *p_dma_info,
+		     enum _ENUM_BTIF_REG_ID_ flag)
 {
 	unsigned int i_ret = -1;
 
@@ -1265,7 +1325,22 @@ int hal_dma_dump_reg(P_MTK_DMA_INFO_STR p_dma_info, ENUM_BTIF_REG_ID flag)
 	return i_ret;
 }
 
-static int _tx_dma_flush(P_MTK_DMA_INFO_STR p_dma_info)
+void hal_dma_dump_vfifo(struct _MTK_DMA_INFO_STR_ *p_dma_info)
+{
+	struct _DMA_VFIFO_ *p_vfifo;
+
+	if (!p_dma_info)
+		return;
+
+	p_vfifo = p_dma_info->p_vfifo;
+	if (!p_vfifo || !p_vfifo->p_vir_addr)
+		return;
+
+	btif_dump_array(p_dma_info->dir == DMA_DIR_RX ? "RX" : "TX",
+		p_vfifo->p_vir_addr, p_vfifo->vfifo_size);
+}
+
+static int _tx_dma_flush(struct _MTK_DMA_INFO_STR_ *p_dma_info)
 {
 	unsigned int i_ret = -1;
 	unsigned long base = p_dma_info->base;
@@ -1273,7 +1348,7 @@ static int _tx_dma_flush(P_MTK_DMA_INFO_STR p_dma_info)
 
 /*in MTK DMA BTIF channel we cannot set STOP and FLUSH bit at the same time*/
 	if ((stop && DMA_STOP_BIT) != 0)
-		BTIF_ERR_FUNC("BTIF's DMA in stop state, omit flush operation\n");
+		BTIF_ERR_FUNC("DMA in stop state, omit flush operation\n");
 	else {
 		BTIF_DBG_FUNC("flush tx dma\n");
 		BTIF_SET_BIT(TX_DMA_FLUSH(base), DMA_FLUSH_BIT);
@@ -1282,18 +1357,20 @@ static int _tx_dma_flush(P_MTK_DMA_INFO_STR p_dma_info)
 	return i_ret;
 }
 
-static int _is_tx_dma_in_flush(P_MTK_DMA_INFO_STR p_dma_info)
+static int _is_tx_dma_in_flush(struct _MTK_DMA_INFO_STR_ *p_dma_info)
 {
 	bool b_ret = true;
 	unsigned long base = p_dma_info->base;
 
 /*see if flush operation is in process*/
-	b_ret = ((DMA_FLUSH_BIT & BTIF_READ32(TX_DMA_FLUSH(base))) != 0) ? true : false;
+	b_ret = ((DMA_FLUSH_BIT & BTIF_READ32(TX_DMA_FLUSH(base))) != 0) ?
+			true : false;
 
 	return b_ret;
 }
 
-int hal_dma_pm_ops(P_MTK_DMA_INFO_STR p_dma_info, MTK_BTIF_PM_OPID opid)
+int hal_dma_pm_ops(struct _MTK_DMA_INFO_STR_ *p_dma_info,
+		   enum _MTK_BTIF_PM_OPID_ opid)
 {
 	int i_ret = -1;
 
@@ -1313,7 +1390,7 @@ int hal_dma_pm_ops(P_MTK_DMA_INFO_STR p_dma_info, MTK_BTIF_PM_OPID opid)
 		break;
 	case BTIF_PM_RESTORE_NOIRQ:{
 			unsigned int flag = 0;
-			P_MTK_BTIF_IRQ_STR p_irq = p_dma_info->p_irq;
+			struct _MTK_BTIF_IRQ_STR_ *p_irq = p_dma_info->p_irq;
 
 #ifdef CONFIG_OF
 			flag = p_irq->irq_flags;
@@ -1328,7 +1405,8 @@ int hal_dma_pm_ops(P_MTK_DMA_INFO_STR p_dma_info, MTK_BTIF_PM_OPID opid)
 					flag = IRQF_TRIGGER_RISING |
 					    IRQF_TRIGGER_FALLING;
 				else
-					flag = IRQF_TRIGGER_FALLING;	/*make this as default type */
+					flag = IRQF_TRIGGER_FALLING;
+					/*make this as default type */
 				break;
 			case IRQ_SENS_LVL:
 				if (p_irq->lvl_type == IRQ_LVL_LOW)
@@ -1336,10 +1414,12 @@ int hal_dma_pm_ops(P_MTK_DMA_INFO_STR p_dma_info, MTK_BTIF_PM_OPID opid)
 				else if (p_irq->lvl_type == IRQ_LVL_HIGH)
 					flag = IRQF_TRIGGER_HIGH;
 				else
-					flag = IRQF_TRIGGER_LOW;	/*make this as default type */
+					flag = IRQF_TRIGGER_LOW;
+					/*make this as default type */
 				break;
 			default:
-				flag = IRQF_TRIGGER_LOW;	/*make this as default type */
+				flag = IRQF_TRIGGER_LOW;
+				/*make this as default type */
 				break;
 			}
 #endif
@@ -1357,19 +1437,19 @@ int hal_dma_pm_ops(P_MTK_DMA_INFO_STR p_dma_info, MTK_BTIF_PM_OPID opid)
 }
 
 /*****************************************************************************
-* FUNCTION
-*  hal_dma_receive_data
-* DESCRIPTION
-*  receive data from btif module in DMA polling mode
-* PARAMETERS
-* p_dma_info   [IN]        pointer to BTIF dma channel's information
-* p_buf     [IN/OUT] pointer to rx data buffer
-* max_len  [IN]        max length of rx buffer
-* RETURNS
-*  positive means data is available, 0 means no data available
-*****************************************************************************/
+ * FUNCTION
+ *  hal_dma_receive_data
+ * DESCRIPTION
+ *  receive data from btif module in DMA polling mode
+ * PARAMETERS
+ *  p_dma_info   [IN]        pointer to BTIF dma channel's information
+ *  p_buf        [IN/OUT] pointer to rx data buffer
+ *  max_len      [IN]        max length of rx buffer
+ * RETURNS
+ *  positive means data is available, 0 means no data available
+ *****************************************************************************/
 #ifndef MTK_BTIF_MARK_UNUSED_API
-int hal_dma_receive_data(P_MTK_DMA_INFO_STR p_dma_info,
+int hal_dma_receive_data(struct _MTK_DMA_INFO_STR_ *p_dma_info,
 			 unsigned char *p_buf, const unsigned int max_len)
 {
 	unsigned int i_ret = -1;
@@ -1380,57 +1460,111 @@ int hal_dma_receive_data(P_MTK_DMA_INFO_STR p_dma_info,
 
 int _btif_dma_dump_dbg_reg(void)
 {
-#if 0
-	static MTK_BTIF_DMA_REG_DMP_DBG g_dma_dbg_regs[] = {
-		{0x10201180, 0x0},
-		{0x10201184, 0x0},
-		{0x10201188, 0x0},
-		{0x1020118C, 0x0},
-		{0x10201190, 0x0},
-		{0x1000320C, 0x0},
-		{0x10003210, 0x0},
-		{0x10003214, 0x0},
-	};
-
-	int i = 0;
-	char *addr1 = NULL;
-	char *addr2 = NULL;
-
-	int array_num = ARRAY_SIZE(g_dma_dbg_regs)
-
-	addr1 = ioremap(g_dma_dbg_regs[0].reg_addr, 0x20);
-	if (addr1) {
-		for (i = 0; i < 5; i++)
-			g_dma_dbg_regs[i].reg_val = *(volatile unsigned int*)(addr1 + i*4);
-		iounmap(addr1);
-	}
-
-	addr2 = ioremap(g_dma_dbg_regs[5].reg_addr, 0x10);
-	if (addr2) {
-		g_dma_dbg_regs[5].reg_val = *(volatile unsigned int*)(addr2);
-		g_dma_dbg_regs[6].reg_val = *(volatile unsigned int*)(addr2+4);
-		g_dma_dbg_regs[7].reg_val = *(volatile unsigned int*)(addr2+8);
-		iounmap(addr2);
-	}
-
-	for (i = 0; i < array_num; i++)
-		BTIF_INFO_FUNC("<reg, val>-<0x%lx, 0x%08x>\n", g_dma_dbg_regs[i].reg_addr, g_dma_dbg_regs[i].reg_val);
-#endif
 	return 0;
 }
 
-static void hal_btif_tx_dma_vff_set_for_4g(void)
+/*****************************************************************************
+ * FUNCTION
+ *  hal_dma_tx_has_pending
+ * DESCRIPTION
+ *  Check whether tx dma vff has pending data
+ * PARAMETERS
+ *  p_dma_info   [IN]        pointer to BTIF dma channel's information
+ * RETURNS
+ *  0 means no pending data
+ *  1 means has pending data
+ *  E_BTIF_FAIL means dma is not enable
+ *****************************************************************************/
+int hal_dma_tx_has_pending(struct _MTK_DMA_INFO_STR_ *p_dma_info)
 {
-	BTIF_DBG_FUNC("Set btif tx_vff_addr bit29\n");
-	BTIF_SET_BIT(TX_DMA_VFF_ADDR_H(mtk_btif_tx_dma.base), DMA_VFF_BIT29_OFFSET);
-	BTIF_DBG_FUNC("Dump value of bit29 0x%x:(0x%x)\n", TX_DMA_VFF_ADDR_H(mtk_btif_tx_dma.base),
-					BTIF_READ32(TX_DMA_VFF_ADDR_H(mtk_btif_tx_dma.base)));
-}
-static void hal_btif_rx_dma_vff_set_for_4g(void)
-{
-	BTIF_DBG_FUNC("Set btif rx_vff_addr bit29\n");
-	BTIF_SET_BIT(RX_DMA_VFF_ADDR_H(mtk_btif_rx_dma.base), DMA_VFF_BIT29_OFFSET);
-	BTIF_DBG_FUNC("Dump value of bit29 0x%x:(0x%x)\n", RX_DMA_VFF_ADDR_H(mtk_btif_rx_dma.base),
-					BTIF_READ32(RX_DMA_VFF_ADDR_H(mtk_btif_rx_dma.base)));
+	unsigned long base = p_dma_info->base;
+	unsigned int enable = BTIF_READ32(TX_DMA_EN(base));
+	unsigned int stop = BTIF_READ32(TX_DMA_STOP(base));
+	unsigned int wpt = BTIF_READ32(TX_DMA_VFF_WPT(base));
+	unsigned int rpt = BTIF_READ32(TX_DMA_VFF_RPT(base));
+	unsigned int int_buf = BTIF_READ32(TX_DMA_INT_BUF_SIZE(base));
+
+	if (!(enable & DMA_EN_BIT) || (stop & DMA_STOP_BIT))
+		return E_BTIF_FAIL;
+
+	return ((wpt == rpt) && (int_buf == 0)) ? 0 : 1;
 }
 
+/*****************************************************************************
+ * FUNCTION
+ *  hal_dma_rx_has_pending
+ * DESCRIPTION
+ *  Check whether rx dma vff has pending data
+ * PARAMETERS
+ *  p_dma_info   [IN]        pointer to BTIF dma channel's information
+ * RETURNS
+ *  0 means no pending data
+ *  1 means has pending data
+ *  E_BTIF_FAIL means dma is not enable
+ *****************************************************************************/
+int hal_dma_rx_has_pending(struct _MTK_DMA_INFO_STR_ *p_dma_info)
+{
+	unsigned long base = p_dma_info->base;
+	unsigned int enable = BTIF_READ32(RX_DMA_EN(base));
+	unsigned int stop = BTIF_READ32(RX_DMA_STOP(base));
+	unsigned int wpt = BTIF_READ32(RX_DMA_VFF_WPT(base));
+	unsigned int rpt = BTIF_READ32(RX_DMA_VFF_RPT(base));
+	unsigned int int_buf = BTIF_READ32(RX_DMA_INT_BUF_SIZE(base));
+
+	if (!(enable & DMA_EN_BIT) || (stop & DMA_STOP_BIT))
+		return E_BTIF_FAIL;
+
+	return ((wpt == rpt) && (int_buf == 0)) ? 0 : 1;
+}
+
+/*****************************************************************************
+ * FUNCTION
+ *  hal_rx_dma_lock
+ * DESCRIPTION
+ *  Need to lock data path before checking if the data path is empty.
+ * PARAMETERS
+ *  enable   [IN]        lock or unlock
+ * RETURNS
+ *  0 means success
+ *****************************************************************************/
+int hal_rx_dma_lock(bool enable)
+{
+	static unsigned long flag;
+
+	if (enable) {
+		if (!spin_trylock_irqsave(&g_clk_cg_spinlock, flag))
+			return E_BTIF_FAIL;
+	} else
+		spin_unlock_irqrestore(&g_clk_cg_spinlock, flag);
+	return 0;
+}
+
+int hal_btif_dma_check_status(struct _MTK_DMA_INFO_STR_ *p_dma_info)
+{
+	enum _ENUM_DMA_DIR_ dir = p_dma_info->dir;
+	unsigned long base = p_dma_info->base;
+	unsigned int enable;
+	unsigned int vfifo_size;
+
+	if (dir == DMA_DIR_RX) {
+		enable = BTIF_READ32(RX_DMA_EN(base));
+		vfifo_size = BTIF_READ32(RX_DMA_VFF_LEN(base));
+	} else if (dir == DMA_DIR_TX) {
+		enable = BTIF_READ32(TX_DMA_EN(base));
+		vfifo_size = BTIF_READ32(TX_DMA_VFF_LEN(base));
+	} else {
+		BTIF_ERR_FUNC("dir %d is unexpected.", dir);
+		return -1;
+	}
+
+	if (enable == 0 || vfifo_size == 0) {
+		if (dir == DMA_DIR_RX)
+			hal_rx_dma_dump_reg(p_dma_info, REG_ALL);
+		else
+			hal_tx_dma_dump_reg(p_dma_info, REG_ALL);
+
+		return -1;
+	}
+
+	return 0;
+}
