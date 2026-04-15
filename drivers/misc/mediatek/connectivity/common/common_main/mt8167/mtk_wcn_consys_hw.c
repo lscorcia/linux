@@ -1048,28 +1048,32 @@ INT32 mtk_wcn_consys_hw_restore(struct device *device)
 	return 0;
 }
 
-/*Reserved memory by device tree!*/
-int reserve_memory_consys_fn(struct reserved_mem *rmem)
-{
-	WMT_PLAT_WARN_FUNC(" name: %s, base: 0x%llx, size: 0x%llx\n", rmem->name,
-			   (unsigned long long)rmem->base, (unsigned long long)rmem->size);
-	gConEmiPhyBase = rmem->base;
-	return 0;
-}
-
-RESERVEDMEM_OF_DECLARE(reserve_memory_test, "mediatek,consys-reserve-memory", reserve_memory_consys_fn);
-
-
 INT32 mtk_wcn_consys_hw_init(void)
 {
 
 	INT32 iRet = -1;
 	UINT32 addrPhy = 0;
 	INT32 i = 0;
-	struct device_node *node = NULL;
+	struct device_node *node = NULL, *reserved_mem_node = NULL;
+	struct reserved_mem *reserved_mem = NULL;
 
 	node = of_find_compatible_node(NULL, NULL, "mediatek,mt8167-consys");
 	if (node) {
+		/* try to pick up connsys reserved memory region from DT */
+		reserved_mem_node = of_parse_phandle(node, "memory-region", 0);
+		if (!reserved_mem_node) {
+			WMT_PLAT_ERR_FUNC("Cannot get connsys memory-region from DT.\n");
+			return -EINVAL;
+		}
+
+		reserved_mem = of_reserved_mem_lookup(reserved_mem_node);
+		if (!reserved_mem) {
+			WMT_PLAT_ERR_FUNC("Failed to lookup reserved memory.\n");
+			return -EINVAL;
+		}
+
+		gConEmiPhyBase = reserved_mem->base;
+
 		/* registers base address */
 		conn_reg.mcu_base = (SIZE_T) of_iomap(node, i);
 		WMT_PLAT_DBG_FUNC("Get mcu register base(0x%zx)\n", conn_reg.mcu_base);
@@ -1088,6 +1092,7 @@ INT32 mtk_wcn_consys_hw_init(void)
 		conn_reg.spm_base = (SIZE_T) of_iomap(node, i);
 		WMT_PLAT_DBG_FUNC("Get spm register base(0x%zx)\n", conn_reg.spm_base);
 #endif
+		of_node_put(reserved_mem_node);
 	} else {
 		WMT_PLAT_ERR_FUNC("[%s] can't find CONSYS compatible node\n", __func__);
 		return iRet;
