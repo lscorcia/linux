@@ -56,7 +56,7 @@
 			no-map;
 		};
 
-		consys-reserve-memory {
+		consys_memory: consys-reserve-memory {
 			size = <0x00 0x200000>;
 			alignment = <0x00 0x200000>;
 			no-map;
@@ -387,6 +387,7 @@
 
 &consys {
 	status = "okay";
+	memory-region = <&consys_memory>;
 	vcn35-supply = <&mt6392_vcn35_reg>;
 	vcn18-supply = <&mt6392_vcn18_reg>;
 	pinctrl-3 = <&gps_lna_state_ol_pins>;
