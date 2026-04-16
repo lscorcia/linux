@@ -27,7 +27,7 @@ else
 endif
     subdir-ccflags-y += -D MTK_WCN_WMT_STP_EXP_SYMBOL_ABSTRACT
 
-ifeq ($(CONFIG_MTK_COMBO_COMM),y)
+ifneq ($(CONFIG_MTK_COMBO_COMM),)
     obj-y += common/
 endif
     obj-$(CONFIG_MTK_COMBO_BT) += bt/

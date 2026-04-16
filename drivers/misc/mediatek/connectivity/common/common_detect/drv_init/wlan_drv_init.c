@@ -25,7 +25,7 @@ int do_wlan_drv_init(int chip_id)
 {
 	int i_ret = 0;
 
-#ifdef CONFIG_MTK_COMBO_WIFI
+#if defined(CONFIG_MTK_COMBO_WIFI) || defined(CONFIG_MTK_COMBO_WIFI_MODULE)
 	int ret = 0;
 
 	WMT_DETECT_INFO_FUNC("start to do wlan module init 0x%x\n", chip_id);

@@ -8,6 +8,7 @@ ccflags-y += \
 	-I$(srctree)/drivers/misc/mediatek/btif/common/inc \
 
 obj-y += wmt_core.o wmt_ctrl.o  wmt_func.o  wmt_lib.o wmt_conf.o wmt_exp.o
+obj-y += mtk_wcn_stub_alps.o
 obj-y	+= wmt_ic_6620.o
 obj-y	+= wmt_ic_6628.o
 obj-y	+= wmt_ic_6630.o

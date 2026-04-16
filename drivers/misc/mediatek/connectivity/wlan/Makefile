@@ -12,7 +12,7 @@ $(warning CONFIG_MTK_COMBO_WIFI=$(CONFIG_MTK_COMBO_WIFI))
 
 #########################################################
 # Wi-Fi character device driver
-ifeq ($(CONFIG_MTK_COMBO_COMM),y)
+ifneq ($(CONFIG_MTK_COMBO_COMM),)
 ccflags-y += -D CREATE_NODE_DYNAMIC=1
 
 ifeq ($(CONFIG_MTK_TC1_FEATURE), y)

@@ -37,7 +37,7 @@
 #include "wmt_lib.h"
 #include "wmt_core.h"
 #include "wmt_exp.h"
-#include "wmt_detect.h"
+//#include "wmt_detect.h"
 
 
 /*******************************************************************************

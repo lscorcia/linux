@@ -63,7 +63,7 @@
 #include "stp_exp.h"
 #include "bgw_desense.h"
 #include "wmt_idc.h"
-#include "wmt_detect.h"
+//#include "wmt_detect.h"
 #include "hif_sdio.h"
 
 #ifdef CONFIG_COMPAT
@@ -1257,6 +1257,8 @@ VOID wmt_dev_send_cmd_to_daemon(UINT32 cmd)
 
 static INT32 WMT_init(VOID)
 {
+	pr_warn("*** LUCA WMT_init 1");
+
 	dev_t devID = MKDEV(gWmtMajor, 0);
 	INT32 cdevErr = -1;
 	INT32 ret = -1;

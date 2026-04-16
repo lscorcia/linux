@@ -3,7 +3,6 @@ subdir-ccflags-y += \
 	-I$(src)/linux/pri/include \
 	-I$(src)/core/include \
 	-I$(src)/include \
-	-I$(src)/../common_detect \
 	-I$(srctree)/drivers/misc/mediatek/btif/common/inc
 
 subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/eccci/
@@ -31,26 +30,32 @@ subdir-ccflags-y += -D WMT_CREATE_NODE_DYNAMIC=1
 obj-$(CONFIG_MTK_COMBO) += mtk_stp_wmt$(EXT_FLAG).o
 # WMT DRIVER-core part
 mtk_stp_wmt$(EXT_FLAG)-objs	:= core/wmt_core.o core/wmt_ctrl.o core/wmt_func.o core/wmt_ic_soc.o core/wmt_lib.o core/wmt_conf.o
-
+mtk_stp_wmt$(EXT_FLAG)-objs 	+= core/mtk_wcn_stub_alps.o
 
 # WMT DRIVER-linux private part
-mtk_stp_wmt$(EXT_FLAG)-objs	+= linux/pri/wmt_dev.o linux/pri/wmt_exp.o
-mtk_stp_wmt$(EXT_FLAG)-objs	+= linux/pri/stp_btif.o
-
+mtk_stp_wmt$(EXT_FLAG)-objs	+= linux/wmt_dev.o core/wmt_exp.o
+mtk_stp_wmt$(EXT_FLAG)-objs	+= linux/stp_btif.o
 
 # WMT DRIVER-OSAL
-mtk_stp_wmt$(EXT_FLAG)-objs	+= linux/pub/osal.o linux/pub/bgw_desense.o
+mtk_stp_wmt$(EXT_FLAG)-objs	+= linux/osal.o linux/bgw_desense.o
+
+mtk_stp_wmt$(EXT_FLAG)-objs	+= core/stp_exp.o core/stp_core.o core/psm_core.o core/btm_core.o
+mtk_stp_wmt$(EXT_FLAG)-objs	+= linux/stp_dbg.o linux/stp_dbg_combo.o linux/stp_dbg_soc.o linux/wmt_dbg.o
+mtk_stp_wmt$(EXT_FLAG)-objs	+= linux/stp_sdio.o linux/stp_uart.o linux/hif_sdio.o
+
+ifneq ($(filter CONSYS_%,$(CONFIG_MTK_COMBO_CHIP)),)
+subdir-ccflags-y += -I$(src)/$(subst ",,$(CONFIG_MTK_PLATFORM))/include
+
+mtk_stp_wmt$(EXT_FLAG)-objs += $(subst ",,$(CONFIG_MTK_PLATFORM))/mtk_wcn_consys_hw.o
+mtk_stp_wmt$(EXT_FLAG)-objs += $(subst ",,$(CONFIG_MTK_PLATFORM))/wmt_plat_alps.o
+else
 # WMT DRIVER-platform implementation
-# mtk_stp_wmt$(EXT_FLAG)-objs += platform/alps/wmt_plat_alps.o
-
-# mtk_stp_wmt$(EXT_FLAG)-objs += platform/alps/mtk_wcn_consys_hw.o
-
-
-mtk_stp_wmt$(EXT_FLAG)-objs	+= linux/pri/stp_exp.o core/stp_core.o core/psm_core.o core/btm_core.o linux/pri/stp_dbg.o
+mtk_stp_wmt$(EXT_FLAG)-objs += platform/alps/wmt_plat_alps.o
+mtk_stp_wmt$(EXT_FLAG)-objs += platform/alps/mtk_wcn_cmb_hw.o
 
 # WMT stub part (built-in kernel image)
-# obj-y			+= platform/alps/mtk_wcn_consys_stub_alps.o
-
+obj-y			+= platform/alps/wmt_plat_stub.o
+endif
 endif
 
 ifeq ($(CONFIG_MTK_COMBO), y)

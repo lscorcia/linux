@@ -43,7 +43,12 @@
 #include "stp_core.h"
 #include "psm_core.h"
 #include "wmt_exp.h"
-#include "wmt_detect.h"
+//#include "wmt_detect.h"
+
+ENUM_WMT_CHIP_TYPE wmt_detect_get_chip_type(void)
+{
+	return WMT_CHIP_TYPE_SOC;
+}
 
 P_WMT_FUNC_OPS gpWmtFuncOps[WMTDRV_TYPE_MAX] = {
 #if CFG_FUNC_BT_SUPPORT
@@ -681,9 +686,13 @@ static INT32 wmt_core_stp_init(VOID)
 	P_WMT_CTX pctx = &gMtkWmtCtx;
 	P_WMT_GEN_CONF pWmtGenConf = NULL;
 
+	pr_warn("*** LUCA wmt_core_stp_init 1");
+
 	if (wmt_detect_get_chip_type() == WMT_CHIP_TYPE_COMBO)
 		wmt_conf_read_file();
 	gDevWmt.rWmtGenConf.co_clock_flag = wmt_lib_co_clock_flag_get();
+
+	pr_warn("*** LUCA wmt_core_stp_init 2");
 
 	pWmtGenConf = wmt_conf_get_cfg();
 	if (pWmtGenConf == NULL)
@@ -694,6 +703,7 @@ static INT32 wmt_core_stp_init(VOID)
 		return -1;
 	}
 
+	pr_warn("*** LUCA wmt_core_stp_init 3");
 
 	/* 4 <0> turn on SDIO2 for common SDIO */
 	if (pctx->wmtHifConf.hifType == WMT_HIF_SDIO) {
@@ -718,6 +728,9 @@ static INT32 wmt_core_stp_init(VOID)
 			return -3;
 		}
 	}
+
+	pr_warn("*** LUCA wmt_core_stp_init 4");
+
 	/* 4 <1> open stp */
 	ctrlPa1 = 0;
 	ctrlPa2 = 0;
@@ -726,6 +739,8 @@ static INT32 wmt_core_stp_init(VOID)
 		WMT_ERR_FUNC("WMT-CORE: wmt open stp\n");
 		return -4;
 	}
+
+	pr_warn("*** LUCA wmt_core_stp_init 5");
 
 	if (pctx->wmtHifConf.hifType == WMT_HIF_UART) {
 		ctrlPa1 = WMT_DEFAULT_BAUD_RATE;
@@ -739,32 +754,47 @@ static INT32 wmt_core_stp_init(VOID)
 	}
 	/* WMT_DBG_FUNC("WMT-CORE: change host baudrate(%d) ok\n", gMtkWmtCtx.wmtHifConf.au4HifConf[0]); */
 
+	pr_warn("*** LUCA wmt_core_stp_init 6");
+
 	/* 4 <1.5> disable and un-ready stp */
 	ctrlPa1 = WMT_STP_CONF_EN;
 	ctrlPa2 = 0;
 	iRet += wmt_core_ctrl(WMT_CTRL_STP_CONF, &ctrlPa1, &ctrlPa2);
+
+	pr_warn("*** LUCA wmt_core_stp_init 6a");
+
 	ctrlPa1 = WMT_STP_CONF_RDY;
 	ctrlPa2 = 0;
 	iRet += wmt_core_ctrl(WMT_CTRL_STP_CONF, &ctrlPa1, &ctrlPa2);
 
+	pr_warn("*** LUCA wmt_core_stp_init 7");
+
 	/* 4 <2> set mode and enable */
 	if (pctx->wmtHifConf.hifType == WMT_HIF_UART) {
+		pr_warn("*** LUCA wmt_core_stp_init 7a");
 		ctrlPa1 = WMT_STP_CONF_MODE;
 		ctrlPa2 = MTKSTP_UART_MAND_MODE;
 		iRet += wmt_core_ctrl(WMT_CTRL_STP_CONF, &ctrlPa1, &ctrlPa2);
 	} else if (pctx->wmtHifConf.hifType == WMT_HIF_SDIO) {
-
+		pr_warn("*** LUCA wmt_core_stp_init 7b");
 		ctrlPa1 = WMT_STP_CONF_MODE;
 		ctrlPa2 = MTKSTP_SDIO_MODE;
 		iRet += wmt_core_ctrl(WMT_CTRL_STP_CONF, &ctrlPa1, &ctrlPa2);
 		if (iRet)
 			WMT_ERR_FUNC(" confif SDIO_MODE fail!!!!\n");
 	}
+
+	pr_warn("*** LUCA wmt_core_stp_init 8");
+
 	if (pctx->wmtHifConf.hifType == WMT_HIF_BTIF) {
+		pr_warn("*** LUCA wmt_core_stp_init 8a");
 		ctrlPa1 = WMT_STP_CONF_MODE;
 		ctrlPa2 = MTKSTP_BTIF_MAND_MODE;
 		iRet += wmt_core_ctrl(WMT_CTRL_STP_CONF, &ctrlPa1, &ctrlPa2);
 	}
+
+	pr_warn("*** LUCA wmt_core_stp_init 9");
+
 	ctrlPa1 = WMT_STP_CONF_EN;
 	ctrlPa2 = 1;
 	iRet += wmt_core_ctrl(WMT_CTRL_STP_CONF, &ctrlPa1, &ctrlPa2);
@@ -774,11 +804,16 @@ static INT32 wmt_core_stp_init(VOID)
 	}
 	/* TODO: [ChangeFeature][GeorgeKuo] can we apply raise UART baud rate firstly for ALL supported chips??? */
 
+	pr_warn("*** LUCA wmt_core_stp_init 10");
+
 	iRet = wmt_core_hw_check();
 	if (iRet) {
 		WMT_ERR_FUNC("hw_check fail:%d\n", iRet);
 		return -8;
 	}
+
+	pr_warn("*** LUCA wmt_core_stp_init 11");
+
 	/* mtkWmtCtx.p_ic_ops is identified and checked ok */
 	if ((pctx->p_ic_ops->co_clock_ctrl != NULL) && (pWmtGenConf != NULL)) {
 		co_clock_type = (pWmtGenConf->co_clock_flag & 0x0f);
@@ -787,6 +822,9 @@ static INT32 wmt_core_stp_init(VOID)
 		WMT_WARN_FUNC("pctx->p_ic_ops->co_clock_ctrl(%p), pWmtGenConf(%p)\n", pctx->p_ic_ops->co_clock_ctrl,
 			      pWmtGenConf);
 	}
+
+	pr_warn("*** LUCA wmt_core_stp_init 12");
+
 	osal_assert(pctx->p_ic_ops->sw_init != NULL);
 	if (pctx->p_ic_ops->sw_init != NULL) {
 		iRet = (*(pctx->p_ic_ops->sw_init)) (&pctx->wmtHifConf);
@@ -794,10 +832,16 @@ static INT32 wmt_core_stp_init(VOID)
 		WMT_ERR_FUNC("gMtkWmtCtx.p_ic_ops->sw_init is NULL\n");
 		return -9;
 	}
+
+	pr_warn("*** LUCA wmt_core_stp_init 13");
+
 	if (iRet) {
 		WMT_ERR_FUNC("gMtkWmtCtx.p_ic_ops->sw_init fail:%d\n", iRet);
 		return -10;
 	}
+
+	pr_warn("*** LUCA wmt_core_stp_init 14");
+
 	/* 4 <10> set stp ready */
 	ctrlPa1 = WMT_STP_CONF_RDY;
 	ctrlPa2 = 1;
@@ -809,6 +853,9 @@ static INT32 wmt_core_stp_init(VOID)
 	else
 		wmt_lib_deep_sleep_flag_set(MTK_WCN_BOOL_FALSE);
 #endif
+
+	pr_warn("*** LUCA wmt_core_stp_init 15");
+
 	return iRet;
 }
 

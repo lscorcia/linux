@@ -58,6 +58,13 @@
 /* TODO:[ChangeFeature][George] move this definition outside so that wmt_dev can remove wmt_core.h inclusion. */
 #define defaultPatchName "mt66xx_patch_hdr.bin"
 
+typedef enum _ENUM_WMT_CHIP_TYPE_T {
+	WMT_CHIP_TYPE_COMBO,
+	WMT_CHIP_TYPE_SOC,
+	WMT_CHIP_TYPE_INVALID
+} ENUM_WMT_CHIP_TYPE;
+ENUM_WMT_CHIP_TYPE wmt_detect_get_chip_type(void);
+
 /*******************************************************************************
 *                                 M A C R O S
 ********************************************************************************
