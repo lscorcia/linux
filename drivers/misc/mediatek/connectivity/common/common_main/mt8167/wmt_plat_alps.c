@@ -125,7 +125,7 @@ static INT32 wmt_plat_dump_pin_conf(VOID);
 
 UINT32 gCoClockFlag;
 BGF_IRQ_BALANCE gbgfIrqBle;
-UINT32 wmtPlatLogLvl = WMT_PLAT_LOG_INFO;
+UINT32 wmtPlatLogLvl = WMT_PLAT_LOG_LOUD;
 #if CONSYS_BT_WIFI_SHARE_V33
 BT_WIFI_V33_STATUS gBtWifiV33;
 #endif
