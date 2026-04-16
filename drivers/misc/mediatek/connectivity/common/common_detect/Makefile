@@ -26,7 +26,6 @@ endif
 
 ifeq ($(CONFIG_MTK_COMBO),y)
 	ccflags-y += -I$(src)/drv_init/inc
-	obj-y += mtk_wcn_stub_alps.o
 	obj-y += wmt_gpio.o
 
 	obj-y += wmt_detect.o
@@ -37,11 +36,29 @@ ifeq ($(CONFIG_MTK_COMBO),y)
 endif
 
 ifeq ($(CONFIG_MTK_COMBO),m)
-	obj-y += mtk_wcn_stub_alps.o
-	obj-y += wmt_gpio.o
+	ccflags-y += -I$(src)/drv_init/inc
+	ccflags-y += -I$(src)
+		
+	ifneq ($(filter MT6630,$(CONFIG_MTK_COMBO_CHIP)),)
+		ccflags-y += -D MTK_WCN_WLAN_GEN3
+	endif
+
+	ifneq ($(filter MT6632,$(CONFIG_MTK_COMBO_CHIP)),)
+		ccflags-y += -D MTK_WCN_WLAN_GEN4
+	endif
+
+	ifneq ($(filter CONSYS_6797,$(CONFIG_MTK_COMBO_CHIP)),)
+		ccflags-y += -D MTK_WCN_WLAN_GEN3
+	else ifneq ($(filter CONSYS_%,$(CONFIG_MTK_COMBO_CHIP)),)
+		ccflags-y += -D MTK_WCN_WLAN_GEN2
+	endif
 
 	obj-$(CONFIG_MTK_COMBO) += mtk_wmt_detect.o
 	mtk_wmt_detect-objs := wmt_detect.o
 	mtk_wmt_detect-objs += sdio_detect.o
 	mtk_wmt_detect-objs += wmt_detect_pwr.o
+	mtk_wmt_detect-objs += wmt_gpio.o
+
+	mtk_wmt_detect-objs += drv_init/conn_drv_init.o drv_init/bluetooth_drv_init.o drv_init/fm_drv_init.o drv_init/gps_drv_init.o 
+	mtk_wmt_detect-objs += drv_init/common_drv_init.o drv_init/wlan_drv_init.o 
 endif

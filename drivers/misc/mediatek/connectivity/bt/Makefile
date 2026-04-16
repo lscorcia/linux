@@ -8,6 +8,6 @@ ccflags-y += \
 	-I$(src)/../common/common_main/linux/include
 
 obj-$(CONFIG_MTK_COMBO_BT) += stp_chrdev_bt.o
-ifeq ($(CONFIG_MTK_COMBO_BT_BLUEZ), y)
+ifneq ($(CONFIG_MTK_COMBO_BT_BLUEZ),)
 stp_chrdev_bt-objs     := stp_chrdev_bt_bluez.o
 endif

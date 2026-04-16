@@ -22,7 +22,7 @@
 #include "wmt_lib.h"
 #include "wmt_dev.h"
 #include "wmt_conf.h"
-#include "wmt_detect.h"
+//#include "wmt_detect.h"
 
 
 /*******************************************************************************

@@ -16,7 +16,8 @@
 #include "psm_core.h"
 #include "stp_core.h"
 #include "stp_dbg.h"
-#include "wmt_detect.h"
+//#include "wmt_detect.h"
+#include "wmt_core.h"
 #include <mtk_wcn_cmb_stub.h>
 #include <linux/timer.h>
 

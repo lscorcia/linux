@@ -40,7 +40,7 @@
 #include "wmt_core.h"
 #include "wmt_plat.h"
 #include "wmt_plat_stub.h"
-#include "wmt_detect.h"
+//#include "wmt_detect.h"
 
 #include "stp_core.h"
 #include "btm_core.h"

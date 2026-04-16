@@ -39,7 +39,8 @@
 /* #include "stp_btm.h" */
 #include "btm_core.h"
 #include "wmt_plat.h"
-#include "wmt_detect.h"
+//#include "wmt_detect.h"
+#include "wmt_core.h"
 #include "stp_sdio.h"
 
 
