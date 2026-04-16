@@ -902,8 +902,11 @@ static int btmtk_open(struct hci_dev *hdev)
 		return -EIO;
 	}
 #else
+	int cnt = 0;
 	while (mtk_wcn_wmt_func_on(WMTDRV_TYPE_BT) == MTK_WCN_BOOL_FALSE) {
-		int cnt = 0;
+		// Abort after 10 attempts		
+		if (cnt > 10) return -EIO;
+
 		BTMTK_WARN("WMT turn on BT fail!, retry %d\n", cnt);
 		cnt++;
 		msleep(1000);
