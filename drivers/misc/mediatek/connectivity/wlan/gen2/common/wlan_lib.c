@@ -2050,7 +2050,7 @@ WLAN_STATUS wlanImageQueryStatus(IN P_ADAPTER_T prAdapter)
 {
 	P_CMD_INFO_T prCmdInfo;
 	P_INIT_HIF_TX_HEADER_T prInitHifTxHeader;
-	UINT_8 aucBuffer[sizeof(INIT_HIF_RX_HEADER_T) + sizeof(INIT_EVENT_PENDING_ERROR)];
+	PUINT_8 pucBuffer = NULL;
 	UINT_32 u4RxPktLength;
 	P_INIT_HIF_RX_HEADER_T prInitHifRxHeader;
 	P_INIT_EVENT_PENDING_ERROR prEventPendingError;
@@ -2066,6 +2066,18 @@ WLAN_STATUS wlanImageQueryStatus(IN P_ADAPTER_T prAdapter)
 
 	if (!prCmdInfo) {
 		DBGLOG(INIT, ERROR, "Allocate CMD_INFO_T ==> FAILED.\n");
+		return WLAN_STATUS_FAILURE;
+	}
+
+
+#if CFG_COALESCING_BUFFER_SIZE || CFG_SDIO_RX_AGG
+	pucBuffer = prAdapter->pucCoalescingBufCached;
+#else
+	pucBuffer = kalMemAlloc(sizeof(INIT_HIF_RX_HEADER_T) + sizeof(INIT_EVENT_PENDING_ERROR), PHY_MEM_TYPE);
+#endif
+	if (pucBuffer == NULL) {
+		DBGLOG(INIT, ERROR, "Allocate mem fail\n");
+		cmdBufFreeCmdInfo(prAdapter, prCmdInfo);
 		return WLAN_STATUS_FAILURE;
 	}
 
@@ -2109,12 +2121,12 @@ WLAN_STATUS wlanImageQueryStatus(IN P_ADAPTER_T prAdapter)
 			u4Status = WLAN_STATUS_FAILURE;
 		} else if (nicRxWaitResponse(prAdapter,
 					     0,
-					     aucBuffer,
+					     pucBuffer,
 					     sizeof(INIT_HIF_RX_HEADER_T) + sizeof(INIT_EVENT_PENDING_ERROR),
 					     &u4RxPktLength) != WLAN_STATUS_SUCCESS) {
 			u4Status = WLAN_STATUS_FAILURE;
 		} else {
-			prInitHifRxHeader = (P_INIT_HIF_RX_HEADER_T) aucBuffer;
+			prInitHifRxHeader = (P_INIT_HIF_RX_HEADER_T) pucBuffer;
 
 			/* EID / SeqNum check */
 			if (prInitHifRxHeader->rInitWifiEvent.ucEID != INIT_EVENT_ID_PENDING_ERROR) {
@@ -2136,6 +2148,11 @@ WLAN_STATUS wlanImageQueryStatus(IN P_ADAPTER_T prAdapter)
 	/* 7. Free CMD Info Packet. */
 	cmdBufFreeCmdInfo(prAdapter, prCmdInfo);
 
+#if CFG_COALESCING_BUFFER_SIZE || CFG_SDIO_RX_AGG
+#else
+	kalMemFree(pucBuffer, PHY_MEM_TYPE, sizeof(INIT_HIF_RX_HEADER_T) + sizeof(INIT_EVENT_PENDING_ERROR));
+#endif
+
 	return u4Status;
 }
 
@@ -2154,7 +2171,7 @@ WLAN_STATUS wlanImageQueryStatus(IN P_ADAPTER_T prAdapter)
 /*----------------------------------------------------------------------------*/
 WLAN_STATUS wlanImageSectionDownloadStatus(IN P_ADAPTER_T prAdapter, IN UINT_8 ucCmdSeqNum)
 {
-	UINT_8 aucBuffer[sizeof(INIT_HIF_RX_HEADER_T) + sizeof(INIT_EVENT_CMD_RESULT)];
+	PUINT_8 pucBuffer = NULL;
 	P_INIT_HIF_RX_HEADER_T prInitHifRxHeader;
 	P_INIT_EVENT_CMD_RESULT prEventCmdResult;
 	UINT_32 u4RxPktLength;
@@ -2162,26 +2179,30 @@ WLAN_STATUS wlanImageSectionDownloadStatus(IN P_ADAPTER_T prAdapter, IN UINT_8 u
 
 	ASSERT(prAdapter);
 
+#if CFG_COALESCING_BUFFER_SIZE || CFG_SDIO_RX_AGG
+	pucBuffer = prAdapter->pucCoalescingBufCached;
+#else
+	pucBuffer = kalMemAlloc(sizeof(INIT_HIF_RX_HEADER_T) + sizeof(INIT_EVENT_CMD_RESULT), PHY_MEM_TYPE);
+#endif
+	if (pucBuffer == NULL) {
+		DBGLOG(INIT, ERROR, "Allocate mem fail\n");
+		return WLAN_STATUS_FAILURE;
+	}
+
 	do {
 		if (kalIsCardRemoved(prAdapter->prGlueInfo) == TRUE || fgIsBusAccessFailed == TRUE) {
 			DBGLOG(INIT, ERROR, "kalIsCardRemoved or fgIsBusAccessFailed\n");
 			u4Status = WLAN_STATUS_FAILURE;
 		} else if (nicRxWaitResponse(prAdapter,
 					0,
-					aucBuffer,
+					pucBuffer,
 					sizeof(INIT_HIF_RX_HEADER_T) + sizeof(INIT_EVENT_CMD_RESULT),/* 4B + 4B */
 					&u4RxPktLength) != WLAN_STATUS_SUCCESS) {
-			DBGLOG(INIT, ERROR, "nicRxWaitResponse fail at SeqNo (%d)\n", ucCmdSeqNum);
-
-			/*Dump WLAN TX Status Register TQ0_CNT, make sure FW write ROM success before CMD send*/
-			wlanDumpTxReleaseCount(prAdapter);
-			/*Dump  TX_DESC and RX_DESC*/
-			wlanDebugHifDescriptorDump(prAdapter, MTK_AMPDU_TX_DESC, DEBUG_TC0_INDEX);
-			wlanDebugHifDescriptorDump(prAdapter, MTK_AMPDU_RX_DESC, DEBUG_TC0_INDEX);
-
+			DBGLOG(INIT, ERROR, "nicRxWaitResponse fail\n");
 			u4Status = WLAN_STATUS_FAILURE;
 		} else {
-			prInitHifRxHeader = (P_INIT_HIF_RX_HEADER_T) aucBuffer;
+			prInitHifRxHeader = (P_INIT_HIF_RX_HEADER_T) pucBuffer;
+
 			/* EID / SeqNum check */
 			if (prInitHifRxHeader->rInitWifiEvent.ucEID != INIT_EVENT_ID_CMD_RESULT) {
 				DBGLOG(INIT, ERROR, "rInitWifiEvent.ucEID != INIT_EVENT_ID_CMD_RESULT\n");
@@ -2213,6 +2234,11 @@ WLAN_STATUS wlanImageSectionDownloadStatus(IN P_ADAPTER_T prAdapter, IN UINT_8 u
 			}
 		}
 	} while (FALSE);
+
+#if CFG_COALESCING_BUFFER_SIZE || CFG_SDIO_RX_AGG
+#else
+	kalMemFree(pucBuffer, PHY_MEM_TYPE, sizeof(INIT_HIF_RX_HEADER_T) + sizeof(INIT_EVENT_CMD_RESULT));
+#endif
 
 	return u4Status;
 }
@@ -3013,10 +3039,11 @@ WLAN_STATUS wlanQueryPermanentAddress(IN P_ADAPTER_T prAdapter)
 	P_CMD_INFO_T prCmdInfo;
 	P_WIFI_CMD_T prWifiCmd;
 	UINT_32 u4RxPktLength;
-	UINT_8 aucBuffer[sizeof(WIFI_EVENT_T) + sizeof(EVENT_BASIC_CONFIG)];
 	P_HIF_RX_HEADER_T prHifRxHdr;
 	P_WIFI_EVENT_T prEvent;
 	P_EVENT_BASIC_CONFIG prEventBasicConfig;
+	PUINT_8 pucBuffer = NULL;
+	WLAN_STATUS u4Status = WLAN_STATUS_SUCCESS;
 
 	ASSERT(prAdapter);
 
@@ -3028,6 +3055,18 @@ WLAN_STATUS wlanQueryPermanentAddress(IN P_ADAPTER_T prAdapter)
 		DBGLOG(INIT, ERROR, "Allocate CMD_INFO_T ==> FAILED.\n");
 		return WLAN_STATUS_FAILURE;
 	}
+
+#if CFG_COALESCING_BUFFER_SIZE || CFG_SDIO_RX_AGG
+	pucBuffer = prAdapter->pucCoalescingBufCached;
+#else
+	pucBuffer = kalMemAlloc(sizeof(WIFI_EVENT_T) + sizeof(EVENT_BASIC_CONFIG), PHY_MEM_TYPE);
+#endif
+	if (pucBuffer == NULL) {
+		DBGLOG(INIT, ERROR, "Allocate mem fail\n");
+		cmdBufFreeCmdInfo(prAdapter, prCmdInfo);
+		return WLAN_STATUS_FAILURE;
+	}
+
 	/* increase command sequence number */
 	ucCmdSeqNum = nicIncreaseCmdSeqNum(prAdapter);
 
@@ -3057,23 +3096,39 @@ WLAN_STATUS wlanQueryPermanentAddress(IN P_ADAPTER_T prAdapter)
 	/* wait for response */
 	if (nicRxWaitResponse(prAdapter,
 				1,
-				aucBuffer,
+				pucBuffer,
 				sizeof(WIFI_EVENT_T) + sizeof(EVENT_BASIC_CONFIG),	/* 8B + 12B */
-				&u4RxPktLength) != WLAN_STATUS_SUCCESS)
-		return WLAN_STATUS_FAILURE;
-	/* header checking .. */
-	prHifRxHdr = (P_HIF_RX_HEADER_T) aucBuffer;
-	if ((prHifRxHdr->u2PacketType & HIF_RX_HDR_PACKET_TYPE_MASK) != HIF_RX_PKT_TYPE_EVENT)
-		return WLAN_STATUS_FAILURE;
+				&u4RxPktLength) != WLAN_STATUS_SUCCESS) {
+		u4Status = WLAN_STATUS_FAILURE;
+	} else {
+		/* header checking .. */
+		prHifRxHdr = (P_HIF_RX_HEADER_T) pucBuffer;
+		if ((prHifRxHdr->u2PacketType & HIF_RX_HDR_PACKET_TYPE_MASK) != HIF_RX_PKT_TYPE_EVENT) {
+			u4Status = WLAN_STATUS_FAILURE;
+		} else {
+			prEvent = (P_WIFI_EVENT_T) pucBuffer;
+			if (prEvent->ucEID != EVENT_ID_BASIC_CONFIG)
+				u4Status = WLAN_STATUS_FAILURE;
+		}
+	}
 
-	prEvent = (P_WIFI_EVENT_T) aucBuffer;
-	if (prEvent->ucEID != EVENT_ID_BASIC_CONFIG)
-		return WLAN_STATUS_FAILURE;
+	if (u4Status != WLAN_STATUS_SUCCESS) {
+#if CFG_COALESCING_BUFFER_SIZE || CFG_SDIO_RX_AGG
+#else
+		kalMemFree(pucBuffer, PHY_MEM_TYPE, sizeof(WIFI_EVENT_T) + sizeof(EVENT_BASIC_CONFIG));
+#endif
+		return u4Status;
+	}
 
 	prEventBasicConfig = (P_EVENT_BASIC_CONFIG) (prEvent->aucBuffer);
 
 	COPY_MAC_ADDR(prAdapter->rWifiVar.aucPermanentAddress, &(prEventBasicConfig->rMyMacAddr));
 	COPY_MAC_ADDR(prAdapter->rWifiVar.aucMacAddress, &(prEventBasicConfig->rMyMacAddr));
+
+#if CFG_COALESCING_BUFFER_SIZE || CFG_SDIO_RX_AGG
+#else
+	kalMemFree(pucBuffer, PHY_MEM_TYPE, sizeof(WIFI_EVENT_T) + sizeof(EVENT_BASIC_CONFIG));
+#endif
 
 	return WLAN_STATUS_SUCCESS;
 }
@@ -3095,10 +3150,11 @@ WLAN_STATUS wlanQueryNicCapability(IN P_ADAPTER_T prAdapter)
 	P_WIFI_CMD_T prWifiCmd;
 	UINT_32 u4RxPktLength;
 	UINT_32 u4FwIDVersion = 0;
-	UINT_8 aucBuffer[sizeof(WIFI_EVENT_T) + sizeof(EVENT_NIC_CAPABILITY)];
 	P_HIF_RX_HEADER_T prHifRxHdr;
 	P_WIFI_EVENT_T prEvent;
 	P_EVENT_NIC_CAPABILITY prEventNicCapability;
+	PUINT_8 pucBuffer = NULL;
+	WLAN_STATUS u4Status = WLAN_STATUS_SUCCESS;
 
 	ASSERT(prAdapter);
 
@@ -3110,6 +3166,18 @@ WLAN_STATUS wlanQueryNicCapability(IN P_ADAPTER_T prAdapter)
 		DBGLOG(INIT, ERROR, "Allocate CMD_INFO_T ==> FAILED.\n");
 		return WLAN_STATUS_FAILURE;
 	}
+
+#if CFG_COALESCING_BUFFER_SIZE || CFG_SDIO_RX_AGG
+	pucBuffer = prAdapter->pucCoalescingBufCached;
+#else
+	pucBuffer = kalMemAlloc(sizeof(WIFI_EVENT_T) + sizeof(EVENT_NIC_CAPABILITY), PHY_MEM_TYPE);
+#endif
+	if (pucBuffer == NULL) {
+		DBGLOG(INIT, ERROR, "Allocate mem fail\n");
+		cmdBufFreeCmdInfo(prAdapter, prCmdInfo);
+		return WLAN_STATUS_FAILURE;
+	}
+
 	/* increase command sequence number */
 	ucCmdSeqNum = nicIncreaseCmdSeqNum(prAdapter);
 
@@ -3139,18 +3207,29 @@ WLAN_STATUS wlanQueryNicCapability(IN P_ADAPTER_T prAdapter)
 	/* wait for FW response */
 	if (nicRxWaitResponse(prAdapter,
 			      1,
-			      aucBuffer,
+			      pucBuffer,
 			      sizeof(WIFI_EVENT_T) + sizeof(EVENT_NIC_CAPABILITY),
-			      &u4RxPktLength) != WLAN_STATUS_SUCCESS)
-		return WLAN_STATUS_FAILURE;
-	/* header checking .. */
-	prHifRxHdr = (P_HIF_RX_HEADER_T) aucBuffer;
-	if ((prHifRxHdr->u2PacketType & HIF_RX_HDR_PACKET_TYPE_MASK) != HIF_RX_PKT_TYPE_EVENT)
-		return WLAN_STATUS_FAILURE;
+			      &u4RxPktLength) != WLAN_STATUS_SUCCESS) {
+		u4Status = WLAN_STATUS_FAILURE;
+	} else {
+		/* header checking .. */
+		prHifRxHdr = (P_HIF_RX_HEADER_T) pucBuffer;
+		if ((prHifRxHdr->u2PacketType & HIF_RX_HDR_PACKET_TYPE_MASK) != HIF_RX_PKT_TYPE_EVENT) {
+			u4Status = WLAN_STATUS_FAILURE;
+		} else {
+			prEvent = (P_WIFI_EVENT_T) pucBuffer;
+			if (prEvent->ucEID != EVENT_ID_NIC_CAPABILITY)
+				u4Status = WLAN_STATUS_FAILURE;
+		}
+	}
 
-	prEvent = (P_WIFI_EVENT_T) aucBuffer;
-	if (prEvent->ucEID != EVENT_ID_NIC_CAPABILITY)
-		return WLAN_STATUS_FAILURE;
+	if (u4Status != WLAN_STATUS_SUCCESS) {
+#if CFG_COALESCING_BUFFER_SIZE || CFG_SDIO_RX_AGG
+#else
+		kalMemFree(pucBuffer, PHY_MEM_TYPE, sizeof(WIFI_EVENT_T) + sizeof(EVENT_NIC_CAPABILITY));
+#endif
+		return u4Status;
+	}
 
 	prEventNicCapability = (P_EVENT_NIC_CAPABILITY) (prEvent->aucBuffer);
 
@@ -3188,6 +3267,12 @@ WLAN_STATUS wlanQueryNicCapability(IN P_ADAPTER_T prAdapter)
 	DBGLOG(INIT, LOUD, " RF CAL FAIL  = (%d),BB CAL FAIL  = (%d)\n",
 			    prEventNicCapability->ucRfCalFail, prEventNicCapability->ucBbCalFail);
 #endif
+
+#if CFG_COALESCING_BUFFER_SIZE || CFG_SDIO_RX_AGG
+#else
+	kalMemFree(pucBuffer, PHY_MEM_TYPE, sizeof(WIFI_EVENT_T) + sizeof(EVENT_NIC_CAPABILITY));
+#endif
+
 	return WLAN_STATUS_SUCCESS;
 }
 
@@ -3262,10 +3347,11 @@ WLAN_STATUS wlanQueryCompileFlag(IN P_ADAPTER_T prAdapter, IN UINT_32 u4QueryID,
 	P_CMD_INFO_T prCmdInfo;
 	P_WIFI_CMD_T prWifiCmd;
 	UINT_32 u4RxPktLength;
-	UINT_8 aucBuffer[sizeof(WIFI_EVENT_T) + sizeof(CMD_SW_DBG_CTRL_T)];
 	P_HIF_RX_HEADER_T prHifRxHdr;
 	P_WIFI_EVENT_T prEvent;
 	P_CMD_SW_DBG_CTRL_T prCmdNicCompileFlag, prEventNicCompileFlag;
+	PUINT_8 pucBuffer = NULL;
+	WLAN_STATUS u4Status = WLAN_STATUS_SUCCESS;
 
 	ASSERT(prAdapter);
 
@@ -3277,6 +3363,18 @@ WLAN_STATUS wlanQueryCompileFlag(IN P_ADAPTER_T prAdapter, IN UINT_32 u4QueryID,
 		DBGLOG(INIT, ERROR, "Allocate CMD_INFO_T ==> FAILED.\n");
 		return WLAN_STATUS_FAILURE;
 	}
+
+#if CFG_COALESCING_BUFFER_SIZE || CFG_SDIO_RX_AGG
+	pucBuffer = prAdapter->pucCoalescingBufCached;
+#else
+	pucBuffer = kalMemAlloc(sizeof(WIFI_EVENT_T) + sizeof(CMD_SW_DBG_CTRL_T), PHY_MEM_TYPE);
+#endif
+	if (pucBuffer == NULL) {
+		DBGLOG(INIT, ERROR, "Allocate mem fail\n");
+		cmdBufFreeCmdInfo(prAdapter, prCmdInfo);
+		return WLAN_STATUS_FAILURE;
+	}
+
 	/* increase command sequence number */
 	ucCmdSeqNum = nicIncreaseCmdSeqNum(prAdapter);
 
@@ -3309,22 +3407,38 @@ WLAN_STATUS wlanQueryCompileFlag(IN P_ADAPTER_T prAdapter, IN UINT_32 u4QueryID,
 
 	if (nicRxWaitResponse(prAdapter,
 			      1,
-			      aucBuffer,
+			      pucBuffer,
 			      sizeof(WIFI_EVENT_T) + sizeof(CMD_SW_DBG_CTRL_T),
-			      &u4RxPktLength) != WLAN_STATUS_SUCCESS)
-		return WLAN_STATUS_FAILURE;
-	/* header checking .. */
-	prHifRxHdr = (P_HIF_RX_HEADER_T) aucBuffer;
-	if ((prHifRxHdr->u2PacketType & HIF_RX_HDR_PACKET_TYPE_MASK) != HIF_RX_PKT_TYPE_EVENT)
-		return WLAN_STATUS_FAILURE;
+			      &u4RxPktLength) != WLAN_STATUS_SUCCESS) {
+		u4Status = WLAN_STATUS_FAILURE;
+	} else {
+		/* header checking .. */
+		prHifRxHdr = (P_HIF_RX_HEADER_T) pucBuffer;
+		if ((prHifRxHdr->u2PacketType & HIF_RX_HDR_PACKET_TYPE_MASK) != HIF_RX_PKT_TYPE_EVENT) {
+			u4Status = WLAN_STATUS_FAILURE;
+		} else {
+			prEvent = (P_WIFI_EVENT_T) pucBuffer;
+			if (prEvent->ucEID != EVENT_ID_SW_DBG_CTRL)
+				u4Status = WLAN_STATUS_FAILURE;
+		}
+	}
 
-	prEvent = (P_WIFI_EVENT_T) aucBuffer;
-	if (prEvent->ucEID != EVENT_ID_SW_DBG_CTRL)
-		return WLAN_STATUS_FAILURE;
+	if (u4Status != WLAN_STATUS_SUCCESS) {
+#if CFG_COALESCING_BUFFER_SIZE || CFG_SDIO_RX_AGG
+#else
+		kalMemFree(pucBuffer, PHY_MEM_TYPE, sizeof(WIFI_EVENT_T) + sizeof(CMD_SW_DBG_CTRL_T));
+#endif
+		return u4Status;
+	}
 
 	prEventNicCompileFlag = (P_CMD_SW_DBG_CTRL_T) (prEvent->aucBuffer);
 
 	*pu4CompilerFlag = prEventNicCompileFlag->u4Data;
+
+#if CFG_COALESCING_BUFFER_SIZE || CFG_SDIO_RX_AGG
+#else
+	kalMemFree(pucBuffer, PHY_MEM_TYPE, sizeof(WIFI_EVENT_T) + sizeof(CMD_SW_DBG_CTRL_T));
+#endif
 
 	return WLAN_STATUS_SUCCESS;
 }
@@ -3421,6 +3535,8 @@ WLAN_STATUS wlanQueryPdMcr(IN P_ADAPTER_T prAdapter, P_PARAM_MCR_RW_STRUCT_T prM
 	P_HIF_RX_HEADER_T prHifRxHdr;
 	P_WIFI_EVENT_T prEvent;
 	P_CMD_ACCESS_REG prCmdMcrQuery;
+	PUINT_8 pucBuffer = NULL;
+	WLAN_STATUS u4Status = WLAN_STATUS_SUCCESS;
 
 	ASSERT(prAdapter);
 
@@ -3431,6 +3547,18 @@ WLAN_STATUS wlanQueryPdMcr(IN P_ADAPTER_T prAdapter, P_PARAM_MCR_RW_STRUCT_T prM
 		DBGLOG(INIT, ERROR, "Allocate CMD_INFO_T ==> FAILED.\n");
 		return WLAN_STATUS_FAILURE;
 	}
+
+#if CFG_COALESCING_BUFFER_SIZE || CFG_SDIO_RX_AGG
+	pucBuffer = prAdapter->pucCoalescingBufCached;
+#else
+	pucBuffer = kalMemAlloc(sizeof(WIFI_EVENT_T) + sizeof(CMD_ACCESS_REG), PHY_MEM_TYPE);
+#endif
+	if (pucBuffer == NULL) {
+		DBGLOG(INIT, ERROR, "Allocate mem fail\n");
+		cmdBufFreeCmdInfo(prAdapter, prCmdInfo);
+		return WLAN_STATUS_FAILURE;
+	}
+
 	/* increase command sequence number */
 	ucCmdSeqNum = nicIncreaseCmdSeqNum(prAdapter);
 
@@ -3461,21 +3589,37 @@ WLAN_STATUS wlanQueryPdMcr(IN P_ADAPTER_T prAdapter, P_PARAM_MCR_RW_STRUCT_T prM
 	if (nicRxWaitResponse(prAdapter,
 			      1,
 			      aucBuffer,
-			      sizeof(WIFI_EVENT_T) + sizeof(CMD_ACCESS_REG), &u4RxPktLength) != WLAN_STATUS_SUCCESS)
-		return WLAN_STATUS_FAILURE;
-	/* header checking .. */
-	prHifRxHdr = (P_HIF_RX_HEADER_T) aucBuffer;
-	if ((prHifRxHdr->u2PacketType & HIF_RX_HDR_PACKET_TYPE_MASK) != HIF_RX_PKT_TYPE_EVENT)
-		return WLAN_STATUS_FAILURE;
+			      sizeof(WIFI_EVENT_T) + sizeof(CMD_ACCESS_REG), &u4RxPktLength) != WLAN_STATUS_SUCCESS) {
+		u4Status = WLAN_STATUS_FAILURE;
+	} else {
+		/* header checking .. */
+		prHifRxHdr = (P_HIF_RX_HEADER_T) aucBuffer;
+		if ((prHifRxHdr->u2PacketType & HIF_RX_HDR_PACKET_TYPE_MASK) != HIF_RX_PKT_TYPE_EVENT) {
+			u4Status = WLAN_STATUS_FAILURE;
+		} else {
+			prEvent = (P_WIFI_EVENT_T) aucBuffer;
 
-	prEvent = (P_WIFI_EVENT_T) aucBuffer;
+			if (prEvent->ucEID != EVENT_ID_ACCESS_REG)
+				u4Status = WLAN_STATUS_FAILURE;
+		}
+	}
 
-	if (prEvent->ucEID != EVENT_ID_ACCESS_REG)
-		return WLAN_STATUS_FAILURE;
+	if (u4Status != WLAN_STATUS_SUCCESS) {
+#if CFG_COALESCING_BUFFER_SIZE || CFG_SDIO_RX_AGG
+#else
+		kalMemFree(pucBuffer, PHY_MEM_TYPE, sizeof(WIFI_EVENT_T) + sizeof(CMD_ACCESS_REG));
+#endif
+		return u4Status;
+	}
 
 	prCmdMcrQuery = (P_CMD_ACCESS_REG) (prEvent->aucBuffer);
 	prMcrRdInfo->u4McrOffset = prCmdMcrQuery->u4Address;
 	prMcrRdInfo->u4McrData = prCmdMcrQuery->u4Data;
+
+#if CFG_COALESCING_BUFFER_SIZE || CFG_SDIO_RX_AGG
+#else
+	kalMemFree(pucBuffer, PHY_MEM_TYPE, sizeof(WIFI_EVENT_T) + sizeof(CMD_ACCESS_REG));
+#endif
 
 	return WLAN_STATUS_SUCCESS;
 }
