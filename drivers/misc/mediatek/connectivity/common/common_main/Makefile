@@ -24,6 +24,9 @@ subdir-ccflags-y += -D CFG_WMT_READ_EFUSE_VCN33
 endif
 
 ifeq ($(CONFIG_MTK_COMBO), m)
+# Enable dynamic node creation
+subdir-ccflags-y += -D WMT_CREATE_NODE_DYNAMIC=1
+
 # WMT DRIVER
 obj-$(CONFIG_MTK_COMBO) += mtk_stp_wmt$(EXT_FLAG).o
 # WMT DRIVER-core part
