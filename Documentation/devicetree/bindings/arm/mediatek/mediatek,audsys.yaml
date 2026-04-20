@@ -65,6 +65,16 @@ allOf:
       properties:
         compatible:
           contains:
+            const: mediatek,mt8167-audsys
+    then:
+      properties:
+        audio-controller:
+          $ref: /schemas/sound/mediatek,mt8167-afe-pcm.yaml#
+
+  - if:
+      properties:
+        compatible:
+          contains:
             const: mediatek,mt8183-audiosys
     then:
       properties:
