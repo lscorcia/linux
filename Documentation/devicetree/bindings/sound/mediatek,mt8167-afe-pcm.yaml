@@ -1,0 +1,211 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/sound/mediatek,mt8167-afe-pcm.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: Mediatek AFE PCM controller for MT8167
+
+maintainers:
+  - Luca Leonardo Scorcia <l.scorcia@gmail.com>
+
+properties:
+  compatible:
+    const: mediatek,mt8167-afe-pcm
+
+  interrupts:
+    maxItems: 1
+
+  resets:
+    maxItems: 1
+
+  reset-names:
+    const: audiosys
+
+  clocks:
+    items:
+      - description: Audio AFE clock
+      - description: Audio I2S input clock
+      - description: Audio low-jitter 22.5792m clock
+      - description: Audio low-jitter 24.576m clock
+      - description: Audio SPDIF-in clock
+      - description: Audio PLL2 tuner clock
+      - description: Audio PLL1 tuner clock
+      - description: Audio HDMI clock
+      - description: Audio SPDIF clock
+      - description: Audio ADDA ADC clock
+      - description: Audio ADDA DAC clock
+      - description: Audio ADDA DAC pre-distortion clock
+      - description: Audio Test model clock
+      - description: audio
+      - description: APLL1 and APLL2 divider for I2S port 0
+      - description: APLL1 and APLL2 divider for I2S port 1
+      - description: APLL1 and APLL2 divider for I2S port 2
+      - description: APLL1 and APLL2 divider for I2S port 3
+      - description: APLL1 and APLL2 MCK clock divider for I2S port 4
+      - description: APLL1 and APLL2 BCK clock divider for I2S port 4
+      - description: APLL1 and APLL2 MCK clock divider for I2S port 5
+      - description: APLL1 and APLL2 BCK clock divider for I2S port 5
+      - description: APLL1 and APLL2 divider for SPDIF
+      - description: spdif_in
+      - description: Primary audio en-generator clock
+      - description: Secondary audio en-generator clock
+      - description: Audio 1 clock
+      - description: Audio 2 clock
+      - description: Mux selector for I2S port 0
+      - description: Mux selector for I2S port 1
+      - description: Mux selector for I2S port 2
+      - description: Mux selector for I2S port 3
+      - description: Mux selector for I2S port 4
+      - description: Mux selector for I2S port 5
+      - description: spdif_b_sel
+      - description: spdifin_sel
+      - description: univpll_div2
+
+  clock-names:
+    items:
+      - const: aud_afe
+      - const: aud_i2s
+      - const: aud_22m
+      - const: aud_24m
+      - const: aud_intdir
+      - const: aud_apll2_tuner
+      - const: aud_apll_tuner
+      - const: aud_hdmi
+      - const: aud_spdf
+      - const: aud_adc
+      - const: aud_dac
+      - const: aud_dac_predis
+      - const: aud_tml
+      - const: audio
+      - const: apll12_div0
+      - const: apll12_div1
+      - const: apll12_div2
+      - const: apll12_div3
+      - const: apll12_div4
+      - const: apll12_div4b
+      - const: apll12_div5
+      - const: apll12_div5b
+      - const: apll12_div6
+      - const: spdif_in
+      - const: engen1
+      - const: engen2
+      - const: aud1
+      - const: aud2
+      - const: i2s0_m_sel
+      - const: i2s1_m_sel
+      - const: i2s2_m_sel
+      - const: i2s3_m_sel
+      - const: i2s4_m_sel
+      - const: i2s5_m_sel
+      - const: spdif_b_sel
+      - const: spdifin_sel
+      - const: univpll_div2
+
+required:
+  - compatible
+  - interrupts
+  - resets
+  - reset-names
+  - clocks
+  - clock-names
+
+additionalProperties: false
+
+examples:
+  - |
+    #include <dt-bindings/clock/mt8167-clk.h>
+    #include <dt-bindings/interrupt-controller/arm-gic.h>
+    #include <dt-bindings/interrupt-controller/irq.h>
+    #include <dt-bindings/power/mt8167-power.h>
+    #include <dt-bindings/reset/mediatek,mt8167-resets.h>
+
+    audio-controller {
+        compatible = "mediatek,mt8167-afe-pcm";
+        interrupts = <GIC_SPI 120 IRQ_TYPE_LEVEL_LOW>;
+        resets = <&watchdog MT8167_TOPRGU_AUD_PAD_RST>;
+        reset-names = "audiosys";
+        clocks = <&audsys CLK_AUD_AFE>,
+          <&audsys CLK_AUD_I2S>,
+          <&audsys CLK_AUD_22M>,
+          <&audsys CLK_AUD_24M>,
+          <&audsys CLK_AUD_INTDIR>,
+          <&audsys CLK_AUD_APLL2_TUNER>,
+          <&audsys CLK_AUD_APLL_TUNER>,
+          <&audsys CLK_AUD_HDMI>,
+          <&audsys CLK_AUD_SPDF>,
+          <&audsys CLK_AUD_ADC>,
+          <&audsys CLK_AUD_DAC>,
+          <&audsys CLK_AUD_DAC_PREDIS>,
+          <&audsys CLK_AUD_TML>,
+          <&topckgen CLK_TOP_AUDIO>,
+          <&topckgen CLK_TOP_APLL12_DIV0>,
+          <&topckgen CLK_TOP_APLL12_DIV1>,
+          <&topckgen CLK_TOP_APLL12_DIV2>,
+          <&topckgen CLK_TOP_APLL12_DIV3>,
+          <&topckgen CLK_TOP_APLL12_DIV4>,
+          <&topckgen CLK_TOP_APLL12_DIV4B>,
+          <&topckgen CLK_TOP_APLL12_DIV5>,
+          <&topckgen CLK_TOP_APLL12_DIV5B>,
+          <&topckgen CLK_TOP_APLL12_DIV6>,
+          <&topckgen CLK_TOP_RG_AUD_SPDIF_IN>,
+          <&topckgen CLK_TOP_RG_AUD_ENGEN1>,
+          <&topckgen CLK_TOP_RG_AUD_ENGEN2>,
+          <&topckgen CLK_TOP_RG_AUD1>,
+          <&topckgen CLK_TOP_RG_AUD2>,
+          <&topckgen CLK_TOP_AUD_I2S0_M_SEL>,
+          <&topckgen CLK_TOP_AUD_I2S1_M_SEL>,
+          <&topckgen CLK_TOP_AUD_I2S2_M_SEL>,
+          <&topckgen CLK_TOP_AUD_I2S3_M_SEL>,
+          <&topckgen CLK_TOP_AUD_I2S4_M_SEL>,
+          <&topckgen CLK_TOP_AUD_I2S5_M_SEL>,
+          <&topckgen CLK_TOP_AUD_SPDIF_B_SEL>,
+          <&topckgen CLK_TOP_AUD_SPDIFIN_SEL>,
+          <&topckgen CLK_TOP_UNIVPLL_D2>;
+        clock-names = 
+          "aud_afe",
+          "aud_i2s",
+          "aud_22m",
+          "aud_24m",
+          "aud_intdir",
+          "aud_apll2_tuner",
+          "aud_apll_tuner",
+          "aud_hdmi",
+          "aud_spdf",
+          "aud_adc",
+          "aud_dac",
+          "aud_dac_predis",
+          "aud_tml",
+          "audio",
+          "apll12_div0",
+          "apll12_div1",
+          "apll12_div2",
+          "apll12_div3",
+          "apll12_div4",
+          "apll12_div4b",
+          "apll12_div5",
+          "apll12_div5b",
+          "apll12_div6",
+          "spdif_in",
+          "engen1",
+          "engen2",
+          "aud1",
+          "aud2",
+          "i2s0_m_sel",
+          "i2s1_m_sel",
+          "i2s2_m_sel",
+          "i2s3_m_sel",
+          "i2s4_m_sel",
+          "i2s5_m_sel",
+          "spdif_b_sel",
+          "spdifin_sel",
+          "univpll_div2";
+        assigned-clocks = <&topckgen CLK_TOP_AUD1_SEL>,
+          <&topckgen CLK_TOP_AUD2_SEL>,
+          <&topckgen CLK_TOP_AUD_ENGEN1_SEL>,
+          <&topckgen CLK_TOP_AUD_ENGEN2_SEL>;
+        assigned-clock-parents = <&topckgen CLK_TOP_APLL1>,
+          <&topckgen CLK_TOP_APLL2>,
+          <&topckgen CLK_TOP_RG_APLL1_D8_EN>,
+          <&topckgen CLK_TOP_RG_APLL2_D8_EN>;
+    };
