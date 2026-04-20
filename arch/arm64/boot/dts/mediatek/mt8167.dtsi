@@ -519,6 +519,17 @@
 			clock-names = "apb", "smi";
 			power-domains = <&spm MT8167_POWER_DOMAIN_VDEC>;
 		};
+
+		btcvsd_snd: mtk-btcvsd-snd@18000000 {
+			compatible = "mediatek,mtk-btcvsd-snd";
+			reg = <0 0x18000000 0 0x10000>,
+			      <0 0x18080000 0 0x8000>;
+			reg-names = "pkv", "sram-bank2";
+			interrupts = <GIC_SPI 194 IRQ_TYPE_LEVEL_LOW>;
+			mediatek,infracfg = <&infracfg>;
+			mediatek,offset = <0xf00 0x800 0xfd0 0xfd4 0xfd8>;
+			status = "disabled";
+		};
 	};
 };
 
