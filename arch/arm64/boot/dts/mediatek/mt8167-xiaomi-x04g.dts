@@ -485,3 +485,7 @@
 	regulator-always-on;
 	regulator-boot-on;
 };
+
+&btcvsd_snd {
+	status = "okay";
+};
