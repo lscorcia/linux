@@ -153,6 +153,86 @@
 			status = "disabled";
 		};
 
+		audsys: clock-controller@11140000 {
+			compatible = "mediatek,mt8167-audsys", "syscon";
+			reg = <0 0x11140000 0 0x1000>;
+			#clock-cells = <1>;
+
+			afe: audio-controller {
+				compatible = "mediatek,mt8167-afe-pcm";
+				interrupts = <GIC_SPI 120 IRQ_TYPE_LEVEL_LOW>;
+				resets = <&watchdog MT8167_TOPRGU_AUD_PAD_RST>;
+				reset-names = "audiosys";
+				clocks = <&audsys CLK_AUD_AFE>,
+					<&audsys CLK_AUD_DAC>,
+					<&audsys CLK_AUD_DAC_PREDIS>,
+					<&audsys CLK_AUD_ADC>,
+					<&topckgen CLK_TOP_AUDIO>,
+					<&topckgen CLK_TOP_APLL12_DIV0>,
+					<&topckgen CLK_TOP_APLL12_DIV1>,
+					<&topckgen CLK_TOP_APLL12_DIV2>,
+					<&topckgen CLK_TOP_APLL12_DIV3>,
+					<&topckgen CLK_TOP_APLL12_DIV4>,
+					<&topckgen CLK_TOP_APLL12_DIV4B>,
+					<&topckgen CLK_TOP_APLL12_DIV5>,
+					<&topckgen CLK_TOP_APLL12_DIV5B>,
+					<&topckgen CLK_TOP_APLL12_DIV6>,
+					<&topckgen CLK_TOP_RG_AUD_SPDIF_IN>,
+					<&topckgen CLK_TOP_RG_AUD_ENGEN1>,
+					<&topckgen CLK_TOP_RG_AUD_ENGEN2>,
+					<&topckgen CLK_TOP_RG_AUD1>,
+					<&topckgen CLK_TOP_RG_AUD2>,
+					<&topckgen CLK_TOP_AUD_I2S0_M_SEL>,
+					<&topckgen CLK_TOP_AUD_I2S1_M_SEL>,
+					<&topckgen CLK_TOP_AUD_I2S2_M_SEL>,
+					<&topckgen CLK_TOP_AUD_I2S3_M_SEL>,
+					<&topckgen CLK_TOP_AUD_I2S4_M_SEL>,
+					<&topckgen CLK_TOP_AUD_I2S5_M_SEL>,
+					<&topckgen CLK_TOP_AUD_SPDIF_B_SEL>,
+					<&topckgen CLK_TOP_AUD_SPDIFIN_SEL>,
+					<&topckgen CLK_TOP_UNIVPLL_D2>,
+					<&topckgen CLK_TOP_CLK26M>;
+				clock-names =
+					"aud_afe",
+					"aud_dac",
+					"aud_dac_predis",
+					"aud_adc",
+					"audio",
+					"apll12_div0",
+					"apll12_div1",
+					"apll12_div2",
+					"apll12_div3",
+					"apll12_div4",
+					"apll12_div4b",
+					"apll12_div5",
+					"apll12_div5b",
+					"apll12_div6",
+					"spdif_in",
+					"engen1",
+					"engen2",
+					"aud1",
+					"aud2",
+					"i2s0_m_sel",
+					"i2s1_m_sel",
+					"i2s2_m_sel",
+					"i2s3_m_sel",
+					"i2s4_m_sel",
+					"i2s5_m_sel",
+					"spdif_b_sel",
+					"spdifin_sel",
+					"univpll_div2",
+					"clk26m";
+				assigned-clocks = <&topckgen CLK_TOP_AUD1_SEL>,
+					<&topckgen CLK_TOP_AUD2_SEL>,
+					<&topckgen CLK_TOP_AUD_ENGEN1_SEL>,
+					<&topckgen CLK_TOP_AUD_ENGEN2_SEL>;
+				assigned-clock-parents = <&topckgen CLK_TOP_APLL1>,
+					<&topckgen CLK_TOP_APLL2>,
+					<&topckgen CLK_TOP_RG_APLL1_D8_EN>,
+					<&topckgen CLK_TOP_RG_APLL2_D8_EN>;
+			};
+		};
+
 		mmsys: syscon@14000000 {
 			compatible = "mediatek,mt8167-mmsys", "syscon";
 			reg = <0 0x14000000 0 0x1000>;
