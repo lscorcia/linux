@@ -7,7 +7,7 @@
  */
 
 #include <linux/clk-provider.h>
-#include <linux/mod_devicetable.h>
+#include <linux/of_platform.h>
 #include <linux/platform_device.h>
 
 #include "clk-mtk.h"
@@ -46,6 +46,25 @@ static const struct mtk_clk_desc aud_desc = {
 	.num_clks = ARRAY_SIZE(aud_clks),
 };
 
+static int clk_mt8167_audio_probe(struct platform_device *pdev)
+{
+	int r;
+
+	r = mtk_clk_simple_probe(pdev);
+	if (r)
+		return r;
+
+	r = devm_of_platform_populate(&pdev->dev);
+	if (r)
+		goto err_plat_populate;
+
+	return 0;
+
+err_plat_populate:
+	mtk_clk_simple_remove(pdev);
+	return r;
+}
+
 static const struct of_device_id of_match_clk_mt8167_audsys[] = {
 	{ .compatible = "mediatek,mt8167-audsys", .data = &aud_desc },
 	{ /* sentinel */ }
@@ -53,7 +72,7 @@ static const struct of_device_id of_match_clk_mt8167_audsys[] = {
 MODULE_DEVICE_TABLE(of, of_match_clk_mt8167_audsys);
 
 static struct platform_driver clk_mt8167_audsys_drv = {
-	.probe = mtk_clk_simple_probe,
+	.probe = clk_mt8167_audio_probe,
 	.remove = mtk_clk_simple_remove,
 	.driver = {
 		.name = "clk-mt8167-audsys",
