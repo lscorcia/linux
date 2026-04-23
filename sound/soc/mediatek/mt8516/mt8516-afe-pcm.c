@@ -9,6 +9,7 @@
 #include <sound/pcm_params.h>
 #include <linux/module.h>
 #include <linux/of.h>
+#include <linux/mfd/syscon.h>
 
 #include "mt8516-afe-common.h"
 #include "mt8516-afe-regs.h"
@@ -695,15 +696,16 @@ static int mt8516_afe_pcm_dev_probe(struct platform_device *pdev)
 
 	afe->dev = &pdev->dev;
 
-	afe->base_addr = devm_platform_ioremap_resource(pdev, 0);
-	if (IS_ERR(afe->base_addr))
-		return dev_err_probe(afe->dev, PTR_ERR(afe->base_addr),
-				     "AFE base_addr not found\n");
-
-	afe->regmap = devm_regmap_init_mmio(&pdev->dev, afe->base_addr,
-		&mt8516_afe_regmap_config);
-	if (IS_ERR(afe->regmap))
+	afe->regmap = syscon_node_to_regmap(afe->dev->parent->of_node);
+	if (IS_ERR(afe->regmap)) {
+		dev_err(afe->dev, "could not get regmap from parent\n");
 		return PTR_ERR(afe->regmap);
+	}
+	ret = regmap_attach_dev(afe->dev, afe->regmap, &mt8516_afe_regmap_config);
+	if (ret) {
+		dev_warn(afe->dev, "regmap_attach_dev fail, ret %d\n", ret);
+		return ret;
+	}
 
 	afe->reg_back_up_list = &mt8516_afe_backup_list[0];
 	afe->reg_back_up_list_num = ARRAY_SIZE(mt8516_afe_backup_list);
