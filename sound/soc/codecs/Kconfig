@@ -2806,6 +2806,12 @@ config SND_SOC_MT6660
 	  Select N if you don't have MT6660 on board.
 	  Select M to build this as module.
 
+config SND_SOC_MT6392_CODEC
+	tristate "Mediatek MT6392 Speaker amplifier"
+	help
+	  MediaTek MT6392 is a 1-channel AB/D speaker power amplifier with
+	  speaker overcurrent protection.
+
 config SND_SOC_NAU8315
 	tristate "Nuvoton Technology Corporation NAU8315 CODEC"
 
