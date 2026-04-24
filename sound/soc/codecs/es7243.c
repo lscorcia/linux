@@ -220,6 +220,7 @@ static struct snd_soc_dai_driver es7243_dai = {
 
 static int es7243_probe(struct snd_soc_component *codec)
 {
+#if 0
 	snd_soc_component_write(codec, 0x00, 0x41);
 	snd_soc_component_write(codec, 0x06, 0x18);
 	snd_soc_component_write(codec, 0x05, 0x1B);
@@ -228,6 +229,15 @@ static int es7243_probe(struct snd_soc_component *codec)
 	snd_soc_component_write(codec, 0x08, 0x11);
 	snd_soc_component_write(codec, 0x06, 0x00);
 	snd_soc_component_write(codec, 0x05, 0x13);
+#else
+	snd_soc_component_write(codec, 0x00, 0x01);
+	snd_soc_component_write(codec, 0x06, 0x18);
+	snd_soc_component_write(codec, 0x05, 0x1B);
+	snd_soc_component_write(codec, 0x01, 0x0F);
+	snd_soc_component_write(codec, 0x08, 0x11);
+	snd_soc_component_write(codec, 0x06, 0x00);
+	snd_soc_component_write(codec, 0x05, 0x13);
+#endif
 
 	return 0;
 }
