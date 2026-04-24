@@ -7,6 +7,15 @@
 
 #include <dt-bindings/input/input.h>
 
+/ {
+	mt6392_audio_codec: mt6392_audio_codec {
+		compatible = "mediatek,mt6392-codec";
+		mediatek,pwrap-regmap = <&pwrap>;
+		mediatek,speaker-mode = <0>; /* 0(CLASSD) 1(CLASSAB) */
+		status = "disabled";
+	};
+};
+
 &pwrap {
 	pmic: pmic {
 		compatible = "mediatek,mt6392", "mediatek,mt6323";
