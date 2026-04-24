@@ -489,3 +489,7 @@
 &btcvsd_snd {
 	status = "okay";
 };
+
+&mt6392_audio_codec {
+	status = "okay";
+};
