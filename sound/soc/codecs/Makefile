@@ -424,6 +424,8 @@ snd-soc-wsa883x-y := wsa883x.o
 snd-soc-wsa884x-y := wsa884x.o
 snd-soc-zl38060-y := zl38060.o
 snd-soc-mt6392-codec-objs := mt6392-codec.o
+snd-soc-mt8167-codec-objs := mt8167-codec.o mt8167-codec-utils.o
+
 # Amp
 snd-soc-max9877-y := max9877.o
 snd-soc-max98504-y := max98504.o
@@ -871,6 +873,7 @@ obj-$(CONFIG_SND_SOC_WSA883X)	+= snd-soc-wsa883x.o
 obj-$(CONFIG_SND_SOC_WSA884X)	+= snd-soc-wsa884x.o
 obj-$(CONFIG_SND_SOC_ZL38060)	+= snd-soc-zl38060.o
 obj-$(CONFIG_SND_SOC_MT6392_CODEC)	+= snd-soc-mt6392-codec.o
+obj-$(CONFIG_SND_SOC_MT8167_CODEC)	+= snd-soc-mt8167-codec.o
 
 # Amp
 obj-$(CONFIG_SND_SOC_MAX9877)	+= snd-soc-max9877.o
