@@ -2812,6 +2812,11 @@ config SND_SOC_MT6392_CODEC
 	  MediaTek MT6392 is a 1-channel AB/D speaker power amplifier with
 	  speaker overcurrent protection.
 
+config SND_SOC_MT8167_CODEC
+	tristate "MediaTek MT8167 Codec"
+	help
+	  Enable support for MediaTek MT8167 SoC on-board audio codec.
+
 config SND_SOC_NAU8315
 	tristate "Nuvoton Technology Corporation NAU8315 CODEC"
 
