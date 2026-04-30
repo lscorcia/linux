@@ -86,6 +86,16 @@ config SND_SOC_MT8167
 	  Select Y if you have such device.
 	  If unsure select "N".
 
+config SND_SOC_MT8167S_ES7243
+	tristate "ASoC support for Mediatek MT8167 chip with MT6392 ext spk amp and ES7243 ADC"
+	depends on ARCH_MEDIATEK && SND_SOC_ES7243 && SND_SOC_MT8167_CODEC && SND_SOC_MT6392_CODEC
+	select SND_SOC_MEDIATEK
+	help
+	  This adds ASoC platform driver support for Mediatek MT8167 chip
+	  with internal codec, MT6392 external speaker amp and ES7243 ADC.
+	  Select Y if you have such device.
+	  If unsure select "N".
+
 config SND_SOC_MT8173
 	tristate "ASoC support for Mediatek MT8173 chip"
 	depends on ARCH_MEDIATEK
