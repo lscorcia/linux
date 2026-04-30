@@ -82,6 +82,27 @@
 		power-supply = <&mt6392_vio18_reg>;
 		pwms = <&disp_pwm 0 1000000>;
 	};
+
+	mt8167_audio_codec: mt8167_audio_codec {
+		compatible = "mediatek,mt8167-codec";
+		clocks = <&topckgen CLK_TOP_AUDIO>;
+		clock-names = "bus";
+		mediatek,afe-regmap = <&afe>;
+		mediatek,apmixedsys-regmap = <&apmixedsys>;
+		mediatek,dmic-wire-mode = <1>; /* 0(ONE_WIRE) 1(TWO_WIRE) */
+		mediatek,headphone-cap-sel = <1>; /* 0(10UF) 1(22UF) 2(33UF) 3(47UF) */
+	};
+
+	sound {
+		compatible = "mediatek,mt8167s-es7243";
+		mediatek,platform = <&afe>;
+		pinctrl-0 = <&aud_default_pins>;
+		pinctrl-1 = <&aud_extamp_on_pins>;
+		pinctrl-2 = <&aud_extamp_off_pins>;
+		pinctrl-names = "default", "extamp_on", "extamp_off";
+		tdmadc-3p3v-supply = <&mt6392_vmch_reg>;
+		tdmadc-1p8v-supply = <&mt6392_vcamio_reg>;
+	};
 };
 
 /* With the firmware on Android devices, cores don't seem to come back after out
@@ -349,6 +370,38 @@
 		};
 		pins_tx {
 			pinmux = <MT8167_PIN_63_UTXD0__FUNC_UTXD0>;
+		};
+	};
+
+	aud_extamp_off_pins: audexampoff-pins {
+		pins_extamp {
+			output-low;
+			slew-rate = <1>;
+			pinmux = <MT8167_PIN_51_SPI_MO__FUNC_GPIO51>;
+		};
+	};
+
+	aud_extamp_on_pins: audexampon-pins {
+		pins_extamp {
+			output-high;
+			slew-rate = <1>;
+			pinmux = <MT8167_PIN_51_SPI_MO__FUNC_GPIO51>;
+		};
+	};
+
+	aud_default_pins: audiodefault-pins {
+		pins_extamp {
+			output-low;
+			slew-rate = <1>;
+			pinmux = <MT8167_PIN_51_SPI_MO__FUNC_GPIO51>;
+		};
+
+		pins_cmd_dat {
+			drive-strength = <MTK_DRIVE_4mA>;
+			pinmux = <MT8167_PIN_100_CMDAT0__FUNC_TDM_RX_MCK
+				  MT8167_PIN_101_CMDAT1__FUNC_TDM_RX_BCK
+				  MT8167_PIN_102_CMMCLK__FUNC_TDM_RX_LRCK
+				  MT8167_PIN_103_CMPCLK__FUNC_TDM_RX_DI>;
 		};
 	};
 };
