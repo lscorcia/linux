@@ -6,3 +6,4 @@ snd-soc-mt8167-afe-objs := \
 	mt8167-dai-adda.o
 
 obj-$(CONFIG_SND_SOC_MT8167) += snd-soc-mt8167-afe.o
+obj-$(CONFIG_SND_SOC_MT8167S_ES7243) += mt8167s-es7243.o
