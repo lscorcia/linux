@@ -7957,6 +7957,7 @@ DRM DRIVER FOR FITIPOWER JD9161Z-based MIPI-DSI LCD PANELS
 M:	Luca Leonardo Scorcia <l.scorcia@gmail.com>
 S:	Maintained
 F:	Documentation/devicetree/bindings/display/panel/fitipower,jd9161z.yaml
+F:	drivers/gpu/drm/panel/panel-fitipower-jd9161z.c
 
 DRM DRIVER FOR FIRMWARE FRAMEBUFFERS
 M:	Thomas Zimmermann <tzimmermann@suse.de>
