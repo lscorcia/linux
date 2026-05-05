@@ -7958,6 +7958,11 @@ S:	Maintained
 F:	Documentation/devicetree/bindings/display/panel/feiyang,fy07024di26a30d.yaml
 F:	drivers/gpu/drm/panel/panel-feiyang-fy07024di26a30d.c
 
+DRM DRIVER FOR FITIPOWER JD9161Z-based MIPI-DSI LCD PANELS
+M:	Luca Leonardo Scorcia <l.scorcia@gmail.com>
+S:	Maintained
+F:	Documentation/devicetree/bindings/display/panel/fitipower,jd9161z.yaml
+
 DRM DRIVER FOR FIRMWARE FRAMEBUFFERS
 M:	Thomas Zimmermann <tzimmermann@suse.de>
 M:	Javier Martinez Canillas <javierm@redhat.com>
