@@ -1,0 +1,69 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/display/panel/fitipower,jd9161z.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: Fitipower JD9161Z-based WVGA DSI panels
+
+maintainers:
+  - Luca Leonardo Scorcia <l.scorcia@gmail.com>
+
+allOf:
+  - $ref: panel-common.yaml#
+
+properties:
+  compatible:
+    items:
+      - enum:
+          - zhunyikeji,z40046-ctc
+      - const: fitipower,jd9161z
+
+  reg:
+    maxItems: 1
+
+  vdd-supply:
+    description: supply regulator for VDD, usually 3.3V
+
+  vccio-supply:
+    description: supply regulator for VCCIO, usually 1.8V
+
+  reset-gpios: true
+  backlight: true
+  rotation: true
+  port: true
+
+required:
+  - compatible
+  - reg
+  - vdd-supply
+  - vccio-supply
+  - reset-gpios
+
+additionalProperties: false
+
+examples:
+  - |
+    #include <dt-bindings/gpio/gpio.h>
+
+    dsi {
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        panel@0 {
+            compatible = "zhunyikeji,z40046-ctc", "fitipower,jd9161z";
+            reg = <0>;
+            backlight = <&backlight_lcd>;
+            reset-gpios = <&pio 66 GPIO_ACTIVE_LOW>;
+            rotation = <270>;
+            vccio-supply = <&mt6392_vio28_reg>;
+            vdd-supply = <&mt6392_vio18_reg>;
+
+            port {
+              panel_in: endpoint {
+                remote-endpoint = <&dsi_out>;
+              };
+            };
+        };
+    };
+...
