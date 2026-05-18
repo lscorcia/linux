@@ -9,6 +9,7 @@
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/phy/phy.h>
+#include <dt-bindings/thermal/thermal.h>
 
 #include "mt8516-pinfunc.h"
 
@@ -58,6 +59,7 @@
 				 <&topckgen CLK_TOP_MAINPLL_D2>;
 			clock-names = "cpu", "intermediate";
 			operating-points-v2 = <&cluster0_opp>;
+			#cooling-cells = <2>;
 		};
 
 		cpu1: cpu@1 {
@@ -71,6 +73,7 @@
 				 <&topckgen CLK_TOP_MAINPLL_D2>;
 			clock-names = "cpu", "intermediate";
 			operating-points-v2 = <&cluster0_opp>;
+			#cooling-cells = <2>;
 		};
 
 		cpu2: cpu@2 {
@@ -84,6 +87,7 @@
 				 <&topckgen CLK_TOP_MAINPLL_D2>;
 			clock-names = "cpu", "intermediate";
 			operating-points-v2 = <&cluster0_opp>;
+			#cooling-cells = <2>;
 		};
 
 		cpu3: cpu@3 {
@@ -97,6 +101,7 @@
 				 <&topckgen CLK_TOP_MAINPLL_D2>;
 			clock-names = "cpu", "intermediate";
 			operating-points-v2 = <&cluster0_opp>;
+			#cooling-cells = <2>;
 		};
 
 		idle-states {
@@ -123,6 +128,88 @@
 	psci {
 		compatible = "arm,psci-1.0";
 		method = "smc";
+	};
+
+	thermal-zones {
+		cpu_thermal: cpu-thermal {
+			polling-delay-passive = <1000>;
+			polling-delay = <1000>;
+			thermal-sensors = <&thermal 0>;
+
+			trips {
+				threshold: trip-point0 {
+					temperature = <95000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+
+				target: trip-point1 {
+					temperature = <105000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+
+				cpu_crit: cpu-crit0 {
+					temperature = <117000>;
+					hysteresis = <2000>;
+					type = "critical";
+				};
+			};
+
+			cooling-maps {
+				map0 {
+					trip = <&target>;
+					cooling-device =
+						<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+						<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+						<&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+						<&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+					contribution = <100>;
+				};
+			};
+		};
+
+		ts1_thermal: ts1-thermal {
+			polling-delay-passive = <1000>;
+			polling-delay = <1000>;
+			thermal-sensors = <&thermal 1>;
+
+			trips {
+				ts1_threshold: ts1-trip {
+					temperature = <75000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+			};
+		};
+
+		ts2_thermal: ts2-thermal {
+			polling-delay-passive = <0>;
+			polling-delay = <0>;
+			thermal-sensors = <&thermal 2>;
+
+			trips {
+				ts2_threshold: ts2-trip {
+					temperature = <75000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+			};
+		};
+
+		abb_thermal: abb-thermal {
+			polling-delay-passive = <0>;
+			polling-delay = <0>;
+			thermal-sensors = <&thermal 3>;
+
+			trips {
+				abb_threshold: abb-trip {
+					temperature = <75000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+			};
+		};
 	};
 
 	clk26m: clk26m {
@@ -263,6 +350,10 @@
 			reg = <0 0x10009000 0 0x1000>;
 			#address-cells = <1>;
 			#size-cells = <1>;
+
+			thermal_calibration_data: calib@180 {
+				reg = <0x180 0xc>;
+			};
 		};
 
 		pwrap: pwrap@1000f000 {
@@ -488,6 +579,20 @@
 				      "pwm4", "pwm5";
 		};
 
+		thermal: thermal@1100d000 {
+			compatible = "mediatek,mt8516-thermal",
+				     "mediatek,mt2701-thermal";
+			reg = <0 0x1100d000 0 0x1000>;
+			interrupts = <GIC_SPI 77 IRQ_TYPE_LEVEL_LOW>;
+			clocks = <&topckgen CLK_TOP_THEM>, <&topckgen CLK_TOP_AUX_ADC>;
+			clock-names = "therm", "auxadc";
+			mediatek,auxadc = <&auxadc>;
+			mediatek,apmixedsys = <&apmixedsys>;
+			nvmem-cells = <&thermal_calibration_data>;
+			nvmem-cell-names = "calibration-data";
+			#thermal-sensor-cells = <1>;
+		};
+
 		usb0: usb@11100000 {
 			compatible = "mediatek,mt8516-musb", "mediatek,mtk-musb";
 			reg = <0 0x11100000 0 0x1000>;
@@ -546,7 +651,6 @@
 			clocks = <&topckgen CLK_TOP_AUX_ADC>;
 			clock-names = "main";
 			#io-channel-cells = <1>;
-			status = "disabled";
 		};
 	};
 };
