@@ -63,6 +63,13 @@
 		};
 	};
 
+	firmware {
+		optee {
+			compatible = "linaro,optee-tz";
+			method = "smc";
+		};
+	};
+
 	vbat: regulator-vbat-sys {
 		compatible = "regulator-fixed";
 		regulator-name = "vbat";
