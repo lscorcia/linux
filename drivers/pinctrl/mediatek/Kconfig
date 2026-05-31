@@ -215,11 +215,16 @@ config PINCTRL_MT7988
 	select PINCTRL_MTK_MOORE
 
 config PINCTRL_MT8167
-	bool "MediaTek MT8167 pin control"
+	bool "MediaTek MT8167 pin control (deprecated)"
 	depends on OF
 	depends on ARM64 || COMPILE_TEST
 	default ARM64 && ARCH_MEDIATEK
 	select PINCTRL_MTK
+	help
+	  This driver is deprecated and only provided for backwards
+	  compatibility. For new builds please select PINCTRL_MT8516_PARIS.
+
+	  If unsure, say N.
 
 config PINCTRL_MT8173
 	bool "MediaTek MT8173 pin control"
@@ -300,11 +305,27 @@ config PINCTRL_MT8365
 	select PINCTRL_MTK
 
 config PINCTRL_MT8516
-	bool "MediaTek MT8516 pin control"
+	bool "MediaTek MT8516 pin control (deprecated)"
 	depends on OF
 	depends on ARM64 || COMPILE_TEST
 	default ARM64 && ARCH_MEDIATEK
 	select PINCTRL_MTK
+	help
+	  This driver is deprecated and only provided for backwards
+	  compatibility. For new builds please select PINCTRL_MT8516_PARIS.
+
+	  If unsure, say N.
+
+config PINCTRL_MT8516_PARIS
+	bool "MediaTek MT8516/MT8167 pin control"
+	depends on OF
+	depends on ARM64 || COMPILE_TEST
+	default ARM64 && ARCH_MEDIATEK
+	select PINCTRL_MTK_PARIS
+	help
+	  Say yes here to support pin controller and gpio driver
+	  on MediaTek MT8516/MT8167 SoC. This driver provides support
+	  for both GPIO and EINT.
 
 # For PMIC
 config PINCTRL_MT6397
