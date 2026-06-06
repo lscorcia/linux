@@ -96,16 +96,58 @@ static int mtk_hdmi_pll_determine_rate(struct clk_hw *hw,
 	return 0;
 }
 
-static int mtk_hdmi_pll_set_rate(struct clk_hw *hw, unsigned long rate,
-				 unsigned long parent_rate)
+static int mtk_hdmi_pll_set_rate_2701(struct clk_hw *hw, unsigned long rate,
+				      unsigned long parent_rate)
 {
 	struct mtk_hdmi_phy *hdmi_phy = to_mtk_hdmi_phy(hw);
 	void __iomem *base = hdmi_phy->regs;
 	u32 pos_div;
 
+	dev_dbg(hdmi_phy->dev, "%s: %lu Hz, parent: %lu Hz\n", __func__,
+		rate, parent_rate);
+
 	if (rate <= 64000000)
 		pos_div = 3;
 	else if (rate <= 128000000)
+		pos_div = 2;
+	else
+		pos_div = 1;
+
+	mtk_phy_set_bits(base + HDMI_CON6, RG_HTPLL_PREDIV_MASK);
+	mtk_phy_set_bits(base + HDMI_CON6, RG_HTPLL_POSDIV_MASK);
+	mtk_phy_set_bits(base + HDMI_CON2, RG_HDMITX_EN_TX_POSDIV);
+	mtk_phy_update_field(base + HDMI_CON6, RG_HTPLL_IC_MASK, 0x1);
+	mtk_phy_update_field(base + HDMI_CON6, RG_HTPLL_IR_MASK, 0x1);
+	mtk_phy_update_field(base + HDMI_CON2, RG_HDMITX_TX_POSDIV_MASK, pos_div);
+	mtk_phy_update_field(base + HDMI_CON6, RG_HTPLL_FBKSEL_MASK, 1);
+	mtk_phy_update_field(base + HDMI_CON6, RG_HTPLL_FBKDIV_MASK, 19);
+	mtk_phy_update_field(base + HDMI_CON7, RG_HTPLL_DIVEN_MASK, 0x2);
+	mtk_phy_update_field(base + HDMI_CON6, RG_HTPLL_BP_MASK, 0xc);
+	mtk_phy_update_field(base + HDMI_CON6, RG_HTPLL_BC_MASK, 0x2);
+	mtk_phy_update_field(base + HDMI_CON6, RG_HTPLL_BR_MASK, 0x1);
+
+	mtk_phy_clear_bits(base + HDMI_CON1, RG_HDMITX_PRED_IMP);
+	mtk_phy_update_field(base + HDMI_CON1, RG_HDMITX_PRED_IBIAS_MASK, 0x3);
+	mtk_phy_clear_bits(base + HDMI_CON0, RG_HDMITX_EN_IMP_MASK);
+	mtk_phy_update_field(base + HDMI_CON1, RG_HDMITX_DRV_IMP_MASK, 0x28);
+	mtk_phy_update_field(base + HDMI_CON4, RG_HDMITX_RESERVE_MASK, 0x28);
+	mtk_phy_update_field(base + HDMI_CON0, RG_HDMITX_DRV_IBIAS_MASK, 0xa);
+	return 0;
+}
+
+static int mtk_hdmi_pll_set_rate_8167(struct clk_hw *hw, unsigned long rate,
+				      unsigned long parent_rate)
+{
+	struct mtk_hdmi_phy *hdmi_phy = to_mtk_hdmi_phy(hw);
+	void __iomem *base = hdmi_phy->regs;
+	u32 pos_div;
+
+	dev_dbg(hdmi_phy->dev, "%s: %lu Hz, parent: %lu Hz\n", __func__,
+		rate, parent_rate);
+
+	if (rate <= 28000000)
+		pos_div = 3;
+	else if (rate <= 74250000)
 		pos_div = 2;
 	else
 		pos_div = 1;
@@ -166,10 +208,18 @@ static unsigned long mtk_hdmi_pll_recalc_rate(struct clk_hw *hw,
 	return out_rate;
 }
 
-static const struct clk_ops mtk_hdmi_phy_pll_ops = {
+static const struct clk_ops mtk_hdmi_phy_pll_2701_ops = {
 	.prepare = mtk_hdmi_pll_prepare,
 	.unprepare = mtk_hdmi_pll_unprepare,
-	.set_rate = mtk_hdmi_pll_set_rate,
+	.set_rate = mtk_hdmi_pll_set_rate_2701,
+	.determine_rate = mtk_hdmi_pll_determine_rate,
+	.recalc_rate = mtk_hdmi_pll_recalc_rate,
+};
+
+static const struct clk_ops mtk_hdmi_phy_pll_8167_ops = {
+	.prepare = mtk_hdmi_pll_prepare,
+	.unprepare = mtk_hdmi_pll_unprepare,
+	.set_rate = mtk_hdmi_pll_set_rate_8167,
 	.determine_rate = mtk_hdmi_pll_determine_rate,
 	.recalc_rate = mtk_hdmi_pll_recalc_rate,
 };
@@ -217,7 +267,15 @@ static void mtk_hdmi_phy_disable_tmds(struct mtk_hdmi_phy *hdmi_phy)
 struct mtk_hdmi_phy_conf mtk_hdmi_phy_2701_conf = {
 	.flags = CLK_SET_RATE_GATE,
 	.pll_default_off = true,
-	.hdmi_phy_clk_ops = &mtk_hdmi_phy_pll_ops,
+	.hdmi_phy_clk_ops = &mtk_hdmi_phy_pll_2701_ops,
+	.hdmi_phy_enable_tmds = mtk_hdmi_phy_enable_tmds,
+	.hdmi_phy_disable_tmds = mtk_hdmi_phy_disable_tmds,
+};
+
+struct mtk_hdmi_phy_conf mtk_hdmi_phy_8167_conf = {
+	.flags = CLK_SET_RATE_GATE,
+	.pll_default_off = true,
+	.hdmi_phy_clk_ops = &mtk_hdmi_phy_pll_8167_ops,
 	.hdmi_phy_enable_tmds = mtk_hdmi_phy_enable_tmds,
 	.hdmi_phy_disable_tmds = mtk_hdmi_phy_disable_tmds,
 };
