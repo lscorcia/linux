@@ -310,9 +310,7 @@
 
 				port@1 {
 					reg = <1>;
-					rdma0_out: endpoint {
-						remote-endpoint = <&dsi_in>;
-					};
+					rdma0_out: endpoint { };
 				};
 			};
 		};
@@ -517,9 +515,7 @@
 
 				port@0 {
 					reg = <0>;
-					dsi_in: endpoint {
-						remote-endpoint = <&rdma0_out>;
-					};
+					dsi_in: endpoint { };
 				};
 
 				port@1 {
