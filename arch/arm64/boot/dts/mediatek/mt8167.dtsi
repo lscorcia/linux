@@ -23,6 +23,8 @@
 		ccorr0 = &ccorr;
 		color0 = &color;
 		dither0 = &dither;
+		dpi0 = &dpi0;
+		dpi1 = &dpi1;
 		dsi0 = &dsi;
 		gamma0 = &gamma;
 		ovl0 = &ovl0;
@@ -525,6 +527,33 @@
 			};
 		};
 
+		dpi0: dpi@14013000 {
+			compatible = "mediatek,mt8167-dpi";
+			reg = <0 0x14013000 0 0x1000>;
+			clocks = <&mmsys CLK_MM_DPI0_PXL>, <&mmsys CLK_MM_DPI0_ENGINE>,
+				 <&apmixedsys CLK_APMIXED_LVDSPLL>;
+			clock-names = "pixel", "engine", "pll";
+			interrupts = <GIC_SPI 172 IRQ_TYPE_LEVEL_LOW>;
+			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
+			resets = <&mmsys MT8167_MMSYS_SW0_RST_B_DPI0>;
+			status = "disabled";
+
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				port@0 {
+					reg = <0>;
+					dpi_in: endpoint { };
+				};
+
+				port@1 {
+					reg = <1>;
+					dpi_out: endpoint { };
+				};
+			};
+		};
+
 		mutex: mutex@14015000 {
 			compatible = "mediatek,mt8167-disp-mutex";
 			reg = <0 0x14015000 0 0x1000>;
@@ -562,6 +591,34 @@
 			#clock-cells = <0>;
 			#phy-cells = <0>;
 			status = "disabled";
+		};
+
+		dpi1: dpi1@14019000 {
+			compatible = "mediatek,mt8167-dpi";
+			reg = <0 0x14019000 0 0x1000>;
+			interrupts = <GIC_SPI 174 IRQ_TYPE_LEVEL_LOW>;
+			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
+			clocks = <&mmsys CLK_MM_DPI1_PXL>, <&mmsys CLK_MM_DPI1_ENGINE>,
+				 <&apmixedsys CLK_APMIXED_TVDPLL>;
+			clock-names = "pixel", "engine", "pll";
+			status = "disabled";
+
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				port@0 {
+					reg = <0>;
+
+					dpi1_in: endpoint { };
+				};
+
+				port@1 {
+					reg = <1>;
+
+					dpi1_out: endpoint { };
+				};
+			};
 		};
 
 		imgsys: syscon@15000000 {
