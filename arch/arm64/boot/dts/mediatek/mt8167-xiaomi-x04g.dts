@@ -173,6 +173,14 @@
 	};
 };
 
+&rdma0_out {
+	remote-endpoint = <&dsi_in>;
+};
+
+&dsi_in {
+	remote-endpoint = <&rdma0_out>;
+};
+
 &dsi_out {
 	remote-endpoint = <&panel_in>;
 };
