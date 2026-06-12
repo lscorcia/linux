@@ -133,12 +133,21 @@ void mtk_rdma_unregister_vblank_cb(struct device *dev)
 
 void mtk_rdma_enable_vblank(struct device *dev)
 {
+	pr_err("*** LUCA mtk_rdma_enable_vblank");
+
+	struct mtk_disp_rdma *rdma = dev_get_drvdata(dev);
+
+	/* Clear frame completion interrupt */
+	writel(0x0, rdma->regs + DISP_REG_RDMA_INT_STATUS);
+
 	rdma_update_bits(dev, DISP_REG_RDMA_INT_ENABLE, RDMA_FRAME_END_INT,
 			 RDMA_FRAME_END_INT);
 }
 
 void mtk_rdma_disable_vblank(struct device *dev)
 {
+	pr_err("*** LUCA mtk_rdma_enable_vblank");
+
 	rdma_update_bits(dev, DISP_REG_RDMA_INT_ENABLE, RDMA_FRAME_END_INT, 0);
 }
 
@@ -316,28 +325,40 @@ static int mtk_disp_rdma_probe(struct platform_device *pdev)
 	int irq;
 	int ret;
 
+	dev_err(dev, "*** LUCA mtk_disp_rdma_probe_1");
+
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
 
+	dev_err(dev, "*** LUCA mtk_disp_rdma_probe_2");
+
 	irq = platform_get_irq(pdev, 0);
 	if (irq < 0)
 		return irq;
+
+	dev_err(dev, "*** LUCA mtk_disp_rdma_probe_3");
 
 	priv->clk = devm_clk_get(dev, NULL);
 	if (IS_ERR(priv->clk))
 		return dev_err_probe(dev, PTR_ERR(priv->clk),
 				     "failed to get rdma clk\n");
 
+	dev_err(dev, "*** LUCA mtk_disp_rdma_probe_4");
+
 	priv->regs = devm_platform_ioremap_resource(pdev, 0);
 	if (IS_ERR(priv->regs))
 		return dev_err_probe(dev, PTR_ERR(priv->regs),
 				     "failed to ioremap rdma\n");
 #if IS_REACHABLE(CONFIG_MTK_CMDQ)
+	dev_err(dev, "*** LUCA mtk_disp_rdma_probe_5");
+
 	ret = cmdq_dev_get_client_reg(dev, &priv->cmdq_reg, 0);
 	if (ret)
 		dev_dbg(dev, "get mediatek,gce-client-reg fail!\n");
 #endif
+
+	dev_err(dev, "*** LUCA mtk_disp_rdma_probe_6");
 
 	ret = of_property_read_u32(dev->of_node,
 				   "mediatek,rdma-fifo-size",
@@ -345,26 +366,43 @@ static int mtk_disp_rdma_probe(struct platform_device *pdev)
 	if (ret && (ret != -EINVAL))
 		return dev_err_probe(dev, ret, "Failed to get rdma fifo size\n");
 
+	dev_err(dev, "*** LUCA mtk_disp_rdma_probe_7");
+
 	/* Disable and clear pending interrupts */
 	writel(0x0, priv->regs + DISP_REG_RDMA_INT_ENABLE);
+
+	dev_err(dev, "*** LUCA mtk_disp_rdma_probe_8");
+
 	writel(0x0, priv->regs + DISP_REG_RDMA_INT_STATUS);
+
+	dev_err(dev, "*** LUCA mtk_disp_rdma_probe_9");
 
 	ret = devm_request_irq(dev, irq, mtk_disp_rdma_irq_handler,
 			       IRQF_TRIGGER_NONE, dev_name(dev), priv);
 	if (ret < 0)
 		return dev_err_probe(dev, ret, "Failed to request irq %d\n", irq);
 
+	dev_err(dev, "*** LUCA mtk_disp_rdma_probe_10");
+
 	priv->data = of_device_get_match_data(dev);
+
+	dev_err(dev, "*** LUCA mtk_disp_rdma_probe_11");
 
 	platform_set_drvdata(pdev, priv);
 
+	dev_err(dev, "*** LUCA mtk_disp_rdma_probe_12");
+
 	pm_runtime_enable(dev);
+
+	dev_err(dev, "*** LUCA mtk_disp_rdma_probe_13");
 
 	ret = component_add(dev, &mtk_disp_rdma_component_ops);
 	if (ret) {
 		pm_runtime_disable(dev);
 		return dev_err_probe(dev, ret, "Failed to add component\n");
 	}
+
+	dev_err(dev, "*** LUCA mtk_disp_rdma_probe_14");
 
 	return 0;
 }

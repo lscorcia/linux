@@ -755,11 +755,15 @@ err_refcount:
 
 static void mtk_dsi_poweroff(struct mtk_dsi *dsi)
 {
+	dev_err(dsi->host.dev, "*** LUCA mtk_dsi_poweroff_1\n");
+
 	if (WARN_ON(dsi->refcount == 0))
 		return;
 
 	if (--dsi->refcount != 0)
 		return;
+
+	dev_err(dsi->host.dev, "*** LUCA mtk_dsi_poweroff_2\n");
 
 	/*
 	 * mtk_dsi_stop() and mtk_dsi_start() is asymmetric, since
@@ -1162,8 +1166,12 @@ static ssize_t mtk_dsi_host_transfer(struct mipi_dsi_host *host,
 
 	if (recv_cnt > 2)
 		src_addr = &read_data[4];
-	else
+	else if (recv_cnt > 0)
 		src_addr = &read_data[1];
+	else {
+		DRM_ERROR("DSI Error Report: 0x%x\n", read_data[1]);
+		goto restore_dsi_mode;
+	}
 
 	if (recv_cnt > 10)
 		recv_cnt = 10;
