@@ -60,6 +60,7 @@
 			clock-names = "cpu", "intermediate";
 			operating-points-v2 = <&cluster0_opp>;
 			#cooling-cells = <2>;
+			next-level-cache = <&l2_cache>;
 		};
 
 		cpu1: cpu@1 {
@@ -74,6 +75,7 @@
 			clock-names = "cpu", "intermediate";
 			operating-points-v2 = <&cluster0_opp>;
 			#cooling-cells = <2>;
+			next-level-cache = <&l2_cache>;
 		};
 
 		cpu2: cpu@2 {
@@ -88,6 +90,7 @@
 			clock-names = "cpu", "intermediate";
 			operating-points-v2 = <&cluster0_opp>;
 			#cooling-cells = <2>;
+			next-level-cache = <&l2_cache>;
 		};
 
 		cpu3: cpu@3 {
@@ -102,6 +105,24 @@
 			clock-names = "cpu", "intermediate";
 			operating-points-v2 = <&cluster0_opp>;
 			#cooling-cells = <2>;
+			next-level-cache = <&l2_cache>;
+		};
+
+		cpu-map {
+			cluster0 {
+				core0 {
+					cpu = <&cpu0>;
+				};
+				core1 {
+					cpu = <&cpu1>;
+				};
+				core2 {
+					cpu = <&cpu2>;
+				};
+				core3 {
+					cpu = <&cpu3>;
+				};
+			};
 		};
 
 		idle-states {
@@ -113,6 +134,7 @@
 				exit-latency-us = <600>;
 				min-residency-us = <1200>;
 				arm,psci-suspend-param = <0x0010000>;
+				local-timer-stop;
 			};
 
 			CLUSTER_SLEEP_0: cluster-sleep-0 {
@@ -121,7 +143,14 @@
 				exit-latency-us = <1000>;
 				min-residency-us = <2000>;
 				arm,psci-suspend-param = <0x2010000>;
+				local-timer-stop;
 			};
+		};
+
+		l2_cache: l2-cache {
+			compatible = "cache";
+			cache-level = <2>;
+			cache-unified;
 		};
 	};
 
@@ -264,9 +293,11 @@
 			     (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
 			     <GIC_PPI 10
 			     (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>;
+		interrupt-names = "sec-phys", "phys", "virt", "hyp-phys";
+		arm,no-tick-in-suspend;
 	};
 
-	pmu {
+	pmu: pmu {
 		compatible = "arm,cortex-a35-pmu";
 		interrupts = <GIC_SPI 4 IRQ_TYPE_LEVEL_LOW>,
 			     <GIC_SPI 5 IRQ_TYPE_LEVEL_LOW>,
@@ -327,6 +358,7 @@
 				     "mediatek,mt6779-keypad";
 			reg = <0 0x10002000 0 0x1000>;
 			wakeup-source;
+			// This should be unsupported; verify w/ IRQ_TYPE_LEVEL_LOW
 			interrupts = <GIC_SPI 149 IRQ_TYPE_EDGE_FALLING>;
 			clocks = <&clk26m>;
 			clock-names = "kpd";
@@ -351,6 +383,10 @@
 			#address-cells = <1>;
 			#size-cells = <1>;
 
+			cpu_speed_bin: calib@40 {
+				reg = <0x40 0x4>;
+			};
+
 			thermal_calibration_data: calib@180 {
 				reg = <0x180 0xc>;
 			};
@@ -373,6 +409,16 @@
 			#interrupt-cells = <3>;
 			interrupt-parent = <&gic>;
 			reg = <0 0x10200620 0 0x20>;
+		};
+
+		cirq: interrupt-controller@10202000 {
+			compatible = "mediatek,mt2701-cirq",
+				     "mediatek,mtk-cirq";
+			reg = <0 0x10202000 0 0x400>;
+			#interrupt-cells = <3>;
+			interrupt-controller;
+			interrupt-parent = <&sysirq>;
+			mediatek,ext-irq-range = <32 226>;
 		};
 
 		gic: interrupt-controller@10310000 {
