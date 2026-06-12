@@ -132,6 +132,7 @@ properties:
           - enum:
               - mediatek,mt8167-pumpkin
               - lenovo,cd24502f
+              - sony,aiv8167-rockman
               - xiaomi,x04g
           - const: mediatek,mt8167
       - description: Google Elm (Acer Chromebook R13)
