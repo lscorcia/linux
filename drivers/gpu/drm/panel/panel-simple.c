@@ -6472,6 +6472,36 @@ static const struct panel_desc_dsi tsd_tst070wsbe_196c = {
 	.lanes = 4,
 };
 
+static const struct drm_display_mode lenovo_cd24502f_panel_mode = {
+	.clock = (480 + 60 + 60 + 10) * (800 + 20 + 18 + 2) * 60 / 1000,
+	.hdisplay = 480,
+	.hsync_start = 480 + 60,
+	.hsync_end = 480 + 60 + 60,
+	.htotal = 480 + 60 + 60 + 10,
+	.vdisplay = 800,
+	.vsync_start = 800 + 20,
+	.vsync_end = 800 + 20 + 18,
+	.vtotal = 800 + 20 + 18 + 2,
+	.flags = DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC,
+};
+
+static const struct panel_desc_dsi lenovo_cd24502f_panel = {
+	.desc = {
+		.modes = &lenovo_cd24502f_panel_mode,
+		.num_modes = 1,
+		.bpc = 8,
+		.size = {
+			.width = 127,
+			.height = 76,
+		},
+		.connector_type = DRM_MODE_CONNECTOR_DSI,
+	},
+	.flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_BURST |
+		 MIPI_DSI_MODE_VIDEO_SYNC_PULSE,
+	.format = MIPI_DSI_FMT_RGB888,
+	.lanes = 2,
+};
+
 static const struct of_device_id dsi_of_match[] = {
 	{
 		.compatible = "auo,b080uan01",
@@ -6495,6 +6525,10 @@ static const struct of_device_id dsi_of_match[] = {
 		.compatible = "team-source-display,tst070wsbe-196c",
 		.data = &tsd_tst070wsbe_196c
 	}, {
+		.compatible = "lenovo,cd24502-panel",
+		.data = &lenovo_cd24502f_panel
+	},
+	{
 		/* sentinel */
 	}
 };
