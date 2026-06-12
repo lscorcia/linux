@@ -188,6 +188,8 @@ void mtk_ovl_register_vblank_cb(struct device *dev,
 {
 	struct mtk_disp_ovl *ovl = dev_get_drvdata(dev);
 
+	pr_err("*** LUCA mtk_ovl_register_vblank_cb");
+
 	ovl->vblank_cb = vblank_cb;
 	ovl->vblank_cb_data = vblank_cb_data;
 }
@@ -195,6 +197,8 @@ void mtk_ovl_register_vblank_cb(struct device *dev,
 void mtk_ovl_unregister_vblank_cb(struct device *dev)
 {
 	struct mtk_disp_ovl *ovl = dev_get_drvdata(dev);
+
+	pr_err("*** LUCA mtk_ovl_unregister_vblank_cb");
 
 	ovl->vblank_cb = NULL;
 	ovl->vblank_cb_data = NULL;
@@ -204,6 +208,8 @@ void mtk_ovl_enable_vblank(struct device *dev)
 {
 	struct mtk_disp_ovl *ovl = dev_get_drvdata(dev);
 
+	pr_err("*** LUCA mtk_ovl_enable_vblank");
+
 	writel(0x0, ovl->regs + DISP_REG_OVL_INTSTA);
 	writel_relaxed(OVL_FME_CPL_INT, ovl->regs + DISP_REG_OVL_INTEN);
 }
@@ -211,6 +217,8 @@ void mtk_ovl_enable_vblank(struct device *dev)
 void mtk_ovl_disable_vblank(struct device *dev)
 {
 	struct mtk_disp_ovl *ovl = dev_get_drvdata(dev);
+
+	pr_err("*** LUCA mtk_ovl_disable_vblank");
 
 	writel_relaxed(0x0, ovl->regs + DISP_REG_OVL_INTEN);
 }
@@ -614,44 +622,64 @@ static int mtk_disp_ovl_probe(struct platform_device *pdev)
 	int irq;
 	int ret;
 
+	dev_err(dev, "*** LUCA mtk_disp_ovl_probe_1");
+
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
 
+	dev_err(dev, "*** LUCA mtk_disp_ovl_probe_2");
+
 	irq = platform_get_irq(pdev, 0);
 	if (irq < 0)
 		return irq;
+
+	dev_err(dev, "*** LUCA mtk_disp_ovl_probe_3");
 
 	priv->clk = devm_clk_get(dev, NULL);
 	if (IS_ERR(priv->clk))
 		return dev_err_probe(dev, PTR_ERR(priv->clk),
 				     "failed to get ovl clk\n");
 
+	dev_err(dev, "*** LUCA mtk_disp_ovl_probe_4");
+
 	priv->regs = devm_platform_ioremap_resource(pdev, 0);
 	if (IS_ERR(priv->regs))
 		return dev_err_probe(dev, PTR_ERR(priv->regs),
 				     "failed to ioremap ovl\n");
 #if IS_REACHABLE(CONFIG_MTK_CMDQ)
+	dev_err(dev, "*** LUCA mtk_disp_ovl_probe_5");
+
 	ret = cmdq_dev_get_client_reg(dev, &priv->cmdq_reg, 0);
 	if (ret)
 		dev_dbg(dev, "get mediatek,gce-client-reg fail!\n");
 #endif
 
+	dev_err(dev, "*** LUCA mtk_disp_ovl_probe_6");
+
 	priv->data = of_device_get_match_data(dev);
 	platform_set_drvdata(pdev, priv);
+
+	dev_err(dev, "*** LUCA mtk_disp_ovl_probe_7");
 
 	ret = devm_request_irq(dev, irq, mtk_disp_ovl_irq_handler,
 			       IRQF_TRIGGER_NONE, dev_name(dev), priv);
 	if (ret < 0)
 		return dev_err_probe(dev, ret, "Failed to request irq %d\n", irq);
 
+	dev_err(dev, "*** LUCA mtk_disp_ovl_probe_8");
+
 	pm_runtime_enable(dev);
+
+	dev_err(dev, "*** LUCA mtk_disp_ovl_probe_9");
 
 	ret = component_add(dev, &mtk_disp_ovl_component_ops);
 	if (ret) {
 		pm_runtime_disable(dev);
 		return dev_err_probe(dev, ret, "Failed to add component\n");
 	}
+
+	dev_err(dev, "*** LUCA mtk_disp_ovl_probe_10");
 
 	return 0;
 }
