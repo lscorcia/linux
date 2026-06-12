@@ -153,6 +153,7 @@
 			mediatek,larbs = <&larb0>, <&larb1>, <&larb2>;
 			interrupts = <GIC_SPI 121 IRQ_TYPE_LEVEL_LOW>;
 			#iommu-cells = <1>;
+			mediatek,infracfg = <&infracfg>;
 		};
 
 		gce: mailbox@1020a000 {
@@ -168,8 +169,12 @@
 		disp_pwm: pwm@1100f000 {
 			compatible = "mediatek,mt8167-disp-pwm", "mediatek,mt8173-disp-pwm";
 			reg = <0 0x1100f000 0 0x1000>;
-			clocks = <&mmsys CLK_MM_DISP_PWM_26M>, <&mmsys CLK_MM_DISP_PWM_MM>;
-			clock-names = "main", "mm";
+			clocks = <&topckgen CLK_TOP_PWM_MM>,
+				 <&mmsys CLK_MM_DISP_PWM_26M>,
+				 <&mmsys CLK_MM_DISP_PWM_MM>;
+			clock-names = "pwm_mm",
+				      "main",
+				      "mm";
 			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
 			mediatek,gce-client-reg = <&gce SUBSYS_1100FXXX 0xf000 0x1000>;
 			#pwm-cells = <2>;
@@ -735,4 +740,11 @@
 
 &pio {
 	compatible = "mediatek,mt8167-pinctrl";
+};
+
+&pmu {
+	interrupts = <GIC_SPI 8 IRQ_TYPE_LEVEL_LOW>,
+		<GIC_SPI 9 IRQ_TYPE_LEVEL_LOW>,
+		<GIC_SPI 10 IRQ_TYPE_LEVEL_LOW>,
+		<GIC_SPI 11 IRQ_TYPE_LEVEL_LOW>;
 };
