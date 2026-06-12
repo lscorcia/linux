@@ -147,6 +147,8 @@ static int jd9161z_prepare(struct drm_panel *panel)
 	struct mipi_dsi_multi_context dsi_ctx = { .dsi = ctx->dsi };
 	int ret;
 
+	pr_err("*** LUCA jd9161z_prepare_1");
+
 	ret = regulator_enable(ctx->vccio);
 	if (ret)
 		return ret;
@@ -155,6 +157,11 @@ static int jd9161z_prepare(struct drm_panel *panel)
 	if (ret)
 		goto disable_vccio;
 
+	msleep(10);
+
+	pr_err("*** LUCA jd9161z_prepare_2");
+
+/*
 	if (ctx->desc->vccio_to_lp11_delay_ms)
 		msleep(ctx->desc->vccio_to_lp11_delay_ms);
 
@@ -166,21 +173,24 @@ static int jd9161z_prepare(struct drm_panel *panel)
 
 	if (ctx->desc->lp11_to_reset_delay_ms)
 		msleep(ctx->desc->lp11_to_reset_delay_ms);
+*/
 
+	// Enter sleep mode to avoid white screen during reset
+	// Requires 120msec wait minimum
+	mipi_dsi_dcs_enter_sleep_mode_multi(&dsi_ctx);
+	msleep(120);
+
+	// Assert reset line for 10usec minimum
+	gpiod_set_value_cansleep(ctx->reset, 1);
+	usleep_range(10, 20);
+
+	// Wait 5 msec minimum after deasserting reset before sending commands
 	gpiod_set_value_cansleep(ctx->reset, 0);
 	msleep(5);
 
-	gpiod_set_value_cansleep(ctx->reset, 1);
-	msleep(20);
-
-	gpiod_set_value_cansleep(ctx->reset, 0);
-	msleep(130);
+	pr_err("*** LUCA jd9161z_prepare_3");
 
 	ret = jd9161z_read_otp_id(&dsi_ctx);
-	if (ret)
-		goto disable_vdd;
-	
-	ret = ctx->desc->init(ctx);
 	if (ret)
 		goto disable_vdd;
 
@@ -195,6 +205,35 @@ disable_vccio:
 	return ret;
 }
 
+static int jd9161z_enable(struct drm_panel *panel)
+{
+	struct jd9161z *ctx = panel_to_jd9161z(panel);
+	struct mipi_dsi_multi_context dsi_ctx = { .dsi = ctx->dsi };
+	int ret;
+
+	pr_err("*** LUCA jd9161z_enable_1");
+
+	ret = ctx->desc->init(ctx);
+	if (ret)
+		return ret;
+
+	pr_err("*** LUCA jd9161z_enable_2");
+
+	// Exit sleep mode to start display clocks
+	// Requires 120msec wait minimum
+	mipi_dsi_dcs_exit_sleep_mode_multi(&dsi_ctx);
+	mipi_dsi_msleep(&dsi_ctx, 120);
+
+	pr_err("*** LUCA jd9161z_enable_3");
+
+	// Turn on the display
+	mipi_dsi_dcs_set_display_on_multi(&dsi_ctx);
+
+	pr_err("*** LUCA jd9161z_enable_4");
+
+	return 0;
+}
+
 static int jd9161z_disable(struct drm_panel *panel)
 {
 	struct jd9161z *ctx = panel_to_jd9161z(panel);
@@ -203,7 +242,11 @@ static int jd9161z_disable(struct drm_panel *panel)
 	if (ctx->desc->backlight_off_to_display_off_delay_ms)
 		mipi_dsi_msleep(&dsi_ctx, ctx->desc->backlight_off_to_display_off_delay_ms);
 
+	pr_err("*** LUCA jd9161z_disable_1");
+
 	mipi_dsi_dcs_set_display_off_multi(&dsi_ctx);
+
+	pr_err("*** LUCA jd9161z_disable_2");
 
 	if (ctx->desc->display_off_to_enter_sleep_delay_ms)
 		mipi_dsi_msleep(&dsi_ctx, ctx->desc->display_off_to_enter_sleep_delay_ms);
@@ -213,13 +256,15 @@ static int jd9161z_disable(struct drm_panel *panel)
 	if (ctx->desc->enter_sleep_to_reset_down_delay_ms)
 		mipi_dsi_msleep(&dsi_ctx, ctx->desc->enter_sleep_to_reset_down_delay_ms);
 
+	pr_err("*** LUCA jd9161z_disable_3");
+
 	return dsi_ctx.accum_err;
 }
 
 static int jd9161z_unprepare(struct drm_panel *panel)
 {
 	struct jd9161z *ctx = panel_to_jd9161z(panel);
-
+/*
 	gpiod_set_value_cansleep(ctx->reset, 0);
 	msleep(120);
 
@@ -228,9 +273,13 @@ static int jd9161z_unprepare(struct drm_panel *panel)
 
 		usleep_range(1000, 2000);
 	}
+*/
+	pr_err("*** LUCA jd9161z_unprepare_1");
 
 	regulator_disable(ctx->vdd);
 	regulator_disable(ctx->vccio);
+
+	pr_err("*** LUCA jd9161z_unprepare_2");
 
 	return 0;
 }
@@ -268,6 +317,7 @@ static enum drm_panel_orientation jd9161z_panel_get_orientation(struct drm_panel
 
 static const struct drm_panel_funcs jd9161z_funcs = {
 	.prepare = jd9161z_prepare,
+	.enable = jd9161z_enable,
 	.disable = jd9161z_disable,
 	.unprepare = jd9161z_unprepare,
 	.get_modes = jd9161z_get_modes,
@@ -370,30 +420,22 @@ static int zhunyi_z40046_init_cmds_ctc(struct jd9161z *ctx)
 
 	mipi_dsi_msleep(&dsi_ctx, 1);
 
-	mipi_dsi_dcs_exit_sleep_mode_multi(&dsi_ctx);
-
-	mipi_dsi_msleep(&dsi_ctx, 120);
-
-	mipi_dsi_dcs_set_display_on_multi(&dsi_ctx);
-
-	mipi_dsi_msleep(&dsi_ctx, 5);
-
 	return dsi_ctx.accum_err;
 };
 
 static const struct jd9161z_panel_desc zhunyi_z40046_ctc_desc = {
 	.mode = {
-		.clock		= (480 + 20 + 20 + 20) * (800 + 14 + 4 + 8) * 60 / 1000,
+		.clock		= (480 + 80 + 80 + 20) * (800 + 20 + 20 + 20) * 60 / 1000,
 
 		.hdisplay	= 480,
-		.hsync_start	= 480 + 20,
-		.hsync_end	= 480 + 20 + 20,
-		.htotal		= 480 + 20 + 20 + 20,
+		.hsync_start	= 480 + 80,
+		.hsync_end	= 480 + 80 + 80,
+		.htotal		= 480 + 80 + 80 + 20,
 
 		.vdisplay	= 800,
-		.vsync_start	= 800 + 14,
-		.vsync_end	= 800 + 14 + 4,
-		.vtotal		= 800 + 14 + 4 + 8,
+		.vsync_start	= 800 + 20,
+		.vsync_end	= 800 + 20 + 20,
+		.vtotal		= 800 + 20 + 20 + 20,
 
 		.width_mm	= 52,
 		.height_mm	= 86,
@@ -402,7 +444,7 @@ static const struct jd9161z_panel_desc zhunyi_z40046_ctc_desc = {
 	},
 	.lanes = 2,
 	.format = MIPI_DSI_FMT_RGB888,
-	.mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE |
+	.mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_BURST |
 		      MIPI_DSI_MODE_LPM,
 	.lp11_before_reset = true,
 	.reset_before_power_off_vccio = true,
