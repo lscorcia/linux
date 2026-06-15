@@ -1996,6 +1996,8 @@ static int pwrap_mt8173_init_soc_specific(struct pmic_wrapper *wrp)
 
 static int pwrap_mt2701_init_soc_specific(struct pmic_wrapper *wrp)
 {
+	dev_err(wrp->dev, "*** LUCA pwrap_mt2701_init_soc_specific %d vs %d", wrp->slave->type, PMIC_MT6323);
+
 	/* GPS_INTF initialization */
 	switch (wrp->slave->type) {
 	case PMIC_MT6323:
@@ -2062,6 +2064,8 @@ static int pwrap_init(struct pmic_wrapper *wrp)
 
 	switch (wrp->master->type) {
 	case PWRAP_MT6795:
+		fallthrough;
+	case PWRAP_MT8516:
 		fallthrough;
 	case PWRAP_MT8173:
 		/* Enable DCM */
@@ -2254,6 +2258,7 @@ static const struct of_device_id of_slave_match_tbl[] = {
 	{ .compatible = "mediatek,mt6357", .data = &pmic_mt6357 },
 	{ .compatible = "mediatek,mt6358", .data = &pmic_mt6358 },
 	{ .compatible = "mediatek,mt6359", .data = &pmic_mt6359 },
+	{ .compatible = "mediatek,mt6392", .data = &pmic_mt6323 },
 
 	/* The MT6380 PMIC only implements a regulator, so we bind it
 	 * directly instead of using a MFD.
@@ -2428,7 +2433,7 @@ static const struct pmic_wrapper_type pwrap_mt8516 = {
 	.wdt_src = PWRAP_WDT_SRC_MASK_ALL,
 	.caps = PWRAP_CAP_DCM,
 	.init_reg_clock = pwrap_mt2701_init_reg_clock,
-	.init_soc_specific = NULL,
+	.init_soc_specific = pwrap_mt2701_init_soc_specific,
 };
 
 static const struct pmic_wrapper_type pwrap_mt8186 = {
@@ -2533,13 +2538,19 @@ static int pwrap_probe(struct platform_device *pdev)
 	 * The PMIC could already be initialized by the bootloader.
 	 * Skip initialization here in this case.
 	 */
+	dev_err(wrp->dev, "*** LUCA check_init_done");
+
 	if (!pwrap_readl(wrp, PWRAP_INIT_DONE2)) {
+		dev_err(wrp->dev, "*** LUCA not init done");
+
 		ret = pwrap_init(wrp);
 		if (ret) {
 			dev_dbg(wrp->dev, "init failed with %d\n", ret);
 			return ret;
 		}
 	}
+
+	dev_err(wrp->dev, "*** LUCA after init");
 
 	if (HAS_CAP(wrp->master->caps, PWRAP_CAP_ARB))
 		mask_done = PWRAP_STATE_INIT_DONE1;
