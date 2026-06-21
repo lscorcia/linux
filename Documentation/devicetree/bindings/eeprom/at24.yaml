@@ -127,6 +127,7 @@ properties:
               - belling,bl24c16a
               - belling,bl24c16f
               - renesas,r1ex24016
+              - rohm,br24t16
           - const: atmel,24c16
       - items:
           - const: giantec,gt24c32a
