@@ -127,6 +127,8 @@ static const struct resource mt6331_keys_resources[] = {
 static const struct resource mt6392_keys_resources[] = {
 	DEFINE_RES_IRQ_NAMED(MT6392_IRQ_PWRKEY, "powerkey"),
 	DEFINE_RES_IRQ_NAMED(MT6392_IRQ_FCHRKEY, "homekey"),
+	DEFINE_RES_IRQ_NAMED(MT6392_IRQ_RELEASE_PWRKEY, "powerkey_r"),
+	DEFINE_RES_IRQ_NAMED(MT6392_IRQ_RELEASE_FCHRKEY, "homekey_r"),
 };
 
 static const struct resource mt6397_keys_resources[] = {
