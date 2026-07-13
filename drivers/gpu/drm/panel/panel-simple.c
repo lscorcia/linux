@@ -3095,6 +3095,32 @@ static const struct panel_desc jutouch_jt101tm023 = {
 	.connector_type = DRM_MODE_CONNECTOR_LVDS,
 };
 
+static const struct display_timing kd_kd070d5450_nha6_timing = {
+	.pixelclock = { 51206000 },
+	.hactive = { 1024 },
+	.hfront_porch = { 160 },
+	.hback_porch = { 112 },
+	.hsync_len = { 48 },
+	.vactive = { 600 },
+	.vfront_porch = { 12 },
+	.vback_porch = { 13 },
+	.vsync_len = { 10 },
+	.flags = DISPLAY_FLAGS_HSYNC_LOW | DISPLAY_FLAGS_VSYNC_LOW |
+		 DISPLAY_FLAGS_DE_HIGH,
+};
+
+static const struct panel_desc kd_kd070d5450_nha6 = {
+	.timings = &kd_kd070d5450_nha6_timing,
+	.num_timings = 1,
+	.bpc = 6,
+	.size = {
+		.width = 178,
+		.height = 90,
+	},
+	.bus_format = MEDIA_BUS_FMT_RGB666_1X18,
+	.bus_flags = DRM_BUS_FLAG_DE_HIGH,
+	.connector_type = DRM_MODE_CONNECTOR_DPI,
+};
 
 static const struct display_timing koe_tx14d24vm1bpa_timing = {
 	.pixelclock = { 5580000, 5850000, 6200000 },
@@ -5933,6 +5959,9 @@ static const struct of_device_id platform_of_match[] = {
 	}, {
 		.compatible = "jutouch,jt101tm023",
 		.data = &jutouch_jt101tm023,
+	}, {
+		.compatible = "kd,kd070d5450nha6",
+		.data = &kd_kd070d5450_nha6,
 	}, {
 		.compatible = "koe,tx14d24vm1bpa",
 		.data = &koe_tx14d24vm1bpa,
