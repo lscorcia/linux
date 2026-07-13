@@ -1,0 +1,308 @@
+// SPDX-License-Identifier: GPL-2.0
+/dts-v1/;
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/linux-event-codes.h>
+#include "mt8167.dtsi"
+#include "mt6392.dtsi"
+
+/ {
+	model = "Lenovo Tab E7";
+	chassis-type = "tablet";
+	compatible = "lenovo,tb7104f", "mediatek,mt8167";
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		bootargs = "console=tty0 console=ttyS0,921600n1 earlycon=uart8250,mmio32,0x11005000";
+		ranges;
+
+		stdout-path = &framebuffer0;
+
+		framebuffer0: framebuffer@7f0c0000 {
+			compatible = "simple-framebuffer";
+			reg = <0x0 0x7f0c0000 0x0 (1024 * 600 * 4)>;
+			width = <1024>;
+			height = <600>;
+			stride = <(1024 * 4)>;
+			format = "a8r8g8b8";
+		};
+	};
+
+	memory@40000000 {
+		device_type = "memory";
+		reg = <0 0x40000000 0 0x40000000>;
+	};
+
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		atf-reserved-memory {
+			reg = <0x00 0x54600000 0x00 0x30000>;
+			no-map;
+		};
+
+		consys-reserve-memory {
+			size = <0x00 0x200000>;
+			alignment = <0x00 0x200000>;
+			no-map;
+		};
+	};
+	
+	vbat: regulator-vbat-sys {
+		compatible = "regulator-fixed";
+		regulator-name = "vbat";
+		regulator-always-on;
+		regulator-boot-on;
+	};
+};
+
+/* With the firmware on Android devices, cores don't seem to come back after out
+   idle/unplug (though initial SMP boot is fine) */
+
+&cpu0 {
+	/delete-property/ cpu-idle-states;
+	proc-supply = <&mt6392_vproc_reg>;
+};
+
+&cpu1 {
+	/delete-property/ cpu-idle-states;
+	proc-supply = <&mt6392_vproc_reg>;
+};
+
+&cpu2 {
+	/delete-property/ cpu-idle-states;
+	proc-supply = <&mt6392_vproc_reg>;
+};
+
+&cpu3 {
+	/delete-property/ cpu-idle-states;
+	proc-supply = <&mt6392_vproc_reg>;
+};
+
+&mmc0 {
+	status = "okay";
+
+	pinctrl-names = "default", "state_uhs";
+	pinctrl-0 = <&mmc0_pins_default>;
+	pinctrl-1 = <&mmc0_pins_uhs>;
+
+	bus-width = <8>;
+	max-frequency = <200000000>;
+	cap-mmc-highspeed;
+	mmc-hs200-1_8v;
+	cap-mmc-hw-reset;
+	non-removable;
+
+	vmmc-supply = <&mt6392_vemc3v3_reg>;
+	vqmmc-supply = <&mt6392_vio18_reg>;
+};
+
+&pio {
+	mmc0_pins_default: mmc0-default-pins {
+		pins_cmd_dat {
+			pinmux = <MT8167_PIN_120_MSDC0_DAT0__FUNC_MSDC0_DAT0>,
+				 <MT8167_PIN_119_MSDC0_DAT1__FUNC_MSDC0_DAT1>,
+				 <MT8167_PIN_118_MSDC0_DAT2__FUNC_MSDC0_DAT2>,
+				 <MT8167_PIN_117_MSDC0_DAT3__FUNC_MSDC0_DAT3>,
+				 <MT8167_PIN_113_MSDC0_DAT4__FUNC_MSDC0_DAT4>,
+				 <MT8167_PIN_112_MSDC0_DAT5__FUNC_MSDC0_DAT5>,
+				 <MT8167_PIN_111_MSDC0_DAT6__FUNC_MSDC0_DAT6>,
+				 <MT8167_PIN_110_MSDC0_DAT7__FUNC_MSDC0_DAT7>,
+				 <MT8167_PIN_115_MSDC0_CMD__FUNC_MSDC0_CMD>;
+			input-enable;
+			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
+		};
+
+		pins_clk {
+			pinmux = <MT8167_PIN_116_MSDC0_CLK__FUNC_MSDC0_CLK>;
+			bias-pull-down = <MTK_PUPD_SET_R1R0_10>;
+		};
+
+		pins_rst {
+			pinmux = <MT8167_PIN_114_MSDC0_RSTB__FUNC_MSDC0_RSTB>;
+			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
+		};
+	};
+
+	mmc0_pins_uhs: mmc0-uhs-pins {
+		pins_cmd_dat {
+			pinmux = <MT8167_PIN_120_MSDC0_DAT0__FUNC_MSDC0_DAT0>,
+				 <MT8167_PIN_119_MSDC0_DAT1__FUNC_MSDC0_DAT1>,
+				 <MT8167_PIN_118_MSDC0_DAT2__FUNC_MSDC0_DAT2>,
+				 <MT8167_PIN_117_MSDC0_DAT3__FUNC_MSDC0_DAT3>,
+				 <MT8167_PIN_113_MSDC0_DAT4__FUNC_MSDC0_DAT4>,
+				 <MT8167_PIN_112_MSDC0_DAT5__FUNC_MSDC0_DAT5>,
+				 <MT8167_PIN_111_MSDC0_DAT6__FUNC_MSDC0_DAT6>,
+				 <MT8167_PIN_110_MSDC0_DAT7__FUNC_MSDC0_DAT7>,
+				 <MT8167_PIN_115_MSDC0_CMD__FUNC_MSDC0_CMD>;
+			input-enable;
+			drive-strength = <MTK_DRIVE_6mA>;
+			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
+		};
+
+		pins_clk {
+			pinmux = <MT8167_PIN_116_MSDC0_CLK__FUNC_MSDC0_CLK>;
+			drive-strength = <MTK_DRIVE_8mA>;
+			bias-pull-down = <MTK_PUPD_SET_R1R0_10>;
+		};
+
+		pins_rst {
+			pinmux = <MT8167_PIN_114_MSDC0_RSTB__FUNC_MSDC0_RSTB>;
+			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
+		};
+	};
+
+	usb0_iddig: iddig-pins {
+		pins_cmd_dat {
+			pinmux = <MT8167_PIN_19_EINT19__FUNC_IDDIG>;
+			slew-rate = <0>;
+			bias-disable;
+		};
+	};
+
+	uart0_pins: uart0-pins {
+		pins_rx {
+			pinmux = <MT8167_PIN_62_URXD0__FUNC_URXD0>;
+			input-enable;
+			bias-pull-up;
+		};
+		pins_tx {
+			pinmux = <MT8167_PIN_63_UTXD0__FUNC_UTXD0>;
+		};
+	};
+};
+
+&pmic {
+	interrupt-parent = <&pio>;
+	interrupts = <28 IRQ_TYPE_LEVEL_HIGH>;
+};
+
+&uart0 {
+	status = "okay";
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart0_pins>;
+};
+
+&usb0 {
+	status = "okay";
+	dr_mode = "peripheral";
+	usb-role-switch;
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb0_iddig>;
+
+	//vusb33-supply = <&mt6392_vusb_reg>;
+
+	usb_con: connector {
+		compatible = "gpio-usb-b-connector", "usb-b-connector";
+		type = "micro";
+		id-gpios = <&pio 19 GPIO_OPEN_SOURCE>;
+		vbus-supply = <&mt6392_vusb_reg>;
+	};
+};
+
+&usb_phy {
+	status = "okay";
+};
+
+&mt6392regulators {
+	vproc-supply = <&vbat>;
+	vcore-supply = <&vbat>;
+	vsys-supply = <&vbat>;
+	ldo1-supply = <&vbat>;
+	ldo2-supply = <&vbat>;
+	ldo3-supply = <&vbat>;
+};
+
+&mt6392_vcore_reg {
+	regulator-min-microvolt = <700000>;
+	regulator-max-microvolt = <1350000>;
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vproc_reg {
+	regulator-min-microvolt = <700000>;
+	regulator-max-microvolt = <1350000>;
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vsys_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vaud28_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vxo22_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vaud22_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vadc18_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vcama_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vusb_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vmc_reg {
+	regulator-boot-on;
+};
+
+&mt6392_vmch_reg {
+	regulator-boot-on;
+};
+
+&mt6392_vemc3v3_reg {
+	regulator-boot-on;
+};
+
+&mt6392_vm25_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vdig18_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vm_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vio18_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6392_vrtc_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
