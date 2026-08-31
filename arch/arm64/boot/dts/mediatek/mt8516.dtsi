@@ -286,6 +286,7 @@
 		#address-cells = <2>;
 		#size-cells = <2>;
 		compatible = "simple-bus";
+		interrupt-parent = <&cirq>;
 		ranges;
 
 		topckgen: topckgen@10000000 {
@@ -380,6 +381,16 @@
 			#interrupt-cells = <3>;
 			interrupt-parent = <&gic>;
 			reg = <0 0x10200620 0 0x20>;
+		};
+
+		cirq: interrupt-controller@10202000 {
+			compatible = "mediatek,mt2701-cirq",
+				     "mediatek,mtk-cirq";
+			reg = <0 0x10202000 0 0x400>;
+			#interrupt-cells = <3>;
+			interrupt-controller;
+			interrupt-parent = <&sysirq>;
+			mediatek,ext-irq-range = <72 218>;
 		};
 
 		gic: interrupt-controller@10310000 {
