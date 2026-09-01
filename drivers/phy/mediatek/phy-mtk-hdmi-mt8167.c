@@ -49,6 +49,8 @@ static int mtk_hdmi_pll_prepare(struct clk_hw *hw)
 	struct mtk_hdmi_phy *hdmi_phy = to_mtk_hdmi_phy(hw);
 	void __iomem *base = hdmi_phy->regs;
 
+	dev_dbg(hdmi_phy->dev, "*** LUCA %s ENTER\n", __func__);
+
 	mtk_phy_set_bits(base + HDMI_CON7, RG_HTPLL_AUTOK_EN);
 	mtk_phy_clear_bits(base + HDMI_CON6, RG_HTPLL_RLH_EN);
 	mtk_phy_set_bits(base + HDMI_CON6, RG_HTPLL_POSDIV);
@@ -61,6 +63,8 @@ static int mtk_hdmi_pll_prepare(struct clk_hw *hw)
 	mtk_phy_set_bits(base + HDMI_CON2, RG_HDMITX_MBIAS_LPF_EN);
 	mtk_phy_set_bits(base + HDMI_CON2, RG_HDMITX_EN_TX_POSDIV);
 
+	dev_dbg(hdmi_phy->dev, "*** LUCA %s EXIT\n", __func__);
+
 	return 0;
 }
 
@@ -68,6 +72,8 @@ static void mtk_hdmi_pll_unprepare(struct clk_hw *hw)
 {
 	struct mtk_hdmi_phy *hdmi_phy = to_mtk_hdmi_phy(hw);
 	void __iomem *base = hdmi_phy->regs;
+
+	dev_dbg(hdmi_phy->dev, "*** LUCA %s ENTER\n", __func__);
 
 	mtk_phy_clear_bits(base + HDMI_CON2, RG_HDMITX_EN_TX_POSDIV);
 	mtk_phy_clear_bits(base + HDMI_CON2, RG_HDMITX_MBIAS_LPF_EN);
@@ -81,6 +87,8 @@ static void mtk_hdmi_pll_unprepare(struct clk_hw *hw)
 	mtk_phy_clear_bits(base + HDMI_CON6, RG_HTPLL_RLH_EN);
 	mtk_phy_clear_bits(base + HDMI_CON7, RG_HTPLL_AUTOK_EN);
 	usleep_range(80, 100);
+
+	dev_dbg(hdmi_phy->dev, "*** LUCA %s EXIT\n", __func__);
 }
 
 static int mtk_hdmi_pll_determine_rate(struct clk_hw *hw,
@@ -88,7 +96,13 @@ static int mtk_hdmi_pll_determine_rate(struct clk_hw *hw,
 {
 	struct mtk_hdmi_phy *hdmi_phy = to_mtk_hdmi_phy(hw);
 
+	dev_dbg(hdmi_phy->dev, "*** LUCA %s ENTER: req_rate: %lu Hz, best_parent_rate: %lu Hz\n", __func__, req->rate, req->best_parent_rate);
+	dev_dbg(hdmi_phy->dev, "*** LUCA %s BEFORE: pll_rate = %lu Hz\n", __func__, hdmi_phy->pll_rate);
+
 	hdmi_phy->pll_rate = req->rate;
+
+	dev_dbg(hdmi_phy->dev, "*** LUCA %s AFTER: pll_rate = %lu Hz, best_parent_rate: %lu Hz\n", __func__,
+		hdmi_phy->pll_rate, req->best_parent_rate);
 
 	return 0;
 }
@@ -107,6 +121,9 @@ static int mtk_hdmi_pll_set_rate(struct clk_hw *hw, unsigned long rate,
 	u32 imp_d1 = 0x1c;
 	u32 imp_d2 = 0x1c;
 	u32 drv_ibias = 0xa;
+
+	dev_dbg(hdmi_phy->dev, "*** LUCA %s: %lu Hz, parent: %lu Hz\n", __func__,
+		rate, parent_rate);
 
 	if (rate <= 27000000)
 		pos_div = 3;
@@ -150,6 +167,9 @@ static unsigned long mtk_hdmi_pll_recalc_rate(struct clk_hw *hw,
 {
 	struct mtk_hdmi_phy *hdmi_phy = to_mtk_hdmi_phy(hw);
 
+	dev_dbg(hdmi_phy->dev, "*** LUCA %s ENTER rate = %lu Hz, parent_rate = %lu Hz\n", __func__,
+		hdmi_phy->pll_rate, parent_rate);
+
 	unsigned long out_rate, val;
 	u32 tmp;
 
@@ -167,15 +187,27 @@ static unsigned long mtk_hdmi_pll_recalc_rate(struct clk_hw *hw,
 		break;
 	}
 
+	dev_dbg(hdmi_phy->dev, "*** LUCA %s RG_HTPLL_PREDIV = %lu\n", __func__,
+		val);
+
 	val = FIELD_GET(RG_HTPLL_FBKDIV, tmp);
 	out_rate *= (val + 1) * 2;
+
+	dev_dbg(hdmi_phy->dev, "*** LUCA %s RG_HTPLL_FBKDIV = %lu\n", __func__,
+		val);
 
 	tmp = readl(hdmi_phy->regs + HDMI_CON2);
 	val = FIELD_GET(RG_HDMITX_TX_POSDIV, tmp);
 	out_rate >>= val;
 
+	dev_dbg(hdmi_phy->dev, "*** LUCA %s RG_HDMITX_TX_POSDIV = %lu, RG_HDMITX_EN_TX_POSDIV = %lu\n", __func__,
+		val, tmp & RG_HDMITX_EN_TX_POSDIV);
+
 	if (tmp & RG_HDMITX_EN_TX_POSDIV)
 		out_rate /= 5;
+
+	dev_dbg(hdmi_phy->dev, "*** LUCA %s EXIT out_rate = %lu Hz, parent_rate = %lu Hz\n", __func__,
+		out_rate, parent_rate);
 
 	return out_rate;
 }
@@ -192,18 +224,26 @@ static void mtk_hdmi_phy_enable_tmds(struct mtk_hdmi_phy *hdmi_phy)
 {
 	void __iomem *base = hdmi_phy->regs;
 
+	dev_dbg(hdmi_phy->dev, "*** LUCA %s ENTER\n", __func__);
+
 	mtk_phy_set_bits(base + HDMI_CON0,
 			 RG_HDMITX_EN_DRV | RG_HDMITX_EN_PRED | RG_HDMITX_EN_SER);
 	usleep_range(80, 100);
+
+	dev_dbg(hdmi_phy->dev, "*** LUCA %s EXIT\n", __func__);
 }
 
 static void mtk_hdmi_phy_disable_tmds(struct mtk_hdmi_phy *hdmi_phy)
 {
 	void __iomem *base = hdmi_phy->regs;
 
+	dev_dbg(hdmi_phy->dev, "*** LUCA %s ENTER\n", __func__);
+
 	mtk_phy_clear_bits(base + HDMI_CON0,
 			 RG_HDMITX_EN_DRV | RG_HDMITX_EN_PRED | RG_HDMITX_EN_SER);
 	usleep_range(80, 100);
+
+	dev_dbg(hdmi_phy->dev, "*** LUCA %s EXIT\n", __func__);
 }
 
 struct mtk_hdmi_phy_conf mtk_hdmi_phy_8167_conf = {
