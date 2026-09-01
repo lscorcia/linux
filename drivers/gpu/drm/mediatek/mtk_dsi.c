@@ -756,11 +756,15 @@ err_refcount:
 
 static void mtk_dsi_poweroff(struct mtk_dsi *dsi)
 {
+	dev_err(dsi->host.dev, "*** LUCA mtk_dsi_poweroff_1\n");
+
 	if (WARN_ON(dsi->refcount == 0))
 		return;
 
 	if (--dsi->refcount != 0)
 		return;
+
+	dev_err(dsi->host.dev, "*** LUCA mtk_dsi_poweroff_2\n");
 
 	/*
 	 * mtk_dsi_stop() and mtk_dsi_start() is asymmetric, since
