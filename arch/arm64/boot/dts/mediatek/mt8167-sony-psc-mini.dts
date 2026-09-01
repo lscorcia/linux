@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: GPL-2.0
+/dts-v1/;
+#include "mt8167.dtsi"
+#include "mt6392.dtsi"
+
+/ {
+	model = "Sony PlayStation Classic Mini";
+	chassis-type = "embedded";
+	compatible = "sony,psc-mini", "mediatek,mt8167";
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		bootargs = "console=tty0 console=ttyS0,921600n1 earlycon=uart8250,mmio32,0x11005000 root=/dev/ram0 initrd=0x42200000,4M";
+		ranges;
+	};
+
+	memory@40000000 {
+		device_type = "memory";
+		reg = <0 0x40000000 0 0x40000000>;
+	};
+
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		/* mtee must be located begin within the last 3MB of dram */
+		mtee-reserved-memory {
+			no-map;
+			reg = <0 0x7FD00000 0 0x300000>;
+		};
+	};
+};
