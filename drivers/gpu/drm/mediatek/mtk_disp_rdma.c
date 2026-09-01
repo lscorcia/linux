@@ -133,6 +133,8 @@ void mtk_rdma_unregister_vblank_cb(struct device *dev)
 
 void mtk_rdma_enable_vblank(struct device *dev)
 {
+	pr_err("*** LUCA %s", __func__);
+
 	struct mtk_disp_rdma *rdma = dev_get_drvdata(dev);
 
 	/* Clear frame completion interrupt */
@@ -144,6 +146,8 @@ void mtk_rdma_enable_vblank(struct device *dev)
 
 void mtk_rdma_disable_vblank(struct device *dev)
 {
+	pr_err("*** LUCA %s", __func__);
+
 	rdma_update_bits(dev, DISP_REG_RDMA_INT_ENABLE, RDMA_FRAME_END_INT, 0);
 }
 
@@ -300,6 +304,7 @@ void mtk_rdma_layer_config(struct device *dev, unsigned int idx,
 static int mtk_disp_rdma_bind(struct device *dev, struct device *master,
 			      void *data)
 {
+	dev_err(dev, "*** LUCA %s", __func__);
 	return 0;
 
 }
@@ -307,6 +312,7 @@ static int mtk_disp_rdma_bind(struct device *dev, struct device *master,
 static void mtk_disp_rdma_unbind(struct device *dev, struct device *master,
 				 void *data)
 {
+	dev_err(dev, "*** LUCA %s", __func__);
 }
 
 static const struct component_ops mtk_disp_rdma_component_ops = {
@@ -321,28 +327,40 @@ static int mtk_disp_rdma_probe(struct platform_device *pdev)
 	int irq;
 	int ret;
 
+	dev_err(dev, "*** LUCA %s 1", __func__);
+
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
 
+	dev_err(dev, "*** LUCA %s 2", __func__);
+
 	irq = platform_get_irq(pdev, 0);
 	if (irq < 0)
 		return irq;
+
+	dev_err(dev, "*** LUCA %s 3", __func__);
 
 	priv->clk = devm_clk_get(dev, NULL);
 	if (IS_ERR(priv->clk))
 		return dev_err_probe(dev, PTR_ERR(priv->clk),
 				     "failed to get rdma clk\n");
 
+	dev_err(dev, "*** LUCA %s 4", __func__);
+
 	priv->regs = devm_platform_ioremap_resource(pdev, 0);
 	if (IS_ERR(priv->regs))
 		return dev_err_probe(dev, PTR_ERR(priv->regs),
 				     "failed to ioremap rdma\n");
 #if IS_REACHABLE(CONFIG_MTK_CMDQ)
+	dev_err(dev, "*** LUCA %s 5", __func__);
+
 	ret = cmdq_dev_get_client_reg(dev, &priv->cmdq_reg, 0);
 	if (ret)
 		dev_dbg(dev, "get mediatek,gce-client-reg fail!\n");
 #endif
+
+	dev_err(dev, "*** LUCA %s 6", __func__);
 
 	ret = of_property_read_u32(dev->of_node,
 				   "mediatek,rdma-fifo-size",
@@ -350,26 +368,43 @@ static int mtk_disp_rdma_probe(struct platform_device *pdev)
 	if (ret && (ret != -EINVAL))
 		return dev_err_probe(dev, ret, "Failed to get rdma fifo size\n");
 
+	dev_err(dev, "*** LUCA %s 7", __func__);
+
 	/* Disable and clear pending interrupts */
 	writel(0x0, priv->regs + DISP_REG_RDMA_INT_ENABLE);
+
+	dev_err(dev, "*** LUCA %s 8", __func__);
+
 	writel(0x0, priv->regs + DISP_REG_RDMA_INT_STATUS);
+
+	dev_err(dev, "*** LUCA %s 9", __func__);
 
 	ret = devm_request_irq(dev, irq, mtk_disp_rdma_irq_handler,
 			       IRQF_TRIGGER_NONE, dev_name(dev), priv);
 	if (ret < 0)
 		return dev_err_probe(dev, ret, "Failed to request irq %d\n", irq);
 
+	dev_err(dev, "*** LUCA %s 10", __func__);
+
 	priv->data = of_device_get_match_data(dev);
+
+	dev_err(dev, "*** LUCA %s 11", __func__);
 
 	platform_set_drvdata(pdev, priv);
 
+	dev_err(dev, "*** LUCA %s 12", __func__);
+
 	pm_runtime_enable(dev);
+
+	dev_err(dev, "*** LUCA %s 13", __func__);
 
 	ret = component_add(dev, &mtk_disp_rdma_component_ops);
 	if (ret) {
 		pm_runtime_disable(dev);
 		return dev_err_probe(dev, ret, "Failed to add component\n");
 	}
+
+	dev_err(dev, "*** LUCA %s 14", __func__);
 
 	return 0;
 }

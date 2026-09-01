@@ -152,6 +152,8 @@ static void mtk_crtc_destroy(struct drm_crtc *crtc)
 
 static void mtk_crtc_reset(struct drm_crtc *crtc)
 {
+	pr_err("*** LUCA %s", __func__);
+
 	struct mtk_crtc_state *state;
 
 	if (crtc->state) {
