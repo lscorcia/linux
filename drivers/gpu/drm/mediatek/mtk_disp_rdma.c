@@ -133,6 +133,11 @@ void mtk_rdma_unregister_vblank_cb(struct device *dev)
 
 void mtk_rdma_enable_vblank(struct device *dev)
 {
+	struct mtk_disp_rdma *rdma = dev_get_drvdata(dev);
+
+	/* Clear frame completion interrupt */
+	writel(0x0, rdma->regs + DISP_REG_RDMA_INT_STATUS);
+
 	rdma_update_bits(dev, DISP_REG_RDMA_INT_ENABLE, RDMA_FRAME_END_INT,
 			 RDMA_FRAME_END_INT);
 }
