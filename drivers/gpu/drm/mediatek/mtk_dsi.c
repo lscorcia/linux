@@ -1169,8 +1169,12 @@ static ssize_t mtk_dsi_host_transfer(struct mipi_dsi_host *host,
 
 	if (recv_cnt > 2)
 		src_addr = &read_data[4];
-	else
+	else if (recv_cnt > 0)
 		src_addr = &read_data[1];
+	else {
+		DRM_ERROR("DSI Error Report: 0x%x\n", read_data[1]);
+		goto restore_dsi_mode;
+	}
 
 	if (recv_cnt > 10)
 		recv_cnt = 10;

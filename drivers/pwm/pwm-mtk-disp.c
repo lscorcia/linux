@@ -43,6 +43,7 @@ struct mtk_pwm_data {
 
 struct mtk_disp_pwm {
 	const struct mtk_pwm_data *data;
+	struct clk *clk_pwm_mm;
 	struct clk *clk_main;
 	struct clk *clk_mm;
 	void __iomem *base;
@@ -82,16 +83,25 @@ static int mtk_disp_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
 					 mdp->data->enable_mask, 0x0);
 		clk_disable_unprepare(mdp->clk_mm);
 		clk_disable_unprepare(mdp->clk_main);
+		clk_disable_unprepare(mdp->clk_pwm_mm);
 
 		mdp->enabled = false;
 		return 0;
 	}
 
 	if (!mdp->enabled) {
+		err = clk_prepare_enable(mdp->clk_pwm_mm);
+		if (err < 0) {
+			dev_err(pwmchip_parent(chip), "Can't enable mdp->clk_pwm_mm: %pe\n",
+				ERR_PTR(err));
+			return err;
+		}
+
 		err = clk_prepare_enable(mdp->clk_main);
 		if (err < 0) {
 			dev_err(pwmchip_parent(chip), "Can't enable mdp->clk_main: %pe\n",
 				ERR_PTR(err));
+			clk_disable_unprepare(mdp->clk_pwm_mm);
 			return err;
 		}
 
@@ -100,6 +110,7 @@ static int mtk_disp_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
 			dev_err(pwmchip_parent(chip), "Can't enable mdp->clk_mm: %pe\n",
 				ERR_PTR(err));
 			clk_disable_unprepare(mdp->clk_main);
+			clk_disable_unprepare(mdp->clk_pwm_mm);
 			return err;
 		}
 	}
@@ -121,6 +132,7 @@ static int mtk_disp_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
 		if (!mdp->enabled) {
 			clk_disable_unprepare(mdp->clk_mm);
 			clk_disable_unprepare(mdp->clk_main);
+			clk_disable_unprepare(mdp->clk_pwm_mm);
 		}
 		return -EINVAL;
 	}
@@ -178,9 +190,16 @@ static int mtk_disp_pwm_get_state(struct pwm_chip *chip,
 	u32 clk_div, pwm_en, con0, con1;
 	int err;
 
+	err = clk_prepare_enable(mdp->clk_pwm_mm);
+	if (err < 0) {
+		dev_err(pwmchip_parent(chip), "Can't enable mdp->clk_pwm_mm: %pe\n", ERR_PTR(err));
+		return err;
+	}
+
 	err = clk_prepare_enable(mdp->clk_main);
 	if (err < 0) {
 		dev_err(pwmchip_parent(chip), "Can't enable mdp->clk_main: %pe\n", ERR_PTR(err));
+		clk_disable_unprepare(mdp->clk_pwm_mm);
 		return err;
 	}
 
@@ -188,6 +207,7 @@ static int mtk_disp_pwm_get_state(struct pwm_chip *chip,
 	if (err < 0) {
 		dev_err(pwmchip_parent(chip), "Can't enable mdp->clk_mm: %pe\n", ERR_PTR(err));
 		clk_disable_unprepare(mdp->clk_main);
+		clk_disable_unprepare(mdp->clk_pwm_mm);
 		return err;
 	}
 
@@ -219,6 +239,7 @@ static int mtk_disp_pwm_get_state(struct pwm_chip *chip,
 	state->polarity = PWM_POLARITY_NORMAL;
 	clk_disable_unprepare(mdp->clk_mm);
 	clk_disable_unprepare(mdp->clk_main);
+	clk_disable_unprepare(mdp->clk_pwm_mm);
 
 	return 0;
 }
@@ -244,6 +265,11 @@ static int mtk_disp_pwm_probe(struct platform_device *pdev)
 	mdp->base = devm_platform_ioremap_resource(pdev, 0);
 	if (IS_ERR(mdp->base))
 		return PTR_ERR(mdp->base);
+
+	mdp->clk_pwm_mm = devm_clk_get_optional(&pdev->dev, "pwm_mm");
+	if (IS_ERR(mdp->clk_pwm_mm))
+		return dev_err_probe(&pdev->dev, PTR_ERR(mdp->clk_pwm_mm),
+				     "Failed to get pwm_mm clock\n");
 
 	mdp->clk_main = devm_clk_get(&pdev->dev, "main");
 	if (IS_ERR(mdp->clk_main))
