@@ -569,11 +569,15 @@ static void mtk_dpi_set_pixel_clk(struct mtk_dpi *dpi, struct videomode *vm, int
 	unsigned long pll_rate;
 	unsigned int factor;
 
+	dev_dbg(dpi->dev, "*** LUCA mode_clk=%d\n", mode_clk);
+	
 	/* let pll_rate can fix the valid range of tvdpll (1G~2GHz) */
 	factor = mtk_dpi_calculate_factor(dpi, mode_clk);
 	pll_rate = vm->pixelclock * factor;
 
-	dev_dbg(dpi->dev, "Want PLL %lu Hz, pixel clock %lu Hz\n",
+	dev_dbg(dpi->dev, "*** LUCA factor=%d\n", factor);
+
+	dev_dbg(dpi->dev, "*** LUCA Want PLL %lu Hz, pixel clock %lu Hz\n",
 		pll_rate, vm->pixelclock);
 
 	clk_set_rate(dpi->tvd_clk, pll_rate);
@@ -587,6 +591,9 @@ static void mtk_dpi_set_pixel_clk(struct mtk_dpi *dpi, struct videomode *vm, int
 	vm->pixelclock = pll_rate / factor;
 	vm->pixelclock /= dpi->conf->pixels_per_iter;
 
+	dev_dbg(dpi->dev, "*** LUCA Computed pixel clock %lu Hz\n",
+		vm->pixelclock);
+
 	if ((dpi->output_fmt == MEDIA_BUS_FMT_RGB888_2X12_LE) ||
 	    (dpi->output_fmt == MEDIA_BUS_FMT_RGB888_2X12_BE))
 		clk_set_rate(dpi->pixel_clk, vm->pixelclock * 2);
@@ -595,7 +602,7 @@ static void mtk_dpi_set_pixel_clk(struct mtk_dpi *dpi, struct videomode *vm, int
 
 	vm->pixelclock = clk_get_rate(dpi->pixel_clk);
 
-	dev_dbg(dpi->dev, "Got  PLL %lu Hz, pixel clock %lu Hz\n",
+	dev_dbg(dpi->dev, "*** LUCA Got  PLL %lu Hz, pixel clock %lu Hz\n",
 		pll_rate, vm->pixelclock);
 }
 

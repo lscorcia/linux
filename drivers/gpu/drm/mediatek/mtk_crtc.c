@@ -152,6 +152,8 @@ static void mtk_crtc_destroy(struct drm_crtc *crtc)
 
 static struct drm_crtc_state *mtk_crtc_create_state(struct drm_crtc *crtc)
 {
+	pr_err("*** LUCA %s", __func__);
+
 	struct mtk_crtc_state *state;
 
 	state = kzalloc_obj(*state);
