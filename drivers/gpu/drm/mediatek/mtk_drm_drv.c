@@ -574,13 +574,18 @@ static int mtk_drm_kms_init(struct drm_device *drm)
 	 */
 	dma_set_max_seg_size(dma_dev, UINT_MAX);
 
+	pr_err("*** LUCA mtk_drm_kms_init_1");
 	ret = drm_vblank_init(drm, MAX_CRTC);
 	if (ret < 0)
 		goto err_component_unbind;
 
+	pr_err("*** LUCA mtk_drm_kms_init_2");
 	drm_kms_helper_poll_init(drm);
+
+	pr_err("*** LUCA mtk_drm_kms_init_3");
 	drm_mode_config_reset(drm);
 
+	pr_err("*** LUCA mtk_drm_kms_init_4");
 	return 0;
 
 err_component_unbind:
