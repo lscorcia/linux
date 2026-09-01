@@ -154,6 +154,7 @@
 			mediatek,larbs = <&larb0>, <&larb1>, <&larb2>;
 			interrupts = <GIC_SPI 121 IRQ_TYPE_LEVEL_LOW>;
 			#iommu-cells = <1>;
+			mediatek,infracfg = <&infracfg>;
 		};
 
 		gce: mailbox@1020a000 {
