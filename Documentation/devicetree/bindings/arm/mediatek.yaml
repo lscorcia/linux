@@ -133,6 +133,7 @@ properties:
               - mediatek,mt8167-pumpkin
               - lenovo,cd24502f
               - lenovo,tb7104f
+              - sony,psc-mini
               - xiaomi,x04g
           - const: mediatek,mt8167
       - description: Google Elm (Acer Chromebook R13)
