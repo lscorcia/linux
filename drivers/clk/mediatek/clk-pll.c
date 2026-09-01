@@ -187,7 +187,17 @@ int mtk_pll_set_rate(struct clk_hw *hw, unsigned long rate,
 	u32 pcw = 0;
 	u32 postdiv;
 
+	if (!strcmp(pll->data->name, "tvdpll") || !strcmp(pll->data->name, "tvdpll_ck"))
+		dev_dbg(pll->dev, "*** LUCA mtk_pll_set_rate name=%s, rate=%lu, parent_rate=%lu", pll->data->name, rate, parent_rate);
+
 	mtk_pll_calc_values(pll, &pcw, &postdiv, rate, parent_rate);
+
+	if (!strcmp(pll->data->name, "tvdpll") || !strcmp(pll->data->name, "tvdpll_ck"))
+	{
+		dev_dbg(pll->dev, "*** LUCA mtk_pll_set_rate name=%s, pcw=%u, postdiv=%u", pll->data->name, pcw, postdiv);
+		dump_stack_lvl(KERN_ERR);
+	}
+
 	mtk_pll_set_rate_regs(pll, pcw, postdiv);
 
 	return 0;
