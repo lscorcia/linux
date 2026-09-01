@@ -240,6 +240,8 @@
 
 		touchscreen-size-x = <480>;
 		touchscreen-size-y = <800>;
+		touchscreen-inverted-y;
+		touchscreen-swapped-x-y;
 
 		wakeup-source;
 	};
