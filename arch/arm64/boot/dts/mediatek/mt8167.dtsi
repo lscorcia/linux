@@ -737,3 +737,10 @@
 &pio {
 	compatible = "mediatek,mt8167-pinctrl-paris";
 };
+
+&pmu {
+	interrupts = <GIC_SPI 8 IRQ_TYPE_LEVEL_LOW>,
+		<GIC_SPI 9 IRQ_TYPE_LEVEL_LOW>,
+		<GIC_SPI 10 IRQ_TYPE_LEVEL_LOW>,
+		<GIC_SPI 11 IRQ_TYPE_LEVEL_LOW>;
+};
