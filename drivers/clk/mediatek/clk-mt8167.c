@@ -734,6 +734,9 @@ static const struct mtk_gate_regs top5_cg_regs = {
 #define GATE_TOP1(_id, _name, _parent, _shift) \
 	GATE_MTK(_id, _name, _parent, &top1_cg_regs, _shift, &mtk_clk_gate_ops_setclr)
 
+#define GATE_TOP1_FLAGS(_id, _name, _parent, _shift, flags) \
+	GATE_MTK_FLAGS(_id, _name, _parent, &top1_cg_regs, _shift, &mtk_clk_gate_ops_setclr, flags)
+
 #define GATE_TOP2(_id, _name, _parent, _shift) \
 	GATE_MTK(_id, _name, _parent, &top2_cg_regs, _shift, &mtk_clk_gate_ops_setclr)
 
@@ -782,7 +785,7 @@ static const struct mtk_gate top_clks[] = {
 	GATE_TOP1(CLK_TOP_SEJ, "sej", "ahb_infra_sel", 21),
 	GATE_TOP1(CLK_TOP_MEMSLP_DLYER, "memslp_dlyer", "clk26m_ck", 22),
 	GATE_TOP1(CLK_TOP_SPI, "spi", "spi_sel", 23),
-	GATE_TOP1(CLK_TOP_APXGPT, "apxgpt", "clk26m_ck", 24),
+	GATE_TOP1_FLAGS(CLK_TOP_APXGPT, "apxgpt", "clk26m_ck", 24, CLK_IS_CRITICAL),
 	GATE_TOP1(CLK_TOP_AUDIO, "audio", "clk26m_ck", 25),
 	GATE_TOP1(CLK_TOP_PMICWRAP_MD, "pwrap_md", "clk26m_ck", 27),
 	GATE_TOP1(CLK_TOP_PMICWRAP_CONN, "pwrap_conn", "clk26m_ck", 28),
