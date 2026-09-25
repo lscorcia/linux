@@ -6538,6 +6538,35 @@ static const struct panel_desc_dsi lenovo_cd24502f_panel = {
 	.lanes = 2,
 };
 
+static const struct drm_display_mode himax_hx8282_dsi_panel_mode = {
+	.clock = (1024 + 60 + 60 + 10) * (600 + 20 + 18 + 2) * 60 / 1000,
+	.hdisplay = 1024,
+	.hsync_start = 1024 + 160,
+	.hsync_end = 1024 + 160 + 160,
+	.htotal = 1024 + 160 + 160 + 60,
+	.vdisplay = 600,
+	.vsync_start = 600 + 12,
+	.vsync_end = 600 + 12 + 23,
+	.vtotal = 600 + 12 + 23 + 1,
+	.flags = DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC,
+};
+
+static const struct panel_desc_dsi himax_hx8282_dsi_panel = {
+	.desc = {
+		.modes = &himax_hx8282_dsi_panel_mode,
+		.num_modes = 1,
+		.bpc = 8,
+		.size = {
+			.width = 154,
+			.height = 86,
+		},
+		.connector_type = DRM_MODE_CONNECTOR_DSI,
+	},
+	.flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_BURST,
+	.format = MIPI_DSI_FMT_RGB888,
+	.lanes = 3,
+};
+
 static const struct of_device_id dsi_of_match[] = {
 	{
 		.compatible = "auo,b080uan01",
@@ -6563,6 +6592,9 @@ static const struct of_device_id dsi_of_match[] = {
 	}, {
 		.compatible = "lenovo,cd24502-panel",
 		.data = &lenovo_cd24502f_panel
+	},{
+		.compatible = "himax,hx8282-dsi-panel",
+		.data = &himax_hx8282_dsi_panel
 	},
 	{
 		/* sentinel */
