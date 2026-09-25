@@ -57,7 +57,7 @@ static const struct mtk_pll_div_table mmpll_div_table[] = {
 };
 
 static const struct mtk_pll_data plls[] = {
-	PLL(CLK_APMIXED_ARMPLL, "armpll", 0x0100, 0x0110, 0, 0,
+	PLL(CLK_APMIXED_ARMPLL, "armpll", 0x0100, 0x0110, 0, PLL_AO,
 	    21, 0x0104, 24, 0, 0x0104, 0),
 	PLL(CLK_APMIXED_MAINPLL, "mainpll", 0x0120, 0x0130, 0,
 	    HAVE_RST_BAR, 21, 0x0124, 24, 0, 0x0124, 0),
