@@ -771,7 +771,7 @@ static const struct mtk_gate top_clks[] = {
 	GATE_TOP1(CLK_TOP_NFIECC, "nfiecc", "rg_nfiecc", 7),
 	GATE_TOP1(CLK_TOP_DEBUGSYS, "debugsys", "rg_dbg_atclk", 8),
 	GATE_TOP1(CLK_TOP_PWM, "pwm", "ahb_infra_sel", 9),
-	GATE_TOP1(CLK_TOP_UART0, "uart0", "uart0_sel", 10),
+	GATE_TOP1_FLAGS(CLK_TOP_UART0, "uart0", "uart0_sel", 10, CLK_IS_CRITICAL),
 	GATE_TOP1(CLK_TOP_UART1, "uart1", "uart1_sel", 11),
 	GATE_TOP1(CLK_TOP_BTIF, "btif", "ahb_infra_sel", 12),
 	GATE_TOP1(CLK_TOP_USB, "usb", "usb_78m", 13),
