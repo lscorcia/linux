@@ -499,6 +499,14 @@ config DRM_PANEL_LEADTEK_LTK500HD1829
 	  24 bit RGB per pixel. It provides a MIPI DSI interface to
 	  the host and has a built-in LED backlight.
 
+config DRM_PANEL_LENOVO_TB7104F
+	tristate "Lenovo TB7104F panel driver"
+	depends on OF
+	depends on DRM_MIPI_DSI
+	depends on BACKLIGHT_CLASS_DEVICE
+	help
+	  TBD
+
 config DRM_PANEL_LINCOLNTECH_LCD197
 	tristate "Lincoln Technologies lcd197 panel"
 	depends on OF
