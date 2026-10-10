@@ -98,19 +98,17 @@ static int clk_mt8167_apmixed_probe(struct platform_device *pdev)
 	struct device *dev = &pdev->dev;
 	int ret;
 
-	base = of_iomap(node, 0);
-	if (!base)
-		return -ENOMEM;
+	base = devm_platform_ioremap_resource(pdev, 0);
+	if (IS_ERR(base))
+		return PTR_ERR(base);
 
 	clk_data = mtk_devm_alloc_clk_data(dev, MT8167_CLK_APMIXED_NR_CLK);
-	if (IS_ERR_OR_NULL(clk_data)) {
-		ret = -ENOMEM;
-		goto unmap_io;
-	}
+	if (IS_ERR_OR_NULL(clk_data))
+		return -ENOMEM;
 
 	ret = mtk_clk_register_plls(dev, plls, ARRAY_SIZE(plls), clk_data);
 	if (ret)
-		goto unmap_io;
+		return ret;
 
 	ret = mtk_clk_register_dividers(dev, adj_divs, ARRAY_SIZE(adj_divs), base,
 					&mt8167_apmixed_clk_lock, clk_data);
@@ -129,8 +127,6 @@ unregister_dividers:
 	mtk_clk_unregister_dividers(adj_divs, ARRAY_SIZE(adj_divs), clk_data);
 unregister_plls:
 	mtk_clk_unregister_plls(plls, ARRAY_SIZE(plls), clk_data);
-unmap_io:
-	iounmap(base);
 
 	return ret;
 }
