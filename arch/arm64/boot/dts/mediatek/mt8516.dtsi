@@ -362,6 +362,10 @@
 			#address-cells = <1>;
 			#size-cells = <1>;
 
+			cpu_speed_bin: calib@40 {
+				reg = <0x40 0x4>;
+			};
+
 			thermal_calibration_data: calib@180 {
 				reg = <0x180 0xc>;
 			};
