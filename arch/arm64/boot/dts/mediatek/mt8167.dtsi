@@ -169,8 +169,9 @@
 		disp_pwm: pwm@1100f000 {
 			compatible = "mediatek,mt8167-disp-pwm", "mediatek,mt8173-disp-pwm";
 			reg = <0 0x1100f000 0 0x1000>;
-			clocks = <&mmsys CLK_MM_DISP_PWM_26M>, <&mmsys CLK_MM_DISP_PWM_MM>;
-			clock-names = "main", "mm";
+			clocks = <&mmsys CLK_MM_DISP_PWM_26M>, <&mmsys CLK_MM_DISP_PWM_MM>,
+				 <&topckgen CLK_TOP_PWM_MM>;
+			clock-names = "main", "mm", "pwm_mm";
 			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
 			#pwm-cells = <2>;
 			status = "disabled";
