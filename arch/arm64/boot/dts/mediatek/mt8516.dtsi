@@ -134,6 +134,7 @@
 				exit-latency-us = <600>;
 				min-residency-us = <1200>;
 				arm,psci-suspend-param = <0x0010000>;
+				local-timer-stop;
 			};
 
 			CLUSTER_SLEEP_0: cluster-sleep-0 {
@@ -142,6 +143,7 @@
 				exit-latency-us = <1000>;
 				min-residency-us = <2000>;
 				arm,psci-suspend-param = <0x2010000>;
+				local-timer-stop;
 			};
 		};
 
