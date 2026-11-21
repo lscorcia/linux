@@ -16,6 +16,22 @@
 / {
 	compatible = "mediatek,mt8167";
 
+	aliases {
+		aal0 = &aal;
+		ccorr0 = &ccorr;
+		color0 = &color;
+		dither0 = &dither;
+		dpi0 = &dpi0;
+		dpi1 = &dpi1;
+		dsi0 = &dsi;
+		gamma0 = &gamma;
+		ovl0 = &ovl0;
+		pwm0 = &disp_pwm;
+		rdma0 = &rdma0;
+		rdma1 = &rdma1;
+		wdma0 = &wdma;
+	};
+
 	soc {
 		topckgen: topckgen@10000000 {
 			compatible = "mediatek,mt8167-topckgen", "syscon";
@@ -144,6 +160,11 @@
 					reg = <0>;
 					remote-endpoint = <&ovl0_in>;
 				};
+
+				mmsys_ext: endpoint@1 {
+					reg = <1>;
+					remote-endpoint = <&rdma1_in>;
+				};
 			};
 		};
 
@@ -197,6 +218,33 @@
 				port@1 {
 					reg = <1>;
 					rdma0_out: endpoint { };
+				};
+			};
+		};
+
+		rdma1: rdma@1400a000 {
+			compatible = "mediatek,mt8167-disp-rdma", "mediatek,mt2701-disp-rdma";
+			reg = <0 0x1400a000 0 0x1000>;
+			clocks = <&mmsys CLK_MM_DISP_RDMA1>;
+			interrupts = <GIC_SPI 163 IRQ_TYPE_LEVEL_LOW>;
+			iommus = <&iommu M4U_PORT_DISP_RDMA1>;
+			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
+			status = "disabled";
+
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				port@0 {
+					reg = <0>;
+					rdma1_in: endpoint {
+						remote-endpoint = <&mmsys_ext>;
+					};
+				};
+
+				port@1 {
+					reg = <1>;
+					rdma1_out: endpoint { };
 				};
 			};
 		};
@@ -436,6 +484,34 @@
 			#clock-cells = <0>;
 			#phy-cells = <0>;
 			status = "disabled";
+		};
+
+		dpi1: dpi@14019000 {
+			compatible = "mediatek,mt8167-dpi";
+			reg = <0 0x14019000 0 0x1000>;
+			clocks = <&mmsys CLK_MM_DPI1_PXL>, <&mmsys CLK_MM_DPI1_ENGINE>,
+				 <&apmixedsys CLK_APMIXED_TVDPLL>;
+			clock-names = "pixel", "engine", "pll";
+			interrupts = <GIC_SPI 174 IRQ_TYPE_LEVEL_LOW>;
+			power-domains = <&spm MT8167_POWER_DOMAIN_MM>;
+			status = "disabled";
+
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				port@0 {
+					reg = <0>;
+
+					dpi1_in: endpoint { };
+				};
+
+				port@1 {
+					reg = <1>;
+
+					dpi1_out: endpoint { };
+				};
+			};
 		};
 
 		imgsys: syscon@15000000 {
