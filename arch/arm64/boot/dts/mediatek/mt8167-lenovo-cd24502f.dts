@@ -60,6 +60,61 @@
 		regulator-always-on;
 		regulator-boot-on;
 	};
+
+	backlight_lcd: backlight-lcd {
+		compatible = "pwm-backlight";
+		brightness-levels = <
+			  0  16  32  48  64  80  96 112
+			128 144 160 176 192 208 224 240
+			255
+		>;
+		default-brightness-level = <9>;
+		power-supply = <&mt6392_vmch_reg>;
+		pwms = <&disp_pwm 0 1000000>;
+	};
+
+	mt8167_audio_codec: mt8167_audio_codec {
+		compatible = "mediatek,mt8167-codec";
+		clocks = <&topckgen CLK_TOP_AUDIO>;
+		clock-names = "bus";
+		mediatek,afe-regmap = <&afe>;
+		mediatek,apmixedsys-regmap = <&apmixedsys>;
+		mediatek,dmic-wire-mode = <1>; /* 0(ONE_WIRE) 1(TWO_WIRE) */
+		mediatek,headphone-cap-sel = <1>; /* 0(10UF) 1(22UF) 2(33UF) 3(47UF) */
+	};
+/*
+	sound {
+		compatible = "mediatek,mt8167s-es7243";
+		mediatek,platform = <&afe>;
+		pinctrl-0 = <&aud_default_pins>;
+		pinctrl-1 = <&aud_extamp_on_pins>;
+		pinctrl-2 = <&aud_extamp_off_pins>;
+		pinctrl-names = "default", "extamp_on", "extamp_off";
+		tdmadc-3p3v-supply = <&mt6392_vmch_reg>;
+		tdmadc-1p8v-supply = <&mt6392_vcamio_reg>;
+	};
+*/
+	gpio-keys {
+		compatible = "gpio-keys";
+
+		volume-up-button {
+			label = "volume up";
+			gpios = <&pio 42 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_VOLUMEUP>;
+		};
+
+		volume-down-button {
+			label = "volume down";
+			gpios = <&pio 40 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_VOLUMEDOWN>;
+		};
+
+		mic-mute-switch {
+			label = "mic mute";
+			gpios = <&pio 21 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_MICMUTE>;
+		};
+	};
 };
 
 /* With the firmware on Android devices, cores don't seem to come back after out
@@ -85,6 +140,140 @@
 	proc-supply = <&mt6392_vproc_reg>;
 };
 
+/*
+&cluster0_opp {
+	opp-1500000000 {
+		opp-hz = /bits/ 64 <1500000000>;
+		opp-microvolt = <1300000>;
+	};
+};
+*/
+&disp_pwm {
+	status = "okay";
+};
+
+&mipi_tx {
+	status = "okay";
+};
+
+&dsi {
+	status = "okay";
+
+	panel: panel@0 {
+		compatible = "lenovo,cd24502-panel";
+		reg = <0>;
+		backlight = <&backlight_lcd>;
+		reset-gpios = <&pio 66 GPIO_ACTIVE_LOW>;
+		rotation = <90>;
+		power-supply = <&mt6392_vgp1_reg>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&panel_pins>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&dsi_out>;
+			};
+		};
+	};
+};
+
+&dsi_out {
+	remote-endpoint = <&panel_in>;
+};
+
+&i2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c_pins_0>;
+	clock-div = <1>;
+	status = "okay";
+
+	/* Accelerometer is mCube MC3416 */
+	mc3416@4c {
+		reg = <0x4c>;
+		compatible = "mcube,mc3416";
+		interrupt-parent = <&pio>;
+		interrupts = <12 IRQ_TYPE_LEVEL_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&mc3416_intpin_default>;
+	};
+
+	/* ALS/PS is Sensortek STK3310 */
+	stk3x1x@48 {
+		reg = <0x48>;
+		compatible = "sensortek,stk3310";
+		interrupt-parent = <&pio>;
+		interrupts = <5 IRQ_TYPE_LEVEL_LOW>;
+		proximity-near-level = <25>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&alsps_intpin_default>;
+	};
+};
+
+&i2c1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c_pins_1>;
+	status = "okay";
+	clock-div = <1>;
+	clock-frequency = <400000>;
+
+	/* Touch is "EP0110M09" (FocalTech FT6336U?) */
+	touch@38 {
+		reg = <0x38>;
+		compatible = "focaltech,ft6236";
+		interrupt-parent = <&pio>;
+		interrupts = <106 IRQ_TYPE_EDGE_FALLING>;
+		reset-gpios = <&pio 107 GPIO_ACTIVE_LOW>;
+
+		vcc-supply = <&mt6392_vio28_reg>;
+		iovcc-supply = <&mt6392_vgp1_reg>;
+
+		panel = <&panel>;
+		touchscreen-size-x = <480>;
+		touchscreen-size-y = <800>;
+		//touchscreen-inverted-y;
+		touchscreen-swapped-x-y;
+
+		wakeup-source;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&touch_pins>;
+	};
+};
+
+&i2c2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c_pins_2>;
+	status = "okay";
+/*
+	tas5805m: tas5805m@2d {
+		compatible = "ti,tas5805m";
+		pinctrl-names = "default";
+		pinctrl-0 = <&spk_pin_default>;
+		reg = <0x2d>;
+		power_gpio = <&pio 69 0>;
+		fault_gpio = <&pio 70 0>;
+	};
+
+	ad82128: ad82128@31 {
+		compatible = "ESMT,ad82128";
+		pinctrl-names = "default";
+		pinctrl-0 = <&spk_pin_default>;
+		reg = <0x31>;
+		power_gpio = <&pio 69 0>;
+		fault_gpio = <&pio 70 0>;
+	};
+		
+	clock2@1d {
+		reg = <0x1d>;
+		compatible = "Tonly,clock2";
+
+		interrupt-parent = <&pio>;
+		interrupts = <18 IRQ_TYPE_EDGE_FALLING>;
+
+	};*/
+};
+
 &mmc0 {
 	status = "okay";
 
@@ -104,6 +293,45 @@
 };
 
 &pio {
+	alsps_intpin_default: alsps-default-pins {
+		pins {
+			bias-disable;
+			input-enable;
+			slew-rate = <0>;
+			pinmux = <MT8167_PIN_5_EINT5__FUNC_GPIO5>;
+		};
+	};
+
+	mc3416_intpin_default: mc3416-default-pins {
+		pins {
+			pinmux = <MT8167_PIN_12_EINT12__FUNC_GPIO12>;
+		};
+	};
+
+	i2c_pins_0: i2c0-pins {
+		pins_i2c {
+			bias-disable;
+			pinmux = <MT8167_PIN_58_SDA0__FUNC_SDA0_0>,
+				 <MT8167_PIN_59_SCL0__FUNC_SCL0_0>;
+		};
+	};
+
+	i2c_pins_1: i2c1-pins {
+		pins_i2c {
+			bias-disable;
+			pinmux = <MT8167_PIN_52_SDA1__FUNC_SDA1_0>,
+				 <MT8167_PIN_53_SCL1__FUNC_SCL1_0>;
+		};
+	};
+
+	i2c_pins_2: i2c2-pins {
+		pins_i2c {
+			bias-disable;
+			pinmux = <MT8167_PIN_60_SDA2__FUNC_SDA2_0>,
+				 <MT8167_PIN_61_SCL2__FUNC_SCL2_0>;
+		};
+	};
+	
 	mmc0_pins_default: mmc0-default-pins {
 		pins_cmd_dat {
 			pinmux = <MT8167_PIN_120_MSDC0_DAT0__FUNC_MSDC0_DAT0>,
@@ -157,12 +385,46 @@
 			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
 		};
 	};
+/*
+	drvvbus_default: drvvbus-default-pins {
+		pins_cmd_dat {
+			pinmux = <MT8167_PIN_6_EINT6__FUNC_GPIO6>;
+			output-low;
+		};
+	};
 
+	usb_switch_default: usb-switch-pins {
+		pins_cmd_dat {
+			pinmux = <MT8167_PIN_12_EINT12__FUNC_PWM_A>;
+			output-low;
+		};
+	};
+*/
 	usb0_iddig: iddig-pins {
 		pins_cmd_dat {
 			pinmux = <MT8167_PIN_19_EINT19__FUNC_IDDIG>;
 			slew-rate = <0>;
 			bias-disable;
+		};
+	};
+
+	panel_pins: dsi0-pins {
+		pins_rst {
+			pinmux = <MT8167_PIN_66_LCM_RST__FUNC_GPIO66>;
+			bias-pull-up;
+		};
+	};
+
+	touch_pins: touch-pins {
+		pins_cmd_dat {
+			pinmux = <MT8167_PIN_106_MSDC1_DAT0__FUNC_GPIO106>;
+			input-enable;
+			bias-disable;
+		};
+
+		pins_rst {
+			pinmux = <MT8167_PIN_107_MSDC1_DAT1__FUNC_GPIO107>;
+			slew-rate = <1>;
 		};
 	};
 
@@ -176,6 +438,38 @@
 			pinmux = <MT8167_PIN_63_UTXD0__FUNC_UTXD0>;
 		};
 	};
+/*
+	aud_extamp_off_pins: audexampoff-pins {
+		pins_extamp {
+			output-low;
+			slew-rate = <1>;
+			pinmux = <MT8167_PIN_51_SPI_MO__FUNC_GPIO51>;
+		};
+	};
+
+	aud_extamp_on_pins: audexampon-pins {
+		pins_extamp {
+			output-high;
+			slew-rate = <1>;
+			pinmux = <MT8167_PIN_51_SPI_MO__FUNC_GPIO51>;
+		};
+	};
+
+	aud_default_pins: audiodefault-pins {
+		pins_extamp {
+			output-low;
+			slew-rate = <1>;
+			pinmux = <MT8167_PIN_51_SPI_MO__FUNC_GPIO51>;
+		};
+
+		pins_cmd_dat {
+			drive-strength = <MTK_DRIVE_4mA>;
+			pinmux = <MT8167_PIN_71_MSDC2_DAT1__FUNC_I2S_8CH_DO1
+				  MT8167_PIN_72_MSDC2_DAT2__FUNC_I2S_8CH_LRCK
+				  MT8167_PIN_73_MSDC2_DAT3__FUNC_I2S_8CH_BCK
+				  MT8167_PIN_38_MRG_DI__FUNC_I2S0_DI>;
+		};
+	};*/
 };
 
 &pmic {
@@ -306,3 +600,16 @@
 	regulator-always-on;
 	regulator-boot-on;
 };
+/*
+&btcvsd_snd {
+	status = "okay";
+};
+
+&mt6392_audio_codec {
+	status = "okay";
+};*/
+/*
+&mt6392keys {
+	status = "disabled";
+};
+*/
